@@ -6,6 +6,7 @@
 
 - **PoC 4.7 package**: `poc4_7/` (installable Python package + CLI)
 - **Reusable workflow**: `.github/workflows/poc4_7_ci.yml`
+- **Roadmap**: `ROADMAP.md` (RFP-aligned priorities)
 
 ## Quick start (use from another repo)
 
