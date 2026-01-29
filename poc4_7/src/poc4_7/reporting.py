@@ -29,6 +29,30 @@ def _load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _load_summary_fallback(run_root: Path) -> Optional[dict]:
+    summary_path = run_root / "summary.json"
+    if summary_path.exists():
+        try:
+            return _load_json(summary_path)
+        except json.JSONDecodeError:
+            return None
+    return None
+
+
+def _normalize_summary(summary: dict, run_root: Path) -> dict:
+    normalized = dict(summary)
+    normalized.setdefault("run_root", str(run_root))
+    normalized.setdefault("generated_at", timestamp())
+    normalized.setdefault("latest_manifests", {})
+    normalized.setdefault("mismatch_forks", [])
+    normalized.setdefault("spec_map_check", None)
+    normalized.setdefault("manifests", [])
+    if "phases_present" not in normalized:
+        phases = sorted((normalized.get("latest_manifests") or {}).keys())
+        normalized["phases_present"] = phases
+    return normalized
+
+
 def _collect_manifests(run_root: Path) -> list[dict]:
     manifests: list[dict] = []
     for manifest_path in run_root.rglob("run_manifest.json"):
@@ -54,6 +78,9 @@ def _select_latest(manifests: list[dict]) -> Optional[dict]:
 def build_summary(run_root: Path) -> dict[str, object]:
     manifests = _collect_manifests(run_root)
     if not manifests:
+        fallback = _load_summary_fallback(run_root)
+        if fallback:
+            return _normalize_summary(fallback, run_root)
         raise FileNotFoundError(f"No run_manifest.json files found under {run_root}")
 
     phases: dict[str, list[dict]] = {}
