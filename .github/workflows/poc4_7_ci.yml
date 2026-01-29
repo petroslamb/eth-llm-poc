@@ -39,9 +39,9 @@ on:
         default: "20"
         type: string
       eips_ref:
-        description: "EIPs repo ref (branch, tag, or commit)"
+        description: "EIPs repo branch (default: master)"
         required: false
-        default: "3b3fb63e"
+        default: "master"
         type: string
       execution_specs_ref:
         description: "Execution-specs repo ref (branch, tag, or commit)"
@@ -87,9 +87,9 @@ on:
         required: false
         default: "20"
       eips_ref:
-        description: "EIPs repo ref (branch, tag, or commit)"
+        description: "EIPs repo branch (default: master)"
         required: false
-        default: "3b3fb63e"
+        default: "master"
       execution_specs_ref:
         description: "Execution-specs repo ref (branch, tag, or commit)"
         required: false
@@ -110,7 +110,7 @@ env:
   DEFAULT_MODEL: "claude-sonnet-4-5"
   DEFAULT_PHASES: "2B"
   DEFAULT_MAX_TURNS: "20"
-  DEFAULT_EIPS_REF: "3b3fb63e"
+  DEFAULT_EIPS_REF: "master"
   DEFAULT_EXECUTION_SPECS_REF: "mainnet"
   DEFAULT_GETH_REF: "v1.16.8"
 
@@ -263,6 +263,10 @@ jobs:
                 ;;
             esac
           done
+          if [[ "$EIPS_REF" =~ ^[0-9a-f]{7,40}$ ]]; then
+            echo "Invalid eips_ref: '$EIPS_REF' (EIPs must use a branch name, not a commit)" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
           PHASES_RAW="${PHASES_RAW// /}"
           if [ -z "$PHASES_RAW" ]; then
             echo "Invalid phases: empty list" >> "$GITHUB_STEP_SUMMARY"
@@ -312,6 +316,11 @@ jobs:
           EXECUTION_SPECS_REF="${{ steps.resolved.outputs.execution_specs_ref }}"
           GETH_REF="${{ steps.resolved.outputs.geth_ref }}"
 
+          if ! git ls-remote --heads https://github.com/ethereum/EIPs.git "$EIPS_REF" | grep -q .; then
+            echo "EIPs branch not found: $EIPS_REF" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
           clone_ref() {
             local url="$1"
             local dest="$2"
@@ -326,7 +335,7 @@ jobs:
           }
 
           mkdir -p specs clients/execution
-          clone_ref https://github.com/ethereum/EIPs.git specs/EIPs "$EIPS_REF"
+          git clone --no-tags --depth 1 --branch "$EIPS_REF" https://github.com/ethereum/EIPs.git specs/EIPs
           clone_ref https://github.com/ethereum/execution-specs.git specs/execution-specs "$EXECUTION_SPECS_REF"
           clone_ref https://github.com/ethereum/go-ethereum.git clients/execution/geth "$GETH_REF"
 

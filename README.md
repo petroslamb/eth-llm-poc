@@ -27,7 +27,7 @@ jobs:
       model: "claude-sonnet-4-5"
       phases: "phase2B"
       max_turns: "20"
-      eips_ref: "3b3fb63e"
+      eips_ref: "master"
       execution_specs_ref: "mainnet"
       geth_ref: "v1.16.8"
     secrets:
