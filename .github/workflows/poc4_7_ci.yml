@@ -402,6 +402,7 @@ jobs:
 
       - name: Run PoC 4.7 phases
         if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        id: run_phases
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
@@ -419,30 +420,44 @@ jobs:
           fi
           RUN_ROOT=""
           PARENT_RUN=""
+          LAST_PHASE=""
+          LAST_OUTPUT=""
           for phase in $PHASE_PLAN; do
             case "$phase" in
               0A)
                 poc4_7 --phase 0A --eip "$EIP" --eip-file "$EIP_FILE" --model "$MODEL" --max-turns "$MAX_TURNS"
                 RUN_ROOT=$(ls -td poc4_7/notes/generated/*/ | grep -v 'index_runs' | head -1)
                 PARENT_RUN=$(ls -td "$RUN_ROOT/phase0A_runs"/* | head -1)
+                LAST_PHASE="0A"
+                LAST_OUTPUT="$PARENT_RUN/phase0A_output.txt"
                 ;;
               1A)
                 poc4_7 --phase 1A --parent-run "$PARENT_RUN" --eip "$EIP" --fork "$FORK" --model "$MODEL" --max-turns "$MAX_TURNS"
                 PARENT_RUN=$(ls -td "$PARENT_RUN/phase1A_runs"/* | head -1)
+                LAST_PHASE="1A"
+                LAST_OUTPUT="$PARENT_RUN/phase1A_output.txt"
                 ;;
               1B)
                 poc4_7 --phase 1B --parent-run "$PARENT_RUN" --eip "$EIP" --model "$MODEL" --max-turns "$MAX_TURNS"
                 PARENT_RUN=$(ls -td "$PARENT_RUN/phase1B_runs"/* | head -1)
+                LAST_PHASE="1B"
+                LAST_OUTPUT="$PARENT_RUN/phase1B_output.txt"
                 ;;
               2A)
                 poc4_7 --phase 2A --parent-run "$PARENT_RUN" --eip "$EIP" --client "$CLIENT" --model "$MODEL" --max-turns "$MAX_TURNS"
                 PARENT_RUN=$(ls -td "$PARENT_RUN/phase2A_runs"/* | head -1)
+                LAST_PHASE="2A"
+                LAST_OUTPUT="$PARENT_RUN/phase2A_output.txt"
                 ;;
               2B)
                 poc4_7 --phase 2B --parent-run "$PARENT_RUN" --eip "$EIP" --client "$CLIENT" --model "$MODEL" --max-turns "$MAX_TURNS"
+                LAST_PHASE="2B"
+                LAST_OUTPUT=$(ls -td "$PARENT_RUN/phase2B_runs"/* | head -1)/phase2B_output.txt
                 ;;
             esac
           done
+          echo "last_phase=$LAST_PHASE" >> "$GITHUB_OUTPUT"
+          echo "last_output=$LAST_OUTPUT" >> "$GITHUB_OUTPUT"
 
       - name: Find run root
         if: ${{ steps.detect_key.outputs.has_key == 'true' }}
@@ -456,6 +471,26 @@ jobs:
         run: |
           poc4_7 report --run-root "${{ steps.run_root.outputs.run_root }}"
           cat "${{ steps.run_root.outputs.run_root }}/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Append last phase output
+        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        run: |
+          set -euo pipefail
+          LAST_PHASE="${{ steps.run_phases.outputs.last_phase }}"
+          LAST_OUTPUT="${{ steps.run_phases.outputs.last_output }}"
+          if [ -n "$LAST_OUTPUT" ] && [ -f "$LAST_OUTPUT" ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "## Last phase output ($LAST_PHASE)" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "```text" >> "$GITHUB_STEP_SUMMARY"
+            tail -n 200 "$LAST_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
+            echo "```" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "## Last phase output" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "No phase output file found at: $LAST_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload summary
         if: ${{ steps.detect_key.outputs.has_key == 'true' }}
