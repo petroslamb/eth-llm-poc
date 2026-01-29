@@ -1,0 +1,28 @@
+You are completing geth gap analysis for EIP-2930 obligations.
+
+Inputs:
+- Client obligations CSV (Phase 2A output): /Users/petros/Projects/eth-llm/poc4_7/notes/generated/20260129_161814/phase0A_runs/20260129_161814/phase1A_runs/20260129_161913/phase1B_runs/20260129_162112/phase2A_runs/20260129_162353/client_obligations_index.csv
+- client root: /Users/petros/Projects/eth-llm/clients/execution/geth
+
+Tasks:
+1) For each obligation row, review client_locations and client_code_flow.
+2) Expand searches in the client codebase if needed to validate coverage or discover missing pieces.
+3) Identify gaps:
+   - client_obligation_gap: client behavior found that is not represented by the obligation statement(s).
+   - client_code_gap: missing or unclear client implementation for the obligation statement(s).
+4) If new relevant code is discovered, update client_locations and client_code_flow.
+
+Output:
+- Update CSV at: /Users/petros/Projects/eth-llm/poc4_7/notes/generated/20260129_161814/phase0A_runs/20260129_161814/phase1A_runs/20260129_161913/phase1B_runs/20260129_162112/phase2A_runs/20260129_162353/phase2B_runs/20260129_162807/client_obligations_index.csv
+
+Constraints:
+- Use filesystem tools to read files and write the updated CSV.
+- Keep prior columns intact and only update client_* fields.
+- If client_locations remains empty, record the reason in client_code_gap or client_obligation_gap.
+- Use Python's csv module to read/write so commas in text fields are quoted correctly.
+- Verify that each client_location contains the key predicate/constant; otherwise remove it and record the gap.
+
+Completion requirements:
+- Read /Users/petros/Projects/eth-llm/poc4_7/notes/generated/20260129_161814/phase0A_runs/20260129_161814/phase1A_runs/20260129_161913/phase1B_runs/20260129_162112/phase2A_runs/20260129_162353/client_obligations_index.csv with tools.
+- Write /Users/petros/Projects/eth-llm/poc4_7/notes/generated/20260129_161814/phase0A_runs/20260129_161814/phase1A_runs/20260129_161913/phase1B_runs/20260129_162112/phase2A_runs/20260129_162353/phase2B_runs/20260129_162807/client_obligations_index.csv.
+- Re-open /Users/petros/Projects/eth-llm/poc4_7/notes/generated/20260129_161814/phase0A_runs/20260129_161814/phase1A_runs/20260129_161913/phase1B_runs/20260129_162112/phase2A_runs/20260129_162353/phase2B_runs/20260129_162807/client_obligations_index.csv and confirm it exists and row count matches /Users/petros/Projects/eth-llm/poc4_7/notes/generated/20260129_161814/phase0A_runs/20260129_161814/phase1A_runs/20260129_161913/phase1B_runs/20260129_162112/phase2A_runs/20260129_162353/client_obligations_index.csv.

@@ -1,0 +1,9 @@
+{
+  "phase": "0A",
+  "generated_at": "20260129_161814",
+  "eip_number": "2930",
+  "eip_file": null,
+  "spec_branch": "fixture",
+  "spec_commit": "fixture",
+  "output_csv": "/Users/petros/Projects/eth-llm/poc4_8/tests/fixtures/run_20260129_161814/phase0A_runs/20260129_161814/obligations_index.csv"
+}

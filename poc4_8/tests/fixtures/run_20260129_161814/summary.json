@@ -1,0 +1,51 @@
+{
+  "run_root": "/Users/petros/Projects/eth-llm/poc4_8/tests/fixtures/run_20260129_161814",
+  "generated_at": "20260129_182328",
+  "phases_present": [
+    "0A",
+    "1A",
+    "1B",
+    "2A",
+    "2B"
+  ],
+  "latest_manifests": {
+    "0A": "/Users/petros/Projects/eth-llm/poc4_8/tests/fixtures/run_20260129_161814/phase0A_runs/20260129_161814/run_manifest.json",
+    "1A": "/Users/petros/Projects/eth-llm/poc4_8/tests/fixtures/run_20260129_161814/phase0A_runs/20260129_161814/phase1A_runs/20260129_161913/run_manifest.json",
+    "1B": "/Users/petros/Projects/eth-llm/poc4_8/tests/fixtures/run_20260129_161814/phase0A_runs/20260129_161814/phase1A_runs/20260129_161913/phase1B_runs/20260129_162112/run_manifest.json",
+    "2A": "/Users/petros/Projects/eth-llm/poc4_8/tests/fixtures/run_20260129_161814/phase0A_runs/20260129_161814/phase1A_runs/20260129_161913/phase1B_runs/20260129_162112/phase2A_runs/20260129_162353/run_manifest.json",
+    "2B": "/Users/petros/Projects/eth-llm/poc4_8/tests/fixtures/run_20260129_161814/phase0A_runs/20260129_161814/phase1A_runs/20260129_161913/phase1B_runs/20260129_162112/phase2A_runs/20260129_162353/phase2B_runs/20260129_162807/run_manifest.json"
+  },
+  "eip_number": "2930",
+  "fork_name": "london",
+  "client_name": "geth",
+  "spec_branch": "fixture",
+  "spec_commit": "fixture",
+  "mismatch_forks": [],
+  "spec_map_check": {
+    "status": "fixture",
+    "fork": "london",
+    "mismatch": false
+  },
+  "manifests": [
+    {
+      "phase": "2B",
+      "path": "/Users/petros/Projects/eth-llm/poc4_8/tests/fixtures/run_20260129_161814/phase0A_runs/20260129_161814/phase1A_runs/20260129_161913/phase1B_runs/20260129_162112/phase2A_runs/20260129_162353/phase2B_runs/20260129_162807/run_manifest.json"
+    },
+    {
+      "phase": "2A",
+      "path": "/Users/petros/Projects/eth-llm/poc4_8/tests/fixtures/run_20260129_161814/phase0A_runs/20260129_161814/phase1A_runs/20260129_161913/phase1B_runs/20260129_162112/phase2A_runs/20260129_162353/run_manifest.json"
+    },
+    {
+      "phase": "1B",
+      "path": "/Users/petros/Projects/eth-llm/poc4_8/tests/fixtures/run_20260129_161814/phase0A_runs/20260129_161814/phase1A_runs/20260129_161913/phase1B_runs/20260129_162112/run_manifest.json"
+    },
+    {
+      "phase": "1A",
+      "path": "/Users/petros/Projects/eth-llm/poc4_8/tests/fixtures/run_20260129_161814/phase0A_runs/20260129_161814/phase1A_runs/20260129_161913/run_manifest.json"
+    },
+    {
+      "phase": "0A",
+      "path": "/Users/petros/Projects/eth-llm/poc4_8/tests/fixtures/run_20260129_161814/phase0A_runs/20260129_161814/run_manifest.json"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "phase": "2B",
+  "generated_at": "20260129_162807",
+  "input_csv": "/Users/petros/Projects/eth-llm/poc4_8/tests/fixtures/run_20260129_161814/phase0A_runs/20260129_161814/phase1A_runs/20260129_161913/phase1B_runs/20260129_162112/phase2A_runs/20260129_162353/client_obligations_index.csv",
+  "output_csv": "/Users/petros/Projects/eth-llm/poc4_8/tests/fixtures/run_20260129_161814/phase0A_runs/20260129_161814/phase1A_runs/20260129_161913/phase1B_runs/20260129_162112/phase2A_runs/20260129_162353/phase2B_runs/20260129_162807/client_obligations_index.csv",
+  "eip_number": "2930",
+  "client_name": "geth",
+  "client_root": null,
+  "parent_run": "/Users/petros/Projects/eth-llm/poc4_8/tests/fixtures/run_20260129_161814/phase0A_runs/20260129_161814/phase1A_runs/20260129_161913/phase1B_runs/20260129_162112/phase2A_runs/20260129_162353"
+}
