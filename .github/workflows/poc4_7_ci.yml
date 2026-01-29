@@ -14,9 +14,14 @@ on:
         default: "prague"
         type: string
       client:
-        description: "Execution client"
+        description: "Execution client (geth, besu, erigon, nethermind, reth)"
         required: false
         default: "geth"
+        type: string
+      client_ref:
+        description: "Execution client ref (branch, tag, or commit). If empty, uses default for the chosen client."
+        required: false
+        default: ""
         type: string
       model:
         description: "Claude model (claude-haiku-4-5, claude-sonnet-4-5, claude-opus-4-5)"
@@ -47,11 +52,6 @@ on:
         description: "Execution-specs repo ref (branch, tag, or commit)"
         required: false
         default: "mainnet"
-        type: string
-      geth_ref:
-        description: "Geth repo ref (branch, tag, or commit)"
-        required: false
-        default: "v1.16.8"
         type: string
     secrets:
       ANTHROPIC_API_KEY:
@@ -67,9 +67,13 @@ on:
         required: false
         default: "prague"
       client:
-        description: "Execution client"
+        description: "Execution client (geth, besu, erigon, nethermind, reth)"
         required: false
         default: "geth"
+      client_ref:
+        description: "Execution client ref (branch, tag, or commit). If empty, uses default for the chosen client."
+        required: false
+        default: ""
       model:
         description: "Claude model (claude-haiku-4-5, claude-sonnet-4-5, claude-opus-4-5)"
         required: false
@@ -94,10 +98,6 @@ on:
         description: "Execution-specs repo ref (branch, tag, or commit)"
         required: false
         default: "mainnet"
-      geth_ref:
-        description: "Geth repo ref (branch, tag, or commit)"
-        required: false
-        default: "v1.16.8"
 
 permissions:
   contents: read
@@ -112,7 +112,11 @@ env:
   DEFAULT_MAX_TURNS: "20"
   DEFAULT_EIPS_REF: "master"
   DEFAULT_EXECUTION_SPECS_REF: "mainnet"
-  DEFAULT_GETH_REF: "v1.16.8"
+  DEFAULT_BESU_REF: "7e35f46ab6b78214f375f191ffc989b6cbc556c0"
+  DEFAULT_ERIGON_REF: "7d4817de3184a8102e099a440d5b641ba0f26737"
+  DEFAULT_GETH_REF: "abeb78c647e354ed922726a1d719ac7bc64a07e2"
+  DEFAULT_NETHERMIND_REF: "2ae8737ec9acde9ab1df849762e55768c5dc3198"
+  DEFAULT_RETH_REF: "3d4efdb271c35cb68f9244d5b0d15d140ea8001d"
 
 jobs:
   poc4_7_report_only:
@@ -174,7 +178,7 @@ jobs:
           MAX_TURNS="${{ inputs.max_turns || github.event.inputs.max_turns || env.DEFAULT_MAX_TURNS }}"
           EIPS_REF="${{ inputs.eips_ref || github.event.inputs.eips_ref || env.DEFAULT_EIPS_REF }}"
           EXECUTION_SPECS_REF="${{ inputs.execution_specs_ref || github.event.inputs.execution_specs_ref || env.DEFAULT_EXECUTION_SPECS_REF }}"
-          GETH_REF="${{ inputs.geth_ref || github.event.inputs.geth_ref || env.DEFAULT_GETH_REF }}"
+          CLIENT_REF_INPUT="${{ inputs.client_ref || github.event.inputs.client_ref || '' }}"
           PHASES_RAW="${{ inputs.phases || github.event.inputs.phases || '' }}"
           STEPS_RAW="${{ inputs.steps || github.event.inputs.steps || '' }}"
           PHASES_COMBINED=""
@@ -198,7 +202,7 @@ jobs:
           echo "max_turns=$MAX_TURNS" >> "$GITHUB_OUTPUT"
           echo "eips_ref=$EIPS_REF" >> "$GITHUB_OUTPUT"
           echo "execution_specs_ref=$EXECUTION_SPECS_REF" >> "$GITHUB_OUTPUT"
-          echo "geth_ref=$GETH_REF" >> "$GITHUB_OUTPUT"
+          echo "client_ref_input=$CLIENT_REF_INPUT" >> "$GITHUB_OUTPUT"
           echo "phases=$PHASES_COMBINED" >> "$GITHUB_OUTPUT"
 
       - name: Validate inputs
@@ -214,7 +218,7 @@ jobs:
           PHASES_RAW="${{ steps.resolved.outputs.phases }}"
           EIPS_REF="${{ steps.resolved.outputs.eips_ref }}"
           EXECUTION_SPECS_REF="${{ steps.resolved.outputs.execution_specs_ref }}"
-          GETH_REF="${{ steps.resolved.outputs.geth_ref }}"
+          CLIENT_REF_INPUT="${{ steps.resolved.outputs.client_ref_input }}"
           case "$EIP" in
             ''|*[!0-9]*)
               echo "Invalid EIP: '$EIP' (must be numeric)" >> "$GITHUB_STEP_SUMMARY"
@@ -230,10 +234,10 @@ jobs:
               ;;
           esac
           case "$CLIENT" in
-            geth)
+            geth|besu|erigon|nethermind|reth)
               ;;
             *)
-              echo "Invalid client: '$CLIENT' (allowed: geth)" >> "$GITHUB_STEP_SUMMARY"
+              echo "Invalid client: '$CLIENT' (allowed: geth, besu, erigon, nethermind, reth)" >> "$GITHUB_STEP_SUMMARY"
               exit 1
               ;;
           esac
@@ -255,7 +259,7 @@ jobs:
             echo "Invalid max_turns: '$MAX_TURNS' (must be >= 1)" >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
-          for ref in "$EIPS_REF" "$EXECUTION_SPECS_REF" "$GETH_REF"; do
+          for ref in "$EIPS_REF" "$EXECUTION_SPECS_REF"; do
             case "$ref" in
               ''|*[!A-Za-z0-9._/-]*)
                 echo "Invalid ref: '$ref' (allowed: A-Z a-z 0-9 . _ / -)" >> "$GITHUB_STEP_SUMMARY"
@@ -263,9 +267,37 @@ jobs:
                 ;;
             esac
           done
+          if [ -n "$CLIENT_REF_INPUT" ]; then
+            case "$CLIENT_REF_INPUT" in
+              *[!A-Za-z0-9._/-]*)
+                echo "Invalid client_ref: '$CLIENT_REF_INPUT' (allowed: A-Z a-z 0-9 . _ / -)" >> "$GITHUB_STEP_SUMMARY"
+                exit 1
+                ;;
+            esac
+          fi
           if [[ "$EIPS_REF" =~ ^[0-9a-f]{7,40}$ ]]; then
             echo "Invalid eips_ref: '$EIPS_REF' (EIPs must use a branch name, not a commit)" >> "$GITHUB_STEP_SUMMARY"
             exit 1
+          fi
+          CLIENT_REF="$CLIENT_REF_INPUT"
+          if [ -z "$CLIENT_REF" ]; then
+            case "$CLIENT" in
+              geth)
+                CLIENT_REF="${{ env.DEFAULT_GETH_REF }}"
+                ;;
+              besu)
+                CLIENT_REF="${{ env.DEFAULT_BESU_REF }}"
+                ;;
+              erigon)
+                CLIENT_REF="${{ env.DEFAULT_ERIGON_REF }}"
+                ;;
+              nethermind)
+                CLIENT_REF="${{ env.DEFAULT_NETHERMIND_REF }}"
+                ;;
+              reth)
+                CLIENT_REF="${{ env.DEFAULT_RETH_REF }}"
+                ;;
+            esac
           fi
           PHASES_RAW="${PHASES_RAW// /}"
           if [ -z "$PHASES_RAW" ]; then
@@ -304,6 +336,7 @@ jobs:
             exit 1
           fi
           RUN_PHASES=("${ORDER[@]:0:$((MAX_INDEX+1))}")
+          echo "client_ref=$CLIENT_REF" >> "$GITHUB_OUTPUT"
           echo "phase_plan=${RUN_PHASES[*]}" >> "$GITHUB_OUTPUT"
           echo "target_phase=${ORDER[$MAX_INDEX]}" >> "$GITHUB_OUTPUT"
           echo "Resolved phase plan: ${RUN_PHASES[*]}" >> "$GITHUB_STEP_SUMMARY"
@@ -314,7 +347,8 @@ jobs:
           set -euo pipefail
           EIPS_REF="${{ steps.resolved.outputs.eips_ref }}"
           EXECUTION_SPECS_REF="${{ steps.resolved.outputs.execution_specs_ref }}"
-          GETH_REF="${{ steps.resolved.outputs.geth_ref }}"
+          CLIENT="${{ steps.resolved.outputs.client }}"
+          CLIENT_REF="${{ steps.validated.outputs.client_ref }}"
 
           if ! git ls-remote --heads https://github.com/ethereum/EIPs.git "$EIPS_REF" | grep -q .; then
             echo "EIPs branch not found: $EIPS_REF" >> "$GITHUB_STEP_SUMMARY"
@@ -337,7 +371,24 @@ jobs:
           mkdir -p specs clients/execution
           git clone --no-tags --depth 1 --branch "$EIPS_REF" https://github.com/ethereum/EIPs.git specs/EIPs
           clone_ref https://github.com/ethereum/execution-specs.git specs/execution-specs "$EXECUTION_SPECS_REF"
-          clone_ref https://github.com/ethereum/go-ethereum.git clients/execution/geth "$GETH_REF"
+          case "$CLIENT" in
+            geth)
+              CLIENT_REPO="https://github.com/ethereum/go-ethereum.git"
+              ;;
+            besu)
+              CLIENT_REPO="https://github.com/hyperledger/besu.git"
+              ;;
+            erigon)
+              CLIENT_REPO="https://github.com/ledgerwatch/erigon.git"
+              ;;
+            nethermind)
+              CLIENT_REPO="https://github.com/NethermindEth/nethermind.git"
+              ;;
+            reth)
+              CLIENT_REPO="https://github.com/paradigmxyz/reth.git"
+              ;;
+          esac
+          clone_ref "$CLIENT_REPO" "clients/execution/$CLIENT" "$CLIENT_REF"
 
       - name: Set up Python
         if: ${{ steps.detect_key.outputs.has_key == 'true' }}

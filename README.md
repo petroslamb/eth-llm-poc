@@ -30,7 +30,7 @@ jobs:
       max_turns: "20"
       eips_ref: "master"
       execution_specs_ref: "mainnet"
-      geth_ref: "v1.16.8"
+      client_ref: ""
     secrets:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 ```
@@ -43,7 +43,8 @@ jobs:
 - **model**: `claude-haiku-4-5`, `claude-sonnet-4-5`, `claude-opus-4-5`
 - **phases**: Comma-separated list. Later phases auto-include prerequisites. Example: `phase1A,phase1B,phase2B`
 - **max_turns**: Agent run count (default `20`)
-- **eips_ref / execution_specs_ref / geth_ref**: Git refs used for shallow checkout
+- **eips_ref / execution_specs_ref**: Git refs used for shallow checkout
+- **client_ref**: Optional client ref override (branch/tag/commit). If empty, uses the default ref for the selected client.
 
 ## Artifacts
 
@@ -51,5 +52,5 @@ The workflow uploads the full run directory (including CSVs, prompts, outputs, a
 
 ## Notes
 
-- This repo contains **no** execution-specs, EIPs, or geth submodules. Those are fetched shallowly by the workflow at runtime.
+- This repo contains **no** execution-specs, EIPs, or execution client submodules. Those are fetched shallowly by the workflow at runtime.
 - Defaults are aligned with the current PoC 4.7/4.8 configuration in `eth-llm`.
