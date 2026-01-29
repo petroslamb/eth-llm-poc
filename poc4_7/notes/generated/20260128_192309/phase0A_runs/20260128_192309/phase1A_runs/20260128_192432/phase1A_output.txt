@@ -1,1 +1,0 @@
-I'll help you map EIP-1559 obligations to their implementation locations in the London fork. Let me start by reading the obligations CSV and understanding the structure.

@@ -1,1 +1,0 @@
-I'll help you map EIP-1559 obligations to their implementation locations in the London fork. Let me start by reading the obligations CSV and exploring the London fork structure.Good! Now let me explore the key files to understand the structure and locate the implementation of each obligation.Now let me explore the VM files to understand where the GASPRICE opcode is implemented:
