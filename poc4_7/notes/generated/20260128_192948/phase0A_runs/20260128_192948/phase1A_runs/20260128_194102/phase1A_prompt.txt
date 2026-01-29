@@ -1,0 +1,21 @@
+You are mapping EIP-1559 obligations to implementation locations in the London fork.
+
+Inputs:
+- Obligations CSV: /Users/petros/Projects/eth-llm/poc4_7/notes/generated/20260128_192948/phase0A_runs/20260128_192948/obligations_index.csv
+- London fork root: /Users/petros/Projects/eth-llm/specs/execution-specs/src/ethereum/forks/london
+
+Tasks:
+1) For each obligation row, locate all code paths that implement the obligation.
+2) Ensure you capture all viable paths, not just the most direct one.
+3) Write a list of locations in the locations column for each row.
+
+Locations format:
+- Use a bracketed list, e.g. [path/file.py:L10-L42, path/other.py:function_name]
+
+Output:
+- Update CSV at: /Users/petros/Projects/eth-llm/poc4_7/notes/generated/20260128_192948/phase0A_runs/20260128_192948/phase1A_runs/20260128_194102/obligations_index.csv
+
+Constraints:
+- Use filesystem tools to read files and write the updated CSV.
+- Do not delete or reorder rows.
+- Use Python's csv module to read/write so commas in text fields are quoted correctly.

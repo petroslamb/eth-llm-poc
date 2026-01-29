@@ -1,0 +1,418 @@
+name: poc4_7-ci
+
+on:
+  workflow_call:
+    inputs:
+      eip:
+        description: "EIP number"
+        required: false
+        default: "7702"
+        type: string
+      fork:
+        description: "Execution-specs fork"
+        required: false
+        default: "prague"
+        type: string
+      client:
+        description: "Execution client"
+        required: false
+        default: "geth"
+        type: string
+      model:
+        description: "Claude model (claude-haiku-4-5, claude-sonnet-4-5, claude-opus-4-5)"
+        required: false
+        default: "claude-sonnet-4-5"
+        type: string
+      phases:
+        description: "Comma-separated phase list (e.g. 0A,1A,1B,2A,2B)"
+        required: false
+        default: "2B"
+        type: string
+      steps:
+        description: "Alias for phases (comma-separated). If set, merges with phases."
+        required: false
+        default: ""
+        type: string
+      max_turns:
+        description: "Max turns per phase"
+        required: false
+        default: "20"
+        type: string
+      eips_ref:
+        description: "EIPs repo ref (branch, tag, or commit)"
+        required: false
+        default: "3b3fb63e"
+        type: string
+      execution_specs_ref:
+        description: "Execution-specs repo ref (branch, tag, or commit)"
+        required: false
+        default: "mainnet"
+        type: string
+      geth_ref:
+        description: "Geth repo ref (branch, tag, or commit)"
+        required: false
+        default: "v1.16.8"
+        type: string
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: false
+  workflow_dispatch:
+    inputs:
+      eip:
+        description: "EIP number"
+        required: false
+        default: "7702"
+      fork:
+        description: "Execution-specs fork"
+        required: false
+        default: "prague"
+      client:
+        description: "Execution client"
+        required: false
+        default: "geth"
+      model:
+        description: "Claude model (claude-haiku-4-5, claude-sonnet-4-5, claude-opus-4-5)"
+        required: false
+        default: "claude-sonnet-4-5"
+      phases:
+        description: "Comma-separated phase list (e.g. 0A,1A,1B,2A,2B)"
+        required: false
+        default: "2B"
+      steps:
+        description: "Alias for phases (comma-separated). If set, merges with phases."
+        required: false
+        default: ""
+      max_turns:
+        description: "Max turns per phase"
+        required: false
+        default: "20"
+      eips_ref:
+        description: "EIPs repo ref (branch, tag, or commit)"
+        required: false
+        default: "3b3fb63e"
+      execution_specs_ref:
+        description: "Execution-specs repo ref (branch, tag, or commit)"
+        required: false
+        default: "mainnet"
+      geth_ref:
+        description: "Geth repo ref (branch, tag, or commit)"
+        required: false
+        default: "v1.16.8"
+
+permissions:
+  contents: read
+  actions: write
+
+env:
+  DEFAULT_EIP: "7702"
+  DEFAULT_FORK: "prague"
+  DEFAULT_CLIENT: "geth"
+  DEFAULT_MODEL: "claude-sonnet-4-5"
+  DEFAULT_PHASES: "2B"
+  DEFAULT_MAX_TURNS: "20"
+  DEFAULT_EIPS_REF: "3b3fb63e"
+  DEFAULT_EXECUTION_SPECS_REF: "mainnet"
+  DEFAULT_GETH_REF: "v1.16.8"
+
+jobs:
+  poc4_7_report_only:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install PoC 4.7
+        run: python -m pip install -e poc4_7
+
+      - name: Report-only (fixture)
+        run: |
+          set -euo pipefail
+          FIXTURE_ROOT="poc4_8/tests/fixtures/run_20260129_161814"
+          OUT_DIR="$FIXTURE_ROOT/report"
+          poc4_7 report --run-root "$FIXTURE_ROOT" --output-dir "$OUT_DIR"
+          cat "$OUT_DIR/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+  poc4_7:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Detect API key
+        id: detect_key
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
+            echo "has_key=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_key=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Resolve inputs
+        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        id: resolved
+        run: |
+          set -euo pipefail
+          EIP="${{ inputs.eip || github.event.inputs.eip || env.DEFAULT_EIP }}"
+          FORK="${{ inputs.fork || github.event.inputs.fork || env.DEFAULT_FORK }}"
+          CLIENT="${{ inputs.client || github.event.inputs.client || env.DEFAULT_CLIENT }}"
+          MODEL="${{ inputs.model || github.event.inputs.model || env.DEFAULT_MODEL }}"
+          MAX_TURNS="${{ inputs.max_turns || github.event.inputs.max_turns || env.DEFAULT_MAX_TURNS }}"
+          EIPS_REF="${{ inputs.eips_ref || github.event.inputs.eips_ref || env.DEFAULT_EIPS_REF }}"
+          EXECUTION_SPECS_REF="${{ inputs.execution_specs_ref || github.event.inputs.execution_specs_ref || env.DEFAULT_EXECUTION_SPECS_REF }}"
+          GETH_REF="${{ inputs.geth_ref || github.event.inputs.geth_ref || env.DEFAULT_GETH_REF }}"
+          PHASES_RAW="${{ inputs.phases || github.event.inputs.phases || '' }}"
+          STEPS_RAW="${{ inputs.steps || github.event.inputs.steps || '' }}"
+          PHASES_COMBINED=""
+          if [ -n "$PHASES_RAW" ]; then
+            PHASES_COMBINED="$PHASES_RAW"
+          fi
+          if [ -n "$STEPS_RAW" ]; then
+            if [ -n "$PHASES_COMBINED" ]; then
+              PHASES_COMBINED="$PHASES_COMBINED,$STEPS_RAW"
+            else
+              PHASES_COMBINED="$STEPS_RAW"
+            fi
+          fi
+          if [ -z "$PHASES_COMBINED" ]; then
+            PHASES_COMBINED="${{ env.DEFAULT_PHASES }}"
+          fi
+          echo "eip=$EIP" >> "$GITHUB_OUTPUT"
+          echo "fork=$FORK" >> "$GITHUB_OUTPUT"
+          echo "client=$CLIENT" >> "$GITHUB_OUTPUT"
+          echo "model=$MODEL" >> "$GITHUB_OUTPUT"
+          echo "max_turns=$MAX_TURNS" >> "$GITHUB_OUTPUT"
+          echo "eips_ref=$EIPS_REF" >> "$GITHUB_OUTPUT"
+          echo "execution_specs_ref=$EXECUTION_SPECS_REF" >> "$GITHUB_OUTPUT"
+          echo "geth_ref=$GETH_REF" >> "$GITHUB_OUTPUT"
+          echo "phases=$PHASES_COMBINED" >> "$GITHUB_OUTPUT"
+
+      - name: Validate inputs
+        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        id: validated
+        run: |
+          set -euo pipefail
+          EIP="${{ steps.resolved.outputs.eip }}"
+          FORK="${{ steps.resolved.outputs.fork }}"
+          CLIENT="${{ steps.resolved.outputs.client }}"
+          MODEL="${{ steps.resolved.outputs.model }}"
+          MAX_TURNS="${{ steps.resolved.outputs.max_turns }}"
+          PHASES_RAW="${{ steps.resolved.outputs.phases }}"
+          EIPS_REF="${{ steps.resolved.outputs.eips_ref }}"
+          EXECUTION_SPECS_REF="${{ steps.resolved.outputs.execution_specs_ref }}"
+          GETH_REF="${{ steps.resolved.outputs.geth_ref }}"
+          case "$EIP" in
+            ''|*[!0-9]*)
+              echo "Invalid EIP: '$EIP' (must be numeric)" >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+              ;;
+          esac
+          case "$FORK" in
+            frontier|homestead|tangerine-whistle|spurious-dragon|byzantium|constantinople|petersburg|istanbul|muir-glacier|berlin|london|arrow-glacier|gray-glacier|paris|shanghai|cancun|prague)
+              ;;
+            *)
+              echo "Invalid fork: '$FORK' (allowed: frontier, homestead, tangerine-whistle, spurious-dragon, byzantium, constantinople, petersburg, istanbul, muir-glacier, berlin, london, arrow-glacier, gray-glacier, paris, shanghai, cancun, prague)" >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+              ;;
+          esac
+          case "$CLIENT" in
+            geth)
+              ;;
+            *)
+              echo "Invalid client: '$CLIENT' (allowed: geth)" >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+              ;;
+          esac
+          case "$MODEL" in
+            claude-haiku-4-5|claude-sonnet-4-5|claude-opus-4-5)
+              ;;
+            *)
+              echo "Invalid model: '$MODEL' (allowed: claude-haiku-4-5, claude-sonnet-4-5, claude-opus-4-5)" >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+              ;;
+          esac
+          case "$MAX_TURNS" in
+            ''|*[!0-9]*)
+              echo "Invalid max_turns: '$MAX_TURNS' (must be numeric)" >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+              ;;
+          esac
+          if [ "$MAX_TURNS" -lt 1 ]; then
+            echo "Invalid max_turns: '$MAX_TURNS' (must be >= 1)" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          for ref in "$EIPS_REF" "$EXECUTION_SPECS_REF" "$GETH_REF"; do
+            case "$ref" in
+              ''|*[!A-Za-z0-9._/-]*)
+                echo "Invalid ref: '$ref' (allowed: A-Z a-z 0-9 . _ / -)" >> "$GITHUB_STEP_SUMMARY"
+                exit 1
+                ;;
+            esac
+          done
+          PHASES_RAW="${PHASES_RAW// /}"
+          if [ -z "$PHASES_RAW" ]; then
+            echo "Invalid phases: empty list" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          IFS=',' read -r -a PHASE_ITEMS <<< "$PHASES_RAW"
+          declare -A SEEN
+          ORDER=(0A 1A 1B 2A 2B)
+          MAX_INDEX=-1
+          for item in "${PHASE_ITEMS[@]}"; do
+            if [ -z "$item" ]; then
+              continue
+            fi
+            phase=$(echo "$item" | tr '[:lower:]' '[:upper:]')
+            phase="${phase#PHASE}"
+            case "$phase" in
+              0A|1A|1B|2A|2B)
+                ;;
+              *)
+                echo "Invalid phase entry: '$item' (allowed: 0A,1A,1B,2A,2B)" >> "$GITHUB_STEP_SUMMARY"
+                exit 1
+                ;;
+            esac
+            if [ -z "${SEEN[$phase]+x}" ]; then
+              SEEN[$phase]=1
+            fi
+            for i in "${!ORDER[@]}"; do
+              if [ "${ORDER[$i]}" = "$phase" ] && [ "$i" -gt "$MAX_INDEX" ]; then
+                MAX_INDEX="$i"
+              fi
+            done
+          done
+          if [ "$MAX_INDEX" -lt 0 ]; then
+            echo "Invalid phases: none selected" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          RUN_PHASES=("${ORDER[@]:0:$((MAX_INDEX+1))}")
+          echo "phase_plan=${RUN_PHASES[*]}" >> "$GITHUB_OUTPUT"
+          echo "target_phase=${ORDER[$MAX_INDEX]}" >> "$GITHUB_OUTPUT"
+          echo "Resolved phase plan: ${RUN_PHASES[*]}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Checkout dependency repos (shallow)
+        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        run: |
+          set -euo pipefail
+          EIPS_REF="${{ steps.resolved.outputs.eips_ref }}"
+          EXECUTION_SPECS_REF="${{ steps.resolved.outputs.execution_specs_ref }}"
+          GETH_REF="${{ steps.resolved.outputs.geth_ref }}"
+
+          clone_ref() {
+            local url="$1"
+            local dest="$2"
+            local ref="$3"
+            rm -rf "$dest"
+            if [[ "$ref" =~ ^[0-9a-f]{7,40}$ ]]; then
+              git clone --no-tags --depth 1 "$url" "$dest"
+              (cd "$dest" && git fetch --no-tags --depth 1 origin "$ref" && git checkout "$ref")
+            else
+              git clone --no-tags --depth 1 --branch "$ref" "$url" "$dest"
+            fi
+          }
+
+          mkdir -p specs clients/execution
+          clone_ref https://github.com/ethereum/EIPs.git specs/EIPs "$EIPS_REF"
+          clone_ref https://github.com/ethereum/execution-specs.git specs/execution-specs "$EXECUTION_SPECS_REF"
+          clone_ref https://github.com/ethereum/go-ethereum.git clients/execution/geth "$GETH_REF"
+
+      - name: Set up Python
+        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install PoC 4.7
+        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        run: python -m pip install -e poc4_7
+
+      - name: Run PoC 4.7 phases
+        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          set -euo pipefail
+          EIP="${{ steps.resolved.outputs.eip }}"
+          FORK="${{ steps.resolved.outputs.fork }}"
+          CLIENT="${{ steps.resolved.outputs.client }}"
+          MODEL="${{ steps.resolved.outputs.model }}"
+          MAX_TURNS="${{ steps.resolved.outputs.max_turns }}"
+          PHASE_PLAN="${{ steps.validated.outputs.phase_plan }}"
+          EIP_FILE="specs/EIPs/EIPS/eip-${EIP}.md"
+          if [ ! -f "$EIP_FILE" ]; then
+            echo "EIP file not found: $EIP_FILE" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          RUN_ROOT=""
+          PARENT_RUN=""
+          for phase in $PHASE_PLAN; do
+            case "$phase" in
+              0A)
+                poc4_7 --phase 0A --eip "$EIP" --eip-file "$EIP_FILE" --model "$MODEL" --max-turns "$MAX_TURNS"
+                RUN_ROOT=$(ls -td poc4_7/notes/generated/*/ | grep -v 'index_runs' | head -1)
+                PARENT_RUN=$(ls -td "$RUN_ROOT/phase0A_runs"/* | head -1)
+                ;;
+              1A)
+                poc4_7 --phase 1A --parent-run "$PARENT_RUN" --eip "$EIP" --fork "$FORK" --model "$MODEL" --max-turns "$MAX_TURNS"
+                PARENT_RUN=$(ls -td "$PARENT_RUN/phase1A_runs"/* | head -1)
+                ;;
+              1B)
+                poc4_7 --phase 1B --parent-run "$PARENT_RUN" --eip "$EIP" --model "$MODEL" --max-turns "$MAX_TURNS"
+                PARENT_RUN=$(ls -td "$PARENT_RUN/phase1B_runs"/* | head -1)
+                ;;
+              2A)
+                poc4_7 --phase 2A --parent-run "$PARENT_RUN" --eip "$EIP" --client "$CLIENT" --model "$MODEL" --max-turns "$MAX_TURNS"
+                PARENT_RUN=$(ls -td "$PARENT_RUN/phase2A_runs"/* | head -1)
+                ;;
+              2B)
+                poc4_7 --phase 2B --parent-run "$PARENT_RUN" --eip "$EIP" --client "$CLIENT" --model "$MODEL" --max-turns "$MAX_TURNS"
+                ;;
+            esac
+          done
+
+      - name: Find run root
+        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        id: run_root
+        run: |
+          RUN_ROOT=$(ls -td poc4_7/notes/generated/*/ | grep -v 'index_runs' | head -1)
+          echo "run_root=$RUN_ROOT" >> "$GITHUB_OUTPUT"
+
+      - name: Build summary
+        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        run: |
+          poc4_7 report --run-root "${{ steps.run_root.outputs.run_root }}"
+          cat "${{ steps.run_root.outputs.run_root }}/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload summary
+        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: poc4_7-summary
+          path: |
+            ${{ steps.run_root.outputs.run_root }}/summary.json
+            ${{ steps.run_root.outputs.run_root }}/summary.md
+      - name: Upload run artifacts
+        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: poc4_7-run-artifacts
+          path: ${{ steps.run_root.outputs.run_root }}/
+
+      - name: Skip run (missing ANTHROPIC_API_KEY)
+        if: ${{ steps.detect_key.outputs.has_key == 'false' }}
+        run: |
+          echo "ANTHROPIC_API_KEY is not set; skipping PoC 4.7 run." >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,31 @@
+You are extracting obligations from {eip_label} and writing a CSV index.
+
+Inputs:
+- EIP file: {eip_path}
+
+Tasks:
+1) Read the {eip_label} text.
+2) Split compound obligations into atomic statements.
+   - If a requirement lists multiple constraints (e.g., upper + lower bounds, minimums),
+     split them into separate obligations; do not drop any constraint.
+3) Assign stable IDs in order: {eip_id_prefix}-OBL-001, {eip_id_prefix}-OBL-002, ...
+4) Tag each obligation with:
+   - category (e.g., fees, base fee adjustment, block validation, tx validation, execution semantics)
+   - enforcement_type (only if applicable; leave empty otherwise)
+
+Output:
+- Write CSV to: {output_csv}
+- Column order must be exactly:
+  id, category, enforcement_type, statement, locations, code_flow, obligation_gap, code_gap
+- The last four columns must be empty initially.
+- Use proper CSV quoting (RFC 4180). Any field containing a comma or quote must be quoted.
+- Prefer writing the file via a short Python snippet using csv.writer to avoid malformed rows.
+
+Constraints:
+- Use the filesystem tools to read the EIP and write the CSV.
+- Do not invent obligations; derive them directly from the EIP text.
+
+Completion requirements:
+- Read {eip_path} with tools.
+- Write {output_csv}.
+- Re-open {output_csv} and confirm it exists and has at least one data row.

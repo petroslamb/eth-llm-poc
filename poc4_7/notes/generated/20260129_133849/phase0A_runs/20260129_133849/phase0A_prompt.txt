@@ -1,0 +1,29 @@
+You are extracting obligations from EIP-1559 and writing a CSV index.
+
+Inputs:
+- EIP file: /Users/petros/Projects/eth-llm/specs/EIPs/EIPS/eip-1559.md
+
+Tasks:
+1) Read the EIP-1559 text.
+2) Split compound obligations into atomic statements.
+3) Assign stable IDs in order: EIP1559-OBL-001, EIP1559-OBL-002, ...
+4) Tag each obligation with:
+   - category (e.g., fees, base fee adjustment, block validation, tx validation, execution semantics)
+   - enforcement_type (only if applicable; leave empty otherwise)
+
+Output:
+- Write CSV to: /Users/petros/Projects/eth-llm/poc4_7/notes/generated/20260129_133849/phase0A_runs/20260129_133849/obligations_index.csv
+- Column order must be exactly:
+  id, category, enforcement_type, statement, locations, code_flow, obligation_gap, code_gap
+- The last four columns must be empty initially.
+- Use proper CSV quoting (RFC 4180). Any field containing a comma or quote must be quoted.
+- Prefer writing the file via a short Python snippet using csv.writer to avoid malformed rows.
+
+Constraints:
+- Use the filesystem tools to read the EIP and write the CSV.
+- Do not invent obligations; derive them directly from the EIP text.
+
+Completion requirements:
+- Read /Users/petros/Projects/eth-llm/specs/EIPs/EIPS/eip-1559.md with tools.
+- Write /Users/petros/Projects/eth-llm/poc4_7/notes/generated/20260129_133849/phase0A_runs/20260129_133849/obligations_index.csv.
+- Re-open /Users/petros/Projects/eth-llm/poc4_7/notes/generated/20260129_133849/phase0A_runs/20260129_133849/obligations_index.csv and confirm it exists and has at least one data row.

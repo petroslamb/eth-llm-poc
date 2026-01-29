@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "poc4_7"
+version = "0.1.0"
+description = "PoC 4.7 package for per-obligation mapping of EIPs to execution-specs forks and execution clients."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+  "anyio>=4.0.0",
+  "claude-agent-sdk>=0.1.0",
+  "PyYAML>=6.0",
+]
+
+[project.scripts]
+poc4_7 = "poc4_7.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+poc4_7 = ["prompts/*.txt"]

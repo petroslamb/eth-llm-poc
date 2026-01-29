@@ -1,0 +1,1 @@
+I'll help you map EIP-1559 obligations to geth implementation locations and code flow. Let me start by reading the Phase 1B CSV to understand the obligations.

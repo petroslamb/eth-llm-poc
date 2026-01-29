@@ -1,0 +1,61 @@
+Now I'll analyze the EIP-1559 document to extract all obligations. Let me identify the normative requirements from the specification section, including the reference implementation code.
+
+Based on my analysis of the EIP-1559 text, I'll extract the following obligations:
+
+**From the Specification Section:**
+
+1. GASPRICE opcode MUST return effective_gas_price (line 40)
+2. Transaction type 2 is introduced as of FORK_BLOCK_NUMBER (line 42)
+3. Intrinsic cost calculation (line 44)
+4. TransactionPayload format for type 2 transactions (line 46)
+5. Signature format requirements (line 48)
+6. ReceiptPayload format (line 50)
+
+**From the Reference Implementation (block validation):**
+7. Block gas_used must not exceed gas_limit (line 173)
+8. Block gas_limit must not increase by more than 1/1024 from parent (line 176)
+9. Block gas_limit must not decrease by more than 1/1024 from parent (line 177)
+10. Block gas_limit must be at least 5000 (line 180)
+11. Base fee calculation at fork block equals INITIAL_BASE_FEE (line 183-184)
+12. Base fee unchanged when parent gas_used equals target (line 185-186)
+13. Base fee increases when parent gas_used exceeds target (line 187-190)
+14. Base fee decreases when parent gas_used is below target (line 191-194)
+15. Block base_fee_per_gas must match expected value (line 195)
+
+**Transaction validation:**
+16. Signer must have enough ETH to cover attached value (line 207)
+17. Signer must be able to afford gas_limit * max_fee_per_gas (line 209)
+18. max_fee_per_gas must be >= base_fee_per_gas (line 212)
+19. max_fee_per_gas must be < 2^256 (line 215)
+20. max_priority_fee_per_gas must be < 2^256 (line 217)
+21. max_fee_per_gas must be >= max_priority_fee_per_gas (line 219)
+22. Signer must have enough ETH to cover gas (line 226)
+
+**Execution semantics:**
+23. Priority fee calculation: min(max_priority_fee, max_fee - base_fee) (line 222)
+24. Effective gas price calculation (line 224)
+25. Signer pays gas_limit * effective_gas_price upfront (line 225)
+26. Unused gas is refunded to signer (line 231)
+27. Miner receives gas_used * priority_fee_per_gas (line 233)
+28. Base fee is burned (not given to anyone) (line 233)
+29. cumulative_transaction_gas_used must equal block.gas_used (line 236)
+
+Now I'll write the CSV using Python to ensure proper RFC 4180 formatting:Now let me verify the file exists and has data rows:The CSV file has been successfully created and verified. Here's a summary:
+
+## Summary
+
+I have extracted **36 obligations** from EIP-1559 and written them to the obligations index CSV file.
+
+**Obligations by Category:**
+- **tx validation**: 13 obligations (transaction format, signature, receipt, balance checks, fee constraints)
+- **block validation**: 6 obligations (gas limits, base fee validation, cumulative gas)
+- **base fee adjustment**: 8 obligations (fork block handling, increase/decrease formulas, constants)
+- **fees**: 8 obligations (intrinsic cost, priority fee calculation, effective gas price, refunds, miner payment, burning)
+- **execution semantics**: 1 obligation (GASPRICE opcode)
+
+**CSV File Details:**
+- **Location**: `/Users/petros/Projects/eth-llm/poc4_7/notes/generated/20260129_133849/phase0A_runs/20260129_133849/obligations_index.csv`
+- **Format**: RFC 4180 compliant (written using Python's csv.writer)
+- **Columns**: id, category, enforcement_type, statement, locations, code_flow, obligation_gap, code_gap
+- **Rows**: 1 header + 36 data rows
+- **Last 4 columns**: Empty as required

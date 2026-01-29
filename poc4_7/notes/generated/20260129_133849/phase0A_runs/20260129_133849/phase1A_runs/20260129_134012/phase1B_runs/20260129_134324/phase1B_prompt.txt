@@ -1,0 +1,24 @@
+You are completing code flow and gap analysis for EIP-1559 obligations.
+
+Inputs:
+- Obligations CSV: /Users/petros/Projects/eth-llm/poc4_7/notes/generated/20260129_133849/phase0A_runs/20260129_133849/phase1A_runs/20260129_134012/obligations_index.csv
+
+Tasks:
+1) For each obligation row, write the end-to-end code_flow text.
+2) Fill enforcement_type if missing.
+3) Identify gaps:
+   - obligation_gap: missing or ambiguous spec requirement.
+   - code_gap: missing or unclear implementation path.
+
+Output:
+- Update CSV at: /Users/petros/Projects/eth-llm/poc4_7/notes/generated/20260129_133849/phase0A_runs/20260129_133849/phase1A_runs/20260129_134012/phase1B_runs/20260129_134324/obligations_index.csv
+
+Constraints:
+- Use filesystem tools to read files and write the updated CSV.
+- Keep prior columns intact and only fill missing fields.
+- Use Python's csv module to read/write so commas in text fields are quoted correctly.
+
+Completion requirements:
+- Read /Users/petros/Projects/eth-llm/poc4_7/notes/generated/20260129_133849/phase0A_runs/20260129_133849/phase1A_runs/20260129_134012/obligations_index.csv with tools.
+- Write /Users/petros/Projects/eth-llm/poc4_7/notes/generated/20260129_133849/phase0A_runs/20260129_133849/phase1A_runs/20260129_134012/phase1B_runs/20260129_134324/obligations_index.csv.
+- Re-open /Users/petros/Projects/eth-llm/poc4_7/notes/generated/20260129_133849/phase0A_runs/20260129_133849/phase1A_runs/20260129_134012/phase1B_runs/20260129_134324/obligations_index.csv and confirm it exists and row count matches /Users/petros/Projects/eth-llm/poc4_7/notes/generated/20260129_133849/phase0A_runs/20260129_133849/phase1A_runs/20260129_134012/obligations_index.csv.

@@ -1,0 +1,8 @@
+I'll help you map EIP-1559 obligations to implementation locations in the London fork. Let me start by reading the obligations CSV to understand the structure and find the row with id 'EIP1559-OBL-001'.Now let me explore the London fork directory structure to understand the codebase:Good! Now I need to find where the GASPRICE opcode (0x3a) is implemented. Based on the obligation "The GASPRICE opcode (0x3a) MUST return the effective_gas_price", I should look in the VM instructions, particularly in environment.py since GASPRICE is an environment-related opcode.Perfect! I found the `gasprice` function at lines 304-324 in environment.py. Now I need to check what `evm.message.tx_env.gas_price` refers to and trace back to where `effective_gas_price` is set. Let me check the EVM types and the transaction execution flow.Excellent! I found the key implementation. Now let me check the TransactionEnvironment to understand the full flow:Perfect! Now I have all the information I need. Let me trace the complete flow:
+
+1. In `fork.py`, line 497-501: `priority_fee_per_gas` is calculated
+2. In `fork.py`, line 501: `effective_gas_price = priority_fee_per_gas + block_env.base_fee_per_gas`
+3. In `fork.py`, line 789: `TransactionEnvironment` is created with `gas_price=effective_gas_price`
+4. In `environment.py`, line 321: The `gasprice` opcode returns `evm.message.tx_env.gas_price`
+
+Let me also check if there are any other relevant locations by searching for where the opcode mapping happens:Great! Now let me check where this opcode implementation mapping is actually used in the interpreter:

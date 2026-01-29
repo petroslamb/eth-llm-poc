@@ -1,0 +1,27 @@
+You are completing code flow and gap analysis for {eip_label} obligations.
+
+Inputs:
+- Obligations CSV: {input_csv}
+
+Tasks:
+1) For each obligation row, write the end-to-end code_flow text.
+   - The flow must include the enforcement hop (the predicate check or the line that raises/returns an error),
+     and at least one entry point that leads to it.
+2) Fill enforcement_type if missing.
+3) Identify gaps:
+   - obligation_gap: missing or ambiguous spec requirement.
+   - code_gap: missing or unclear implementation path.
+
+Output:
+- Update CSV at: {output_csv}
+
+Constraints:
+- Use filesystem tools to read files and write the updated CSV.
+- Keep prior columns intact and only fill missing fields.
+- Use Python's csv module to read/write so commas in text fields are quoted correctly.
+- Do not speculate. If you cannot confirm an enforcement location, leave code_flow minimal and record the uncertainty in code_gap.
+
+Completion requirements:
+- Read {input_csv} with tools.
+- Write {output_csv}.
+- Re-open {output_csv} and confirm it exists and row count matches {input_csv}.

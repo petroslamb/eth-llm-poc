@@ -1,0 +1,33 @@
+I'll help you map EIP-1559 obligations to implementation locations in the London fork. Let me start by reading the obligations CSV and exploring the London fork structure.Now let me explore the key files to understand the structure and locate obligation implementations:Now let me check the VM files to find the GASPRICE opcode implementation:Perfect! Now I have a good understanding of the codebase. Let me create a comprehensive mapping of all obligations to their implementation locations. I'll write a Python script to do this systematically:Perfect! Let me verify the output by reading the updated CSV:Excellent! The CSV has been successfully updated with all the obligation mappings. Let me provide a summary of what was accomplished:
+
+## Summary
+
+I have successfully mapped all 34 EIP-1559 obligations to their implementation locations in the London fork. Here's what was done:
+
+### Key Findings:
+
+1. **Consensus Obligations (32 total)**: All mapped to specific implementation locations
+   - **Transaction validation** (15 obligations): Implemented in `fork.py` (check_transaction, process_transaction) and `transactions.py` (recover_sender, validate_transaction, calculate_intrinsic_cost)
+   - **Block validation** (9 obligations): Implemented in `fork.py` (validate_header, check_gas_limit, calculate_base_fee_per_gas)
+   - **Base fee adjustment** (4 obligations): Implemented in `fork.py` (calculate_base_fee_per_gas function, lines 222-282)
+   - **Execution semantics** (2 obligations): Implemented in `fork.py` (process_transaction function)
+   - **Fee handling** (2 obligations): Implemented in `fork.py` (process_transaction, priority fee to miner, base fee burning)
+
+2. **Non-consensus SHOULD obligations (2 total)**: Left empty as expected
+   - EIP1559-OBL-033: Transaction ordering by time (not enforced in consensus)
+   - EIP1559-OBL-034: Miner preference for higher fees (not enforced in consensus)
+
+### Notable Implementation Patterns:
+
+- **GASPRICE opcode** (OBL-001): Returns `effective_gas_price` from `vm/instructions/environment.py:304-324`
+- **Base fee calculation** (OBL-007-009): Comprehensive logic in `fork.py:222-282` with proper handling of all three cases
+- **Fee distribution** (OBL-023-024): Only priority fees go to coinbase; base fees are implicitly burned by not being distributed
+- **Type 2 transactions** (OBL-026-029): Complete implementation in `transactions.py` with FeeMarketTransaction class and encoding/decoding functions
+
+### Output Location:
+The updated CSV with all mappings has been written to:
+```
+/Users/petros/Projects/eth-llm/poc4_7/notes/generated/20260128_192948/phase0A_runs/20260128_192948/phase1A_runs/20260128_194102/obligations_index.csv
+```
+
+All obligations have been mapped with multiple implementation locations where relevant to capture all code paths that implement each requirement.

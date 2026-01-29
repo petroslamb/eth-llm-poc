@@ -1,0 +1,1 @@
+I'll help you extract obligations from EIP-1559 and create a CSV index. Let me start by reading the EIP file.

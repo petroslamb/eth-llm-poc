@@ -1,0 +1,25 @@
+Now let me read the key files to understand how EIP-1559 is implemented in the London fork:Now let me read a few more files to understand the remaining implementation details:Now I have a comprehensive understanding of the London fork's EIP-1559 implementation. Let me create a Python script to properly output the CSV with the mapped locations for each obligation:I need to write it properly since this is a new file. Let me use Bash with Python to properly handle CSV formatting:Now let me verify the output CSV and confirm the row counts match:Now let me verify the row counts match between the input and output files:The task is complete. Here's a summary of what was done:
+
+## Summary
+
+I mapped all 36 EIP-1559 obligations to their implementation locations in the London fork codebase. The CSV has been updated at:
+`/Users/petros/Projects/eth-llm/poc4_7/notes/generated/20260129_133849/phase0A_runs/20260129_133849/phase1A_runs/20260129_134012/obligations_index.csv`
+
+### Key Implementation Locations Identified:
+
+| Category | Primary Files |
+|----------|---------------|
+| **Base Fee Adjustment** | `fork.py:calculate_base_fee_per_gas`, `fork.py:validate_header`, constants (`ELASTICITY_MULTIPLIER`, `BASE_FEE_MAX_CHANGE_DENOMINATOR`, `INITIAL_BASE_FEE`) |
+| **Transaction Validation** | `fork.py:check_transaction`, `transactions.py:recover_sender`, `transactions.py:validate_transaction` |
+| **Transaction Types** | `transactions.py:FeeMarketTransaction`, `transactions.py:encode_transaction`, `transactions.py:decode_transaction` |
+| **Fee Calculation** | `fork.py:check_transaction` (effective_gas_price, priority_fee), `fork.py:process_transaction` (debiting, refunds, miner fees) |
+| **Block Validation** | `fork.py:validate_header`, `fork.py:check_gas_limit`, `fork.py:state_transition` |
+| **Execution Semantics** | `vm/instructions/environment.py:gasprice` (GASPRICE opcode) |
+| **Receipts** | `blocks.py:Receipt`, `blocks.py:encode_receipt` |
+
+### Verification:
+- ✅ Input CSV: 36 rows
+- ✅ Output CSV: 36 rows  
+- ✅ Row counts match
+- ✅ All IDs preserved in order
+- ✅ All 36 rows have locations populated

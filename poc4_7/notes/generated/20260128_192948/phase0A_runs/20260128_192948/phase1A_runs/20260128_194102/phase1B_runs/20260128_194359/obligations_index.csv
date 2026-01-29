@@ -1,0 +1,194 @@
+"id","category","enforcement_type","statement","locations","code_flow","obligation_gap","code_gap"
+"EIP1559-OBL-001","tx validation","consensus","The GASPRICE opcode (0x3a) MUST return the effective_gas_price.","[vm/instructions/environment.py:304-324, fork.py:789]","1. User calls contract with transaction
+2. Transaction is executed via process_message_call (fork.py:799)
+3. GASPRICE opcode (0x3a) is encountered in EVM execution
+4. gasprice() function in environment.py:304-324 is called
+5. Function pushes evm.message.tx_env.gas_price onto stack
+6. gas_price is set to effective_gas_price during transaction setup (fork.py:789, 501)
+7. effective_gas_price = priority_fee_per_gas + base_fee_per_gas","",""
+"EIP1559-OBL-002","block validation","consensus","Block gas_used MUST be less than or equal to block gas_limit.","[fork.py:320-321, fork.py:202-205]","1. Block is received by node for validation
+2. state_transition() is called (fork.py:154)
+3. validate_header() checks header validity (fork.py:285)
+4. Block header gas_used is compared to gas_limit (fork.py:320-321)
+5. If gas_used > gas_limit, InvalidBlock exception is raised
+6. apply_body() accumulates gas_used from transactions (fork.py:192-196)
+7. Final validation ensures block_output.block_gas_used == block.header.gas_used (fork.py:202-205)","",""
+"EIP1559-OBL-003","block validation","consensus","Block gas_limit MUST be less than parent_gas_limit + parent_gas_limit // 1024.","[fork.py:884-886]","1. New block header is validated via validate_header() (fork.py:285)
+2. check_gas_limit() is called with current and parent gas limits (fork.py:855)
+3. max_adjustment_delta = parent_gas_limit // GAS_LIMIT_ADJUSTMENT_FACTOR (fork.py:884)
+4. Upper bound check: gas_limit >= parent_gas_limit + max_adjustment_delta returns False (fork.py:885-886)
+5. If check fails, InvalidBlock is raised","",""
+"EIP1559-OBL-004","block validation","consensus","Block gas_limit MUST be greater than parent_gas_limit - parent_gas_limit // 1024.","[fork.py:887-888]","1. New block header is validated via validate_header() (fork.py:285)
+2. check_gas_limit() is called with current and parent gas limits (fork.py:855)
+3. max_adjustment_delta = parent_gas_limit // GAS_LIMIT_ADJUSTMENT_FACTOR (fork.py:884)
+4. Lower bound check: gas_limit <= parent_gas_limit - max_adjustment_delta returns False (fork.py:887-888)
+5. If check fails, InvalidBlock is raised","",""
+"EIP1559-OBL-005","block validation","consensus","Block gas_limit MUST be at least 5000.","[fork.py:889-890, fork.py:71]","1. New block header is validated via validate_header() (fork.py:285)
+2. check_gas_limit() is called (fork.py:855)
+3. Minimum check: gas_limit < GAS_LIMIT_MINIMUM (5000) returns False (fork.py:889-890)
+4. GAS_LIMIT_MINIMUM constant defined at fork.py:71
+5. If check fails, InvalidBlock is raised","",""
+"EIP1559-OBL-006","base fee adjustment","consensus","On the fork block (INITIAL_FORK_BLOCK_NUMBER), the base_fee_per_gas MUST be set to INITIAL_BASE_FEE (1000000000).","[fork.py:325-327, fork.py:73]","1. London fork activates at INITIAL_FORK_BLOCK_NUMBER
+2. validate_header() checks if header.number == FORK_CRITERIA.block_number (fork.py:326)
+3. If true, expected_base_fee_per_gas is set to INITIAL_BASE_FEE (1000000000) (fork.py:325, 73)
+4. Header's base_fee_per_gas is compared to expected value (fork.py:336-337)
+5. If mismatch, InvalidBlock is raised","",""
+"EIP1559-OBL-007","base fee adjustment","consensus","If parent_gas_used equals parent_gas_target, then base_fee_per_gas MUST remain equal to parent_base_fee_per_gas.","[fork.py:252-253]","1. New block is validated, calculate_base_fee_per_gas() is called (fork.py:222)
+2. parent_gas_target = parent_gas_limit // ELASTICITY_MULTIPLIER (fork.py:248)
+3. If parent_gas_used == parent_gas_target (fork.py:252)
+4. Then expected_base_fee_per_gas = parent_base_fee_per_gas (fork.py:253)
+5. No adjustment is made, base fee remains unchanged","",""
+"EIP1559-OBL-008","base fee adjustment","consensus","If parent_gas_used is greater than parent_gas_target, then base_fee_per_gas MUST increase by at least 1 and by max(parent_base_fee_per_gas * gas_used_delta // parent_gas_target // BASE_FEE_MAX_CHANGE_DENOMINATOR, 1).","[fork.py:254-267]","1. calculate_base_fee_per_gas() is called (fork.py:222)
+2. parent_gas_target = parent_gas_limit // ELASTICITY_MULTIPLIER (fork.py:248)
+3. If parent_gas_used > parent_gas_target (fork.py:254)
+4. gas_used_delta = parent_gas_used - parent_gas_target (fork.py:255)
+5. Calculate: parent_fee_gas_delta = parent_base_fee_per_gas * gas_used_delta (fork.py:257)
+6. Calculate: target_fee_gas_delta = parent_fee_gas_delta // parent_gas_target (fork.py:258)
+7. base_fee_per_gas_delta = max(target_fee_gas_delta // BASE_FEE_MAX_CHANGE_DENOMINATOR, 1) (fork.py:260-262)
+8. expected_base_fee_per_gas = parent_base_fee_per_gas + base_fee_per_gas_delta (fork.py:265-267)","",""
+"EIP1559-OBL-009","base fee adjustment","consensus","If parent_gas_used is less than parent_gas_target, then base_fee_per_gas MUST decrease by parent_base_fee_per_gas * gas_used_delta // parent_gas_target // BASE_FEE_MAX_CHANGE_DENOMINATOR.","[fork.py:268-280]","1. calculate_base_fee_per_gas() is called (fork.py:222)
+2. parent_gas_target = parent_gas_limit // ELASTICITY_MULTIPLIER (fork.py:248)
+3. If parent_gas_used < parent_gas_target (fork.py:268)
+4. gas_used_delta = parent_gas_target - parent_gas_used (fork.py:269)
+5. Calculate: parent_fee_gas_delta = parent_base_fee_per_gas * gas_used_delta (fork.py:271)
+6. Calculate: target_fee_gas_delta = parent_fee_gas_delta // parent_gas_target (fork.py:272)
+7. base_fee_per_gas_delta = target_fee_gas_delta // BASE_FEE_MAX_CHANGE_DENOMINATOR (fork.py:274-276)
+8. expected_base_fee_per_gas = parent_base_fee_per_gas - base_fee_per_gas_delta (fork.py:278-280)","",""
+"EIP1559-OBL-010","block validation","consensus","The block's base_fee_per_gas MUST equal the expected_base_fee_per_gas calculated from the parent block.","[fork.py:329-337]","1. Block validation occurs in validate_header() (fork.py:285)
+2. For non-fork blocks, calculate_base_fee_per_gas() computes expected value (fork.py:329-334)
+3. Calculated value is compared to header.base_fee_per_gas (fork.py:336)
+4. If expected_base_fee_per_gas != header.base_fee_per_gas (fork.py:336-337)
+5. InvalidBlock exception is raised","",""
+"EIP1559-OBL-011","tx validation","consensus","Transaction signature and chain ID MUST be validated before normalizing the transaction.","[fork.py:484, transactions.py:405-454]","1. Transaction enters check_transaction() (fork.py:439)
+2. recover_sender() is called with chain_id and tx (fork.py:484)
+3. recover_sender() validates signature r, s values against SECP256K1N (transactions.py:419-423)
+4. For Type 2 (FeeMarketTransaction), validates y_parity is 0 or 1 (transactions.py:447-449)
+5. Computes signing_hash_1559() for Type 2 transactions (transactions.py:450-452, 533-557)
+6. Recovers public key via secp256k1_recover and derives address (transactions.py:454)
+7. Validation occurs before normalization in check_transaction flow (fork.py:484, transactions.py:405-454)","",""
+"EIP1559-OBL-012","tx validation","consensus","Signer balance after deducting transaction amount MUST be greater than or equal to 0.","[fork.py:513-514]","1. check_transaction() retrieves sender_account (fork.py:485)
+2. For FeeMarketTransaction, calculates max_gas_fee = tx.gas * tx.max_fee_per_gas (fork.py:502)
+3. Validates sender_account.balance >= max_gas_fee + tx.value (fork.py:513)
+4. After gas deduction in process_transaction(), sender balance = sender_account.balance - effective_gas_fee (fork.py:772-777)
+5. After subtracting tx.value, final balance must be >= 0
+6. If insufficient, InsufficientBalanceError is raised (fork.py:513-514)","",""
+"EIP1559-OBL-013","tx validation","consensus","Signer balance MUST be at least transaction.gas_limit * transaction.max_fee_per_gas.","[fork.py:502-507, fork.py:513-514]","1. check_transaction() validates transaction inclusion (fork.py:439)
+2. For FeeMarketTransaction, calculates max_gas_fee = tx.gas * tx.max_fee_per_gas (fork.py:502)
+3. Checks sender_account.balance >= max_gas_fee + tx.value (fork.py:513)
+4. This ensures sender can pay for maximum possible gas cost
+5. If sender_account.balance < max_gas_fee + tx.value (fork.py:513-514)
+6. InsufficientBalanceError is raised with message ""insufficient sender balance""","",""
+"EIP1559-OBL-014","tx validation","consensus","Transaction max_fee_per_gas MUST be greater than or equal to block base_fee_per_gas.","[fork.py:492-495]","1. check_transaction() validates transaction (fork.py:439)
+2. For FeeMarketTransaction, checks tx.max_fee_per_gas < block_env.base_fee_per_gas (fork.py:492)
+3. If condition is true, raises InsufficientMaxFeePerGasError (fork.py:493-495)
+4. This ensures transaction can pay at least the base fee","",""
+"EIP1559-OBL-015","tx validation","consensus","Transaction max_fee_per_gas MUST be less than 2**256.","[transactions.py:230-239]","1. Transaction is decoded via decode_transaction() (fork.py:591)
+2. For Type 2 tx, rlp.decode_to(FeeMarketTransaction, ...) is called (transactions.py:321)
+3. max_fee_per_gas field is Uint type (transactions.py:235)
+4. Uint type enforces value < 2**256 at type level (transactions.py:230-239)
+5. RLP decoding validates field bounds","",""
+"EIP1559-OBL-016","tx validation","consensus","Transaction max_priority_fee_per_gas MUST be less than 2**256.","[transactions.py:230-239]","1. Transaction is decoded via decode_transaction() (fork.py:591)
+2. For Type 2 tx, rlp.decode_to(FeeMarketTransaction, ...) is called (transactions.py:321)
+3. max_priority_fee_per_gas field is Uint type (transactions.py:230)
+4. Uint type enforces value < 2**256 at type level (transactions.py:230-239)
+5. RLP decoding validates field bounds","",""
+"EIP1559-OBL-017","tx validation","consensus","Transaction max_fee_per_gas MUST be greater than or equal to transaction max_priority_fee_per_gas.","[fork.py:488-491]","1. check_transaction() validates Type 2 transaction (fork.py:439)
+2. Checks if tx.max_fee_per_gas < tx.max_priority_fee_per_gas (fork.py:488)
+3. If true, raises PriorityFeeGreaterThanMaxFeeError (fork.py:489-491)
+4. This ensures max fee can cover priority fee","",""
+"EIP1559-OBL-018","execution semantics","consensus","The priority_fee_per_gas MUST be the minimum of max_priority_fee_per_gas and (max_fee_per_gas - base_fee_per_gas).","[fork.py:497-500]","1. check_transaction() processes FeeMarketTransaction (fork.py:439)
+2. Calculates priority_fee_per_gas = min(tx.max_priority_fee_per_gas, tx.max_fee_per_gas - block_env.base_fee_per_gas) (fork.py:497-500)
+3. This ensures priority fee doesn't exceed available margin above base fee
+4. Priority fee is capped by both max_priority_fee_per_gas and remaining fee space","",""
+"EIP1559-OBL-019","execution semantics","consensus","The effective_gas_price MUST equal priority_fee_per_gas + base_fee_per_gas.","[fork.py:501, fork.py:789]","1. check_transaction() calculates fees for FeeMarketTransaction (fork.py:439)
+2. priority_fee_per_gas = min(max_priority_fee_per_gas, max_fee_per_gas - base_fee_per_gas) (fork.py:497-500)
+3. effective_gas_price = priority_fee_per_gas + block_env.base_fee_per_gas (fork.py:501)
+4. This value is set in tx_env.gas_price (fork.py:789)
+5. GASPRICE opcode returns this effective_gas_price value","",""
+"EIP1559-OBL-020","execution semantics","consensus","Signer balance MUST be debited by transaction.gas_limit * effective_gas_price before transaction execution.","[fork.py:767, fork.py:772-777]","1. process_transaction() begins execution (fork.py:718)
+2. check_transaction() returns sender and effective_gas_price (fork.py:756-763)
+3. effective_gas_fee = tx.gas * effective_gas_price is calculated (fork.py:767)
+4. sender_balance_after_gas_fee = sender_account.balance - effective_gas_fee (fork.py:772-773)
+5. set_account_balance() debits the full gas amount upfront (fork.py:775-777)
+6. This occurs before process_message_call() executes the transaction","",""
+"EIP1559-OBL-021","tx validation","consensus","Signer balance after deducting gas costs MUST be greater than or equal to 0.","[fork.py:513-514]","1. check_transaction() validates sender balance (fork.py:439)
+2. max_gas_fee = tx.gas * effective_price is calculated (fork.py:502 or 507)
+3. Checks if sender_account.balance < max_gas_fee + tx.value (fork.py:513)
+4. If insufficient, InsufficientBalanceError is raised (fork.py:513-514)
+5. This ensures balance is non-negative after all debits","",""
+"EIP1559-OBL-022","execution semantics","consensus","After transaction execution, signer MUST be refunded (gas_limit - gas_used) * effective_gas_price.","[fork.py:801-817]","1. Transaction completes execution, tx_output returned (fork.py:799)
+2. tx_gas_used_before_refund = tx.gas - tx_output.gas_left (fork.py:801)
+3. tx_gas_refund = min(tx_gas_used_before_refund // 5, tx_output.refund_counter) (fork.py:802-804)
+4. tx_gas_used_after_refund = tx_gas_used_before_refund - tx_gas_refund (fork.py:805)
+5. tx_gas_left = tx.gas - tx_gas_used_after_refund (fork.py:806)
+6. gas_refund_amount = tx_gas_left * effective_gas_price (fork.py:807)
+7. sender_balance_after_refund = sender.balance + gas_refund_amount (fork.py:814-817)
+8. set_account_balance() credits the refund","",""
+"EIP1559-OBL-023","fees","consensus","The miner (block author) MUST receive only the priority fee (gas_used * priority_fee_per_gas), not the base fee.","[fork.py:810-811, fork.py:819-828]","1. Transaction execution completes (fork.py:799)
+2. priority_fee_per_gas = effective_gas_price - block_env.base_fee_per_gas (fork.py:810)
+3. transaction_fee = tx_gas_used_after_refund * priority_fee_per_gas (fork.py:811)
+4. coinbase_balance_after_mining_fee = coinbase.balance + transaction_fee (fork.py:820-822)
+5. set_account_balance() credits only priority fee to miner (fork.py:824-828)
+6. Base fee portion is NOT added to coinbase, effectively burned (fork.py:810-811, 819-828)","",""
+"EIP1559-OBL-024","fees","consensus","The base fee MUST be burned (not given to any party).","[fork.py:810-811, fork.py:819-828]","1. Transaction execution completes (fork.py:799)
+2. priority_fee_per_gas = effective_gas_price - base_fee_per_gas (fork.py:810)
+3. Only priority_fee_per_gas * gas_used is paid to miner (fork.py:811, 820-828)
+4. Base fee portion (base_fee_per_gas * gas_used) is NOT credited to any account
+5. The base fee amount is effectively burned (removed from total supply)
+6. No create_ether() call for base fee, only for priority fee to coinbase","",""
+"EIP1559-OBL-025","block validation","consensus","The cumulative_transaction_gas_used MUST equal the block's gas_used.","[fork.py:837, fork.py:202-205]","1. apply_body() processes all transactions (fork.py:558)
+2. Each process_transaction() call accumulates gas: block_output.block_gas_used += tx_gas_used_after_refund (fork.py:837)
+3. state_transition() validates block (fork.py:154)
+4. Checks block_output.block_gas_used == block.header.gas_used (fork.py:202)
+5. If mismatch, InvalidBlock is raised (fork.py:202-205)","",""
+"EIP1559-OBL-026","tx validation","consensus","Type 2 transactions MUST have TransactionPayload formatted as rlp([chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, destination, amount, data, access_list, signature_y_parity, signature_r, signature_s]).","[transactions.py:208-283, transactions.py:303-304]","1. Type 2 transaction is encoded via encode_transaction() (transactions.py:291)
+2. For FeeMarketTransaction, returns b""\x02"" + rlp.encode(tx) (transactions.py:303-304)
+3. RLP encodes dataclass fields in order: chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, destination, amount, data, access_list, y_parity, r, s (transactions.py:208-283)
+4. Transaction wire format is 0x02 || rlp([...])
+5. Decoding reverses this: checks tx[0] == 2, then rlp.decode_to(FeeMarketTransaction, tx[1:]) (transactions.py:320-321)","",""
+"EIP1559-OBL-027","tx validation","consensus","Type 2 transaction signature MUST be a secp256k1 signature over keccak256(0x02 || rlp([chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, destination, amount, data, access_list])).","[transactions.py:447-452, transactions.py:533-557]","1. Transaction signature is validated in recover_sender() (transactions.py:405)
+2. For FeeMarketTransaction, signing_hash_1559() computes hash (transactions.py:451, 533-557)
+3. signing_hash_1559() computes: keccak256(0x02 || rlp([chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas, to, value, data, access_list])) (transactions.py:542-557)
+4. secp256k1_recover(r, s, y_parity, signing_hash) recovers public key (transactions.py:450)
+5. Address is derived from keccak256(public_key)[12:32] (transactions.py:454)
+6. Signature validation checks r, s bounds (transactions.py:419-423, 447-452)","",""
+"EIP1559-OBL-028","tx validation","consensus","Type 2 transaction ReceiptPayload MUST be formatted as rlp([status, cumulative_transaction_gas_used, logs_bloom, logs]).","[blocks.py:262-292, blocks.py:294-308]","1. Transaction execution completes, make_receipt() is called (fork.py:839-841)
+2. Receipt is created with succeeded, cumulative_gas_used, bloom, logs fields (fork.py:548-553)
+3. encode_receipt() is called (fork.py:555)
+4. For FeeMarketTransaction, returns b""\x02"" + rlp.encode(receipt) (blocks.py:305-306)
+5. RLP encodes: rlp([status, cumulative_transaction_gas_used, logs_bloom, logs]) (blocks.py:262-292)
+6. Receipt format is 0x02 || rlp([...]) (blocks.py:294-308)","",""
+"EIP1559-OBL-029","tx validation","consensus","The intrinsic cost of Type 2 transactions MUST be 21000 + 16 * non-zero calldata bytes + 4 * zero calldata bytes + 1900 * access list storage key count + 2400 * access list address count.","[transactions.py:359-402, transactions.py:26-55]","1. validate_transaction() calls calculate_intrinsic_cost() (transactions.py:351, 359)
+2. Intrinsic cost calculation (transactions.py:359-402):
+   - Start with TX_BASE_COST (21000) (transactions.py:26, 402)
+   - Add data_cost: 16 * non_zero_bytes + 4 * zero_bytes (transactions.py:32, 37, 383-387)
+   - Add create_cost: 32000 if tx.to is empty (transactions.py:42, 389-392)
+   - Add access_list_cost for Type 2 tx (transactions.py:394-400):
+     * TX_ACCESS_LIST_ADDRESS_COST (2400) per address (transactions.py:47, 397)
+     * TX_ACCESS_LIST_STORAGE_KEY_COST (1900) per storage key (transactions.py:52, 398-399)
+3. Return: TX_BASE_COST + data_cost + create_cost + access_list_cost","",""
+"EIP1559-OBL-030","block validation","consensus","On the fork block, parent_gas_target MUST be set to parent.gas_limit (not divided by ELASTICITY_MULTIPLIER).","[fork.py:248]","1. calculate_base_fee_per_gas() is called for block at fork height (fork.py:222)
+2. parent_gas_target = parent_gas_limit // ELASTICITY_MULTIPLIER is computed (fork.py:248)
+3. On fork block, parent did not have EIP-1559, so parent.gas_limit is the actual target
+4. For fork block, parent_gas_target should equal parent.gas_limit (not divided)
+5. Code comment indicates special handling needed but may not be explicitly implemented (fork.py:248)","EIP-1559 spec does not explicitly detail how parent_gas_target should be calculated for the fork block when parent did not have EIP-1559. Ambiguity exists about whether to use parent.gas_limit or parent.gas_limit // ELASTICITY_MULTIPLIER.","Code at fork.py:248 calculates parent_gas_target = parent_gas_limit // ELASTICITY_MULTIPLIER uniformly, but may need special handling for fork block. No explicit fork block check in calculate_base_fee_per_gas()."
+"EIP1559-OBL-031","block validation","consensus","On the fork block, parent_gas_limit MUST be multiplied by ELASTICITY_MULTIPLIER when validating the current block's gas_limit.","[fork.py:249-250]","1. validate_header() calls check_gas_limit() for fork block (fork.py:249)
+2. check_gas_limit(gas_limit, parent_gas_limit) validates bounds (fork.py:855)
+3. On fork block, parent_gas_limit should be multiplied by ELASTICITY_MULTIPLIER for validation
+4. This allows fork block gas_limit to be 2x parent without violation (fork.py:249-250)
+5. Ensures smooth transition to elastic block gas limit","EIP-1559 spec does not clearly specify whether parent_gas_limit should be multiplied by ELASTICITY_MULTIPLIER when validating the fork block's gas_limit. This affects gas limit bound checking at the fork transition.","Code at fork.py:249-250 has comment suggesting special fork block handling, but check_gas_limit() at fork.py:855 does not have fork block awareness. May need conditional logic to multiply parent_gas_limit by ELASTICITY_MULTIPLIER for fork block."
+"EIP1559-OBL-032","block validation","consensus","After the fork block, parent_gas_target MUST be calculated as parent.gas_limit // ELASTICITY_MULTIPLIER.","[fork.py:248, fork.py:69]","1. For blocks after fork, calculate_base_fee_per_gas() is called (fork.py:222)
+2. parent_gas_target = parent_gas_limit // ELASTICITY_MULTIPLIER (fork.py:248, 69)
+3. ELASTICITY_MULTIPLIER = 2, so target is half the gas limit
+4. This creates elastic gas limit: target is 15M if limit is 30M
+5. Base fee adjusts based on deviation from this target","",""
+"EIP1559-OBL-033","execution semantics","non-consensus","Transactions with the same priority fee SHOULD be sorted by time received to protect against spam attacks.","[]","1. Transactions enter mempool (implementation-specific, not in spec)
+2. Mempool ordering by priority fee is standard practice
+3. For equal priority fees, time-based ordering protects against spam
+4. This obligation is about node behavior, not consensus rules
+5. No explicit code path in specification, left to client implementations","EIP-1559 mentions this as a recommendation but does not provide formal specification. Mempool ordering is implementation-specific and varies across clients.","No code implementation for mempool transaction ordering in execution-specs. This is a client-level implementation detail not present in the consensus specification."
+"EIP1559-OBL-034","execution semantics","non-consensus","Miners SHOULD prefer transactions with higher priority fees from a selfish mining perspective.","[]","1. Block builder selects transactions from mempool (implementation-specific)
+2. Higher priority fees yield more revenue for miners
+3. Rational miner sorts by priority fee in descending order
+4. This is economic incentive, not enforced by consensus
+5. No explicit code path in specification, emergent behavior from incentives","EIP-1559 describes this as economic behavior but does not mandate it. Block builder strategies are not consensus rules.","No code implementation for miner transaction selection strategy in execution-specs. This is a client-level implementation detail not present in the consensus specification."

@@ -1,0 +1,409 @@
+id,category,enforcement_type,statement,locations,code_flow,obligation_gap,code_gap,client_locations,client_code_flow,client_obligation_gap,client_code_gap
+EIP1559-OBL-001,tx validation,consensus,The GASPRICE opcode (0x3a) MUST return the effective_gas_price.,"[vm/instructions/environment.py:304-324, fork.py:789]","1. User calls contract with transaction
+2. Transaction is executed via process_message_call (fork.py:799)
+3. GASPRICE opcode (0x3a) is encountered in EVM execution
+4. gasprice() function in environment.py:304-324 is called
+5. Function pushes evm.message.tx_env.gas_price onto stack
+6. gas_price is set to effective_gas_price during transaction setup (fork.py:789, 501)
+7. effective_gas_price = priority_fee_per_gas + base_fee_per_gas",,,"[core/vm/instructions.go:419-423, core/state_transition.go:194-198, core/types/tx_dynamic_fee.go:100-109]","1. Transaction converted to Message via TransactionToMessage (state_transition.go:176-203)
+2. If baseFee provided, msg.GasPrice set to effectiveGasPrice (state_transition.go:194-198)
+3. effectiveGasPrice = min(gasTipCap, gasFeeCap - baseFee) + baseFee (tx_dynamic_fee.go:100-109)
+4. EVM context created with msg.GasPrice as TxContext.GasPrice (evm.go:142-147)
+5. GASPRICE opcode (0x3a) executed via opGasprice (instructions.go:419-423)
+6. opGasprice pushes evm.GasPrice onto stack (instructions.go:420-421)
+7. evm.GasPrice equals effective_gas_price calculated in step 3",,
+EIP1559-OBL-002,block validation,consensus,Block gas_used MUST be less than or equal to block gas_limit.,"[fork.py:320-321, fork.py:202-205]","1. Block is received by node for validation
+2. state_transition() is called (fork.py:154)
+3. validate_header() checks header validity (fork.py:285)
+4. Block header gas_used is compared to gas_limit (fork.py:320-321)
+5. If gas_used > gas_limit, InvalidBlock exception is raised
+6. apply_body() accumulates gas_used from transactions (fork.py:192-196)
+7. Final validation ensures block_output.block_gas_used == block.header.gas_used (fork.py:202-205)",,,"[consensus/ethash/consensus.go:276-286, core/state_processor.go:64-69, core/blockchain.go:1876-1912]","1. Block validation occurs in blockchain.insertChain (blockchain.go:1876-1912)
+2. Engine.VerifyHeader checks header validity including gas_used <= gas_limit (ethash/consensus.go:276-286)
+3. state_processor.Process accumulates usedGas from all transactions (state_processor.go:60-138)
+4. GasPool initialized with block.GasLimit (state_processor.go:69)
+5. Each transaction deducts gas via gp.SubGas (state_transition.go:295)
+6. Final validation in blockchain.writeBlockWithState checks gasUsed matches header (blockchain.go:1990-1998)
+7. If gas_used > gas_limit, block rejected",,
+EIP1559-OBL-003,block validation,consensus,Block gas_limit MUST be less than parent_gas_limit + parent_gas_limit // 1024.,[fork.py:884-886],"1. New block header is validated via validate_header() (fork.py:285)
+2. check_gas_limit() is called with current and parent gas limits (fork.py:855)
+3. max_adjustment_delta = parent_gas_limit // GAS_LIMIT_ADJUSTMENT_FACTOR (fork.py:884)
+4. Upper bound check: gas_limit >= parent_gas_limit + max_adjustment_delta returns False (fork.py:885-886)
+5. If check fails, InvalidBlock is raised",,,"[consensus/misc/gaslimit.go:27-41, consensus/misc/eip1559/eip1559.go:34-41, params/protocol_params.go:34]","1. Header validation calls VerifyEIP1559Header (eip1559/eip1559.go:33-53)
+2. For London fork, parentGasLimit adjusted by ElasticityMultiplier for fork block (eip1559.go:36-38)
+3. VerifyGaslimit checks gas limit bounds (gaslimit.go:27-41)
+4. Calculates diff = |parentGasLimit - headerGasLimit| (gaslimit.go:29-32)
+5. limit = parentGasLimit / GasLimitBoundDivisor (1024) (gaslimit.go:33, params/protocol_params.go:34)
+6. If diff >= limit, returns error (gaslimit.go:34-35)
+7. Ensures headerGasLimit < parentGasLimit + parentGasLimit // 1024",,
+EIP1559-OBL-004,block validation,consensus,Block gas_limit MUST be greater than parent_gas_limit - parent_gas_limit // 1024.,[fork.py:887-888],"1. New block header is validated via validate_header() (fork.py:285)
+2. check_gas_limit() is called with current and parent gas limits (fork.py:855)
+3. max_adjustment_delta = parent_gas_limit // GAS_LIMIT_ADJUSTMENT_FACTOR (fork.py:884)
+4. Lower bound check: gas_limit <= parent_gas_limit - max_adjustment_delta returns False (fork.py:887-888)
+5. If check fails, InvalidBlock is raised",,,"[consensus/misc/gaslimit.go:27-41, consensus/misc/eip1559/eip1559.go:34-41, params/protocol_params.go:34]","1. Header validation calls VerifyEIP1559Header (eip1559/eip1559.go:33-53)
+2. For London fork, parentGasLimit adjusted by ElasticityMultiplier for fork block (eip1559.go:36-38)
+3. VerifyGaslimit checks gas limit bounds (gaslimit.go:27-41)
+4. Calculates diff = |parentGasLimit - headerGasLimit| (gaslimit.go:29-32)
+5. limit = parentGasLimit / GasLimitBoundDivisor (1024) (gaslimit.go:33, params/protocol_params.go:34)
+6. If diff >= limit, returns error (gaslimit.go:34-35)
+7. Ensures headerGasLimit > parentGasLimit - parentGasLimit // 1024",,
+EIP1559-OBL-005,block validation,consensus,Block gas_limit MUST be at least 5000.,"[fork.py:889-890, fork.py:71]","1. New block header is validated via validate_header() (fork.py:285)
+2. check_gas_limit() is called (fork.py:855)
+3. Minimum check: gas_limit < GAS_LIMIT_MINIMUM (5000) returns False (fork.py:889-890)
+4. GAS_LIMIT_MINIMUM constant defined at fork.py:71
+5. If check fails, InvalidBlock is raised",,,"[consensus/misc/gaslimit.go:37-39, params/protocol_params.go:33]","1. Header validation calls VerifyGaslimit (gaslimit.go:27-41)
+2. After checking adjustment bounds, validates minimum (gaslimit.go:37-39)
+3. If headerGasLimit < params.MinGasLimit (5000), returns error (gaslimit.go:37-39)
+4. MinGasLimit constant defined at params/protocol_params.go:33
+5. This check applies to all blocks regardless of fork",,
+EIP1559-OBL-006,base fee adjustment,consensus,"On the fork block (INITIAL_FORK_BLOCK_NUMBER), the base_fee_per_gas MUST be set to INITIAL_BASE_FEE (1000000000).","[fork.py:325-327, fork.py:73]","1. London fork activates at INITIAL_FORK_BLOCK_NUMBER
+2. validate_header() checks if header.number == FORK_CRITERIA.block_number (fork.py:326)
+3. If true, expected_base_fee_per_gas is set to INITIAL_BASE_FEE (1000000000) (fork.py:325, 73)
+4. Header's base_fee_per_gas is compared to expected value (fork.py:336-337)
+5. If mismatch, InvalidBlock is raised",,,"[consensus/misc/eip1559/eip1559.go:46-60, params/protocol_params.go:141]","1. VerifyEIP1559Header validates base fee (eip1559/eip1559.go:33-53)
+2. CalcBaseFee computes expected base fee (eip1559.go:56-98)
+3. If !config.IsLondon(parent.Number), returns InitialBaseFee (eip1559.go:58-60)
+4. InitialBaseFee = 1000000000 (1 Gwei) defined at params/protocol_params.go:141
+5. Checks header.BaseFee == expectedBaseFee (eip1559.go:48)
+6. If mismatch, returns error with details (eip1559.go:49-50)",,
+EIP1559-OBL-007,base fee adjustment,consensus,"If parent_gas_used equals parent_gas_target, then base_fee_per_gas MUST remain equal to parent_base_fee_per_gas.",[fork.py:252-253],"1. New block is validated, calculate_base_fee_per_gas() is called (fork.py:222)
+2. parent_gas_target = parent_gas_limit // ELASTICITY_MULTIPLIER (fork.py:248)
+3. If parent_gas_used == parent_gas_target (fork.py:252)
+4. Then expected_base_fee_per_gas = parent_base_fee_per_gas (fork.py:253)
+5. No adjustment is made, base fee remains unchanged",,,[consensus/misc/eip1559/eip1559.go:62-66],"1. CalcBaseFee calculates expected base fee (eip1559.go:56-98)
+2. parentGasTarget = parent.GasLimit / config.ElasticityMultiplier() (eip1559.go:62)
+3. ElasticityMultiplier = 2, so target is half the gas limit
+4. If parent.GasUsed == parentGasTarget (eip1559.go:64)
+5. Returns parent.BaseFee unchanged (eip1559.go:65)
+6. No adjustment when usage equals target",,
+EIP1559-OBL-008,base fee adjustment,consensus,"If parent_gas_used is greater than parent_gas_target, then base_fee_per_gas MUST increase by at least 1 and by max(parent_base_fee_per_gas * gas_used_delta // parent_gas_target // BASE_FEE_MAX_CHANGE_DENOMINATOR, 1).",[fork.py:254-267],"1. calculate_base_fee_per_gas() is called (fork.py:222)
+2. parent_gas_target = parent_gas_limit // ELASTICITY_MULTIPLIER (fork.py:248)
+3. If parent_gas_used > parent_gas_target (fork.py:254)
+4. gas_used_delta = parent_gas_used - parent_gas_target (fork.py:255)
+5. Calculate: parent_fee_gas_delta = parent_base_fee_per_gas * gas_used_delta (fork.py:257)
+6. Calculate: target_fee_gas_delta = parent_fee_gas_delta // parent_gas_target (fork.py:258)
+7. base_fee_per_gas_delta = max(target_fee_gas_delta // BASE_FEE_MAX_CHANGE_DENOMINATOR, 1) (fork.py:260-262)
+8. expected_base_fee_per_gas = parent_base_fee_per_gas + base_fee_per_gas_delta (fork.py:265-267)",,,"[consensus/misc/eip1559/eip1559.go:73-83, params/protocol_params.go:142]","1. CalcBaseFee calculates new base fee (eip1559.go:56-98)
+2. If parent.GasUsed > parentGasTarget (eip1559.go:73)
+3. Calculate delta: num = parent.GasUsed - parentGasTarget (eip1559.go:76)
+4. num = num * parent.BaseFee (eip1559.go:77)
+5. num = num / parentGasTarget (eip1559.go:78)
+6. num = num / BaseFeeChangeDenominator (8) (eip1559.go:79, params:142)
+7. If num < 1, return parent.BaseFee + 1 (eip1559.go:80-81)
+8. Else return parent.BaseFee + num (eip1559.go:83)
+9. Ensures minimum increase of 1",,
+EIP1559-OBL-009,base fee adjustment,consensus,"If parent_gas_used is less than parent_gas_target, then base_fee_per_gas MUST decrease by parent_base_fee_per_gas * gas_used_delta // parent_gas_target // BASE_FEE_MAX_CHANGE_DENOMINATOR.",[fork.py:268-280],"1. calculate_base_fee_per_gas() is called (fork.py:222)
+2. parent_gas_target = parent_gas_limit // ELASTICITY_MULTIPLIER (fork.py:248)
+3. If parent_gas_used < parent_gas_target (fork.py:268)
+4. gas_used_delta = parent_gas_target - parent_gas_used (fork.py:269)
+5. Calculate: parent_fee_gas_delta = parent_base_fee_per_gas * gas_used_delta (fork.py:271)
+6. Calculate: target_fee_gas_delta = parent_fee_gas_delta // parent_gas_target (fork.py:272)
+7. base_fee_per_gas_delta = target_fee_gas_delta // BASE_FEE_MAX_CHANGE_DENOMINATOR (fork.py:274-276)
+8. expected_base_fee_per_gas = parent_base_fee_per_gas - base_fee_per_gas_delta (fork.py:278-280)",,,"[consensus/misc/eip1559/eip1559.go:84-97, params/protocol_params.go:142]","1. CalcBaseFee calculates new base fee (eip1559.go:56-98)
+2. If parent.GasUsed < parentGasTarget (eip1559.go:84)
+3. Calculate delta: num = parentGasTarget - parent.GasUsed (eip1559.go:87)
+4. num = num * parent.BaseFee (eip1559.go:88)
+5. num = num / parentGasTarget (eip1559.go:89)
+6. num = num / BaseFeeChangeDenominator (8) (eip1559.go:90, params:142)
+7. baseFee = parent.BaseFee - num (eip1559.go:92)
+8. If baseFee < 0, set to 0 (eip1559.go:93-94)
+9. Return baseFee (eip1559.go:96)",,
+EIP1559-OBL-010,block validation,consensus,The block's base_fee_per_gas MUST equal the expected_base_fee_per_gas calculated from the parent block.,[fork.py:329-337],"1. Block validation occurs in validate_header() (fork.py:285)
+2. For non-fork blocks, calculate_base_fee_per_gas() computes expected value (fork.py:329-334)
+3. Calculated value is compared to header.base_fee_per_gas (fork.py:336)
+4. If expected_base_fee_per_gas != header.base_fee_per_gas (fork.py:336-337)
+5. InvalidBlock exception is raised",,,[consensus/misc/eip1559/eip1559.go:46-52],"1. VerifyEIP1559Header validates header (eip1559/eip1559.go:33-53)
+2. CalcBaseFee computes expectedBaseFee from parent (eip1559.go:47)
+3. Compares header.BaseFee with expectedBaseFee (eip1559.go:48)
+4. If header.BaseFee != expectedBaseFee, returns error (eip1559.go:48-51)
+5. Error includes actual and expected values for debugging
+6. This check applies to all post-London blocks",,
+EIP1559-OBL-011,tx validation,consensus,Transaction signature and chain ID MUST be validated before normalizing the transaction.,"[fork.py:484, transactions.py:405-454]","1. Transaction enters check_transaction() (fork.py:439)
+2. recover_sender() is called with chain_id and tx (fork.py:484)
+3. recover_sender() validates signature r, s values against SECP256K1N (transactions.py:419-423)
+4. For Type 2 (FeeMarketTransaction), validates y_parity is 0 or 1 (transactions.py:447-449)
+5. Computes signing_hash_1559() for Type 2 transactions (transactions.py:450-452, 533-557)
+6. Recovers public key via secp256k1_recover and derives address (transactions.py:454)
+7. Validation occurs before normalization in check_transaction flow (fork.py:484, transactions.py:405-454)",,,"[core/types/transaction_signing.go:254-270, core/types/transaction_signing.go:478-503]","1. Transaction sender recovered via types.Sender (transaction_signing.go:201)
+2. For EIP-1559, uses modernSigner (transaction_signing.go:186-225)
+3. modernSigner.Sender checks chainID matches (transaction_signing.go:262-264)
+4. Calls recoverPlain for signature recovery (transaction_signing.go:267-269)
+5. ValidateSignatureValues checks r,s are valid secp256k1 values (transaction_signing.go:483)
+6. Ecrecover recovers public key from signature (transaction_signing.go:493)
+7. Address derived from keccak256(pubkey)[12:] (transaction_signing.go:501)
+8. Validation occurs before transaction normalization in TransactionToMessage (state_transition.go:201)",,
+EIP1559-OBL-012,tx validation,consensus,Signer balance after deducting transaction amount MUST be greater than or equal to 0.,[fork.py:513-514],"1. check_transaction() retrieves sender_account (fork.py:485)
+2. For FeeMarketTransaction, calculates max_gas_fee = tx.gas * tx.max_fee_per_gas (fork.py:502)
+3. Validates sender_account.balance >= max_gas_fee + tx.value (fork.py:513)
+4. After gas deduction in process_transaction(), sender balance = sender_account.balance - effective_gas_fee (fork.py:772-777)
+5. After subtracting tx.value, final balance must be >= 0
+6. If insufficient, InsufficientBalanceError is raised (fork.py:513-514)",,,[core/state_transition.go:266-308],"1. preCheck calls buyGas to validate balance (state_transition.go:409)
+2. buyGas calculates total cost: mgval = gasLimit * gasPrice (state_transition.go:267-268)
+3. For EIP-1559, uses gasFeeCap for balance check: balanceCheck = gasLimit * gasFeeCap (state_transition.go:270-273)
+4. balanceCheck += msg.Value (state_transition.go:274)
+5. Validates state.GetBalance(from) >= balanceCheck (state_transition.go:292-293)
+6. SubBalance debits full gas + value upfront (state_transition.go:306)
+7. After execution, returnGas credits unused gas (state_transition.go:655-667)
+8. Final balance >= 0 guaranteed by validation",,
+EIP1559-OBL-013,tx validation,consensus,Signer balance MUST be at least transaction.gas_limit * transaction.max_fee_per_gas.,"[fork.py:502-507, fork.py:513-514]","1. check_transaction() validates transaction inclusion (fork.py:439)
+2. For FeeMarketTransaction, calculates max_gas_fee = tx.gas * tx.max_fee_per_gas (fork.py:502)
+3. Checks sender_account.balance >= max_gas_fee + tx.value (fork.py:513)
+4. This ensures sender can pay for maximum possible gas cost
+5. If sender_account.balance < max_gas_fee + tx.value (fork.py:513-514)
+6. InsufficientBalanceError is raised with message ""insufficient sender balance""",,,[core/state_transition.go:266-308],"1. preCheck calls buyGas (state_transition.go:409)
+2. For EIP-1559 tx, balanceCheck = gasLimit * gasFeeCap + value (state_transition.go:270-274)
+3. Compares sender balance >= balanceCheck (state_transition.go:292-293)
+4. If insufficient, returns ErrInsufficientFunds (state_transition.go:293)
+5. This ensures sender can pay maximum possible gas cost
+6. gasFeeCap = max_fee_per_gas from transaction
+7. Validation occurs before execution in preCheck",,
+EIP1559-OBL-014,tx validation,consensus,Transaction max_fee_per_gas MUST be greater than or equal to block base_fee_per_gas.,[fork.py:492-495],"1. check_transaction() validates transaction (fork.py:439)
+2. For FeeMarketTransaction, checks tx.max_fee_per_gas < block_env.base_fee_per_gas (fork.py:492)
+3. If condition is true, raises InsufficientMaxFeePerGasError (fork.py:493-495)
+4. This ensures transaction can pay at least the base fee",,,[core/state_transition.go:341-363],"1. preCheck validates EIP-1559 fee parameters (state_transition.go:310-409)
+2. If IsLondon(blockNumber), checks fee caps (state_transition.go:341-363)
+3. Validates msg.GasFeeCap >= evm.Context.BaseFee (state_transition.go:359)
+4. If gasFeeCap < baseFee, returns ErrFeeCapTooLow (state_transition.go:359-361)
+5. baseFee comes from header.BaseFee passed via BlockContext
+6. This check ensures transaction can pay at least base fee
+7. Validation occurs before buyGas",,
+EIP1559-OBL-015,tx validation,consensus,Transaction max_fee_per_gas MUST be less than 2**256.,[transactions.py:230-239],"1. Transaction is decoded via decode_transaction() (fork.py:591)
+2. For Type 2 tx, rlp.decode_to(FeeMarketTransaction, ...) is called (transactions.py:321)
+3. max_fee_per_gas field is Uint type (transactions.py:235)
+4. Uint type enforces value < 2**256 at type level (transactions.py:230-239)
+5. RLP decoding validates field bounds",,,"[core/state_transition.go:345-348, core/types/tx_dynamic_fee.go:32]","1. preCheck validates fee cap bit length (state_transition.go:345-348)
+2. Checks msg.GasFeeCap.BitLen() <= 256 (state_transition.go:345)
+3. If > 256 bits, returns ErrFeeCapVeryHigh (state_transition.go:346-347)
+4. DynamicFeeTx.GasFeeCap is *big.Int, inherently supports arbitrary precision
+5. RLP decoding in tx_dynamic_fee.go:123-125 reads GasFeeCap as big.Int
+6. Type system ensures < 2^256 through BitLen check
+7. Validation prevents overflow in fee calculations",,
+EIP1559-OBL-016,tx validation,consensus,Transaction max_priority_fee_per_gas MUST be less than 2**256.,[transactions.py:230-239],"1. Transaction is decoded via decode_transaction() (fork.py:591)
+2. For Type 2 tx, rlp.decode_to(FeeMarketTransaction, ...) is called (transactions.py:321)
+3. max_priority_fee_per_gas field is Uint type (transactions.py:230)
+4. Uint type enforces value < 2**256 at type level (transactions.py:230-239)
+5. RLP decoding validates field bounds",,,"[core/state_transition.go:349-352, core/types/tx_dynamic_fee.go:31]","1. preCheck validates tip cap bit length (state_transition.go:349-352)
+2. Checks msg.GasTipCap.BitLen() <= 256 (state_transition.go:349)
+3. If > 256 bits, returns ErrTipVeryHigh (state_transition.go:350-351)
+4. DynamicFeeTx.GasTipCap is *big.Int
+5. RLP decoding in tx_dynamic_fee.go:123-125 reads GasTipCap as big.Int
+6. Type system ensures < 2^256 through BitLen check
+7. Validation occurs in preCheck before execution",,
+EIP1559-OBL-017,tx validation,consensus,Transaction max_fee_per_gas MUST be greater than or equal to transaction max_priority_fee_per_gas.,[fork.py:488-491],"1. check_transaction() validates Type 2 transaction (fork.py:439)
+2. Checks if tx.max_fee_per_gas < tx.max_priority_fee_per_gas (fork.py:488)
+3. If true, raises PriorityFeeGreaterThanMaxFeeError (fork.py:489-491)
+4. This ensures max fee can cover priority fee",,,[core/state_transition.go:353-356],"1. preCheck validates fee relationship (state_transition.go:353-356)
+2. Checks msg.GasFeeCap >= msg.GasTipCap (state_transition.go:353)
+3. If gasFeeCap < gasTipCap, returns ErrTipAboveFeeCap (state_transition.go:354-355)
+4. This ensures max fee can cover priority fee
+5. Validation occurs after bit length checks
+6. Prevents invalid effective gas price calculation",,
+EIP1559-OBL-018,execution semantics,consensus,The priority_fee_per_gas MUST be the minimum of max_priority_fee_per_gas and (max_fee_per_gas - base_fee_per_gas).,[fork.py:497-500],"1. check_transaction() processes FeeMarketTransaction (fork.py:439)
+2. Calculates priority_fee_per_gas = min(tx.max_priority_fee_per_gas, tx.max_fee_per_gas - block_env.base_fee_per_gas) (fork.py:497-500)
+3. This ensures priority fee doesn't exceed available margin above base fee
+4. Priority fee is capped by both max_priority_fee_per_gas and remaining fee space",,,"[core/types/tx_dynamic_fee.go:100-109, core/state_transition.go:194-198]","1. TransactionToMessage converts tx to Message (state_transition.go:176-203)
+2. For EIP-1559 tx with baseFee, calculates effectiveGasPrice (state_transition.go:194-198)
+3. Calls tx.effectiveGasPrice (tx_dynamic_fee.go:100-109)
+4. tip = gasFeeCap - baseFee (tx_dynamic_fee.go:104)
+5. If tip > gasTipCap, tip = gasTipCap (tx_dynamic_fee.go:105-106)
+6. Return tip + baseFee (tx_dynamic_fee.go:108)
+7. This implements: priority_fee = min(max_priority_fee_per_gas, max_fee_per_gas - base_fee_per_gas)
+8. effectiveGasPrice set to msg.GasPrice for EVM context",,
+EIP1559-OBL-019,execution semantics,consensus,The effective_gas_price MUST equal priority_fee_per_gas + base_fee_per_gas.,"[fork.py:501, fork.py:789]","1. check_transaction() calculates fees for FeeMarketTransaction (fork.py:439)
+2. priority_fee_per_gas = min(max_priority_fee_per_gas, max_fee_per_gas - base_fee_per_gas) (fork.py:497-500)
+3. effective_gas_price = priority_fee_per_gas + block_env.base_fee_per_gas (fork.py:501)
+4. This value is set in tx_env.gas_price (fork.py:789)
+5. GASPRICE opcode returns this effective_gas_price value",,,"[core/types/tx_dynamic_fee.go:100-109, core/state_transition.go:194-198, core/vm/instructions.go:419-423]","1. TransactionToMessage calculates effectiveGasPrice (state_transition.go:194-198)
+2. tx.effectiveGasPrice computes tip + baseFee (tx_dynamic_fee.go:100-109)
+3. tip = min(gasTipCap, gasFeeCap - baseFee) (tx_dynamic_fee.go:104-106)
+4. effectiveGasPrice = tip + baseFee (tx_dynamic_fee.go:108)
+5. Set as msg.GasPrice (state_transition.go:198)
+6. EVM TxContext.GasPrice set to msg.GasPrice (evm.go:142-147)
+7. GASPRICE opcode returns evm.GasPrice (instructions.go:420)
+8. This equals priority_fee_per_gas + base_fee_per_gas",,
+EIP1559-OBL-020,execution semantics,consensus,Signer balance MUST be debited by transaction.gas_limit * effective_gas_price before transaction execution.,"[fork.py:767, fork.py:772-777]","1. process_transaction() begins execution (fork.py:718)
+2. check_transaction() returns sender and effective_gas_price (fork.py:756-763)
+3. effective_gas_fee = tx.gas * effective_gas_price is calculated (fork.py:767)
+4. sender_balance_after_gas_fee = sender_account.balance - effective_gas_fee (fork.py:772-773)
+5. set_account_balance() debits the full gas amount upfront (fork.py:775-777)
+6. This occurs before process_message_call() executes the transaction",,,[core/state_transition.go:266-308],"1. execute calls preCheck before EVM execution (state_transition.go:434)
+2. preCheck calls buyGas (state_transition.go:409)
+3. buyGas calculates mgval = gasLimit * effectiveGasPrice (state_transition.go:267-268)
+4. For EIP-1559, effectiveGasPrice already calculated in TransactionToMessage
+5. mgval += blobGas fees if applicable (state_transition.go:276-286)
+6. SubBalance debits mgval from sender (state_transition.go:306)
+7. gasRemaining = gasLimit (state_transition.go:302)
+8. This occurs before execute's EVM call (state_transition.go:422-574)",,
+EIP1559-OBL-021,tx validation,consensus,Signer balance after deducting gas costs MUST be greater than or equal to 0.,[fork.py:513-514],"1. check_transaction() validates sender balance (fork.py:439)
+2. max_gas_fee = tx.gas * effective_price is calculated (fork.py:502 or 507)
+3. Checks if sender_account.balance < max_gas_fee + tx.value (fork.py:513)
+4. If insufficient, InsufficientBalanceError is raised (fork.py:513-514)
+5. This ensures balance is non-negative after all debits",,,[core/state_transition.go:266-308],"1. buyGas validates sender balance (state_transition.go:266-308)
+2. balanceCheck = gasLimit * gasFeeCap + value (state_transition.go:270-274)
+3. Validates GetBalance(sender) >= balanceCheck (state_transition.go:292-293)
+4. If insufficient, returns ErrInsufficientFunds (state_transition.go:293)
+5. SubBalance debits gasLimit * effectiveGasPrice (state_transition.go:306)
+6. After execution, returnGas refunds unused (state_transition.go:655-667)
+7. Final balance guaranteed >= 0 by upfront validation",,
+EIP1559-OBL-022,execution semantics,consensus,"After transaction execution, signer MUST be refunded (gas_limit - gas_used) * effective_gas_price.",[fork.py:801-817],"1. Transaction completes execution, tx_output returned (fork.py:799)
+2. tx_gas_used_before_refund = tx.gas - tx_output.gas_left (fork.py:801)
+3. tx_gas_refund = min(tx_gas_used_before_refund // 5, tx_output.refund_counter) (fork.py:802-804)
+4. tx_gas_used_after_refund = tx_gas_used_before_refund - tx_gas_refund (fork.py:805)
+5. tx_gas_left = tx.gas - tx_gas_used_after_refund (fork.py:806)
+6. gas_refund_amount = tx_gas_left * effective_gas_price (fork.py:807)
+7. sender_balance_after_refund = sender.balance + gas_refund_amount (fork.py:814-817)
+8. set_account_balance() credits the refund",,,"[core/state_transition.go:530-545, core/state_transition.go:634-651, core/state_transition.go:655-667]","1. After EVM execution, calculate gas used (state_transition.go:528)
+2. calcRefund computes refund amount capped by quotient (state_transition.go:634-651)
+3. For London+, refund = min(gasUsed/5, state.GetRefund()) (state_transition.go:640-646)
+4. gasRemaining += refund (state_transition.go:531)
+5. returnGas credits remaining * gasPrice to sender (state_transition.go:655-667)
+6. remaining = gasRemaining * msg.GasPrice (state_transition.go:656-657)
+7. AddBalance credits sender (state_transition.go:658)
+8. Refund = (gasLimit - gasUsed + refund) * effectiveGasPrice",,
+EIP1559-OBL-023,fees,consensus,"The miner (block author) MUST receive only the priority fee (gas_used * priority_fee_per_gas), not the base fee.","[fork.py:810-811, fork.py:819-828]","1. Transaction execution completes (fork.py:799)
+2. priority_fee_per_gas = effective_gas_price - block_env.base_fee_per_gas (fork.py:810)
+3. transaction_fee = tx_gas_used_after_refund * priority_fee_per_gas (fork.py:811)
+4. coinbase_balance_after_mining_fee = coinbase.balance + transaction_fee (fork.py:820-822)
+5. set_account_balance() credits only priority fee to miner (fork.py:824-828)
+6. Base fee portion is NOT added to coinbase, effectively burned (fork.py:810-811, 819-828)",,,[core/state_transition.go:547-566],"1. After returnGas, calculate miner fee (state_transition.go:547-566)
+2. effectiveTip = msg.GasPrice (state_transition.go:547)
+3. If IsLondon, effectiveTip = msg.GasPrice - baseFee (state_transition.go:548-550)
+4. This extracts priority fee portion only
+5. fee = gasUsed * effectiveTip (state_transition.go:558-559)
+6. AddBalance credits coinbase with fee (state_transition.go:560)
+7. Base fee portion (gasUsed * baseFee) is NOT credited to anyone
+8. Base fee effectively burned",,
+EIP1559-OBL-024,fees,consensus,The base fee MUST be burned (not given to any party).,"[fork.py:810-811, fork.py:819-828]","1. Transaction execution completes (fork.py:799)
+2. priority_fee_per_gas = effective_gas_price - base_fee_per_gas (fork.py:810)
+3. Only priority_fee_per_gas * gas_used is paid to miner (fork.py:811, 820-828)
+4. Base fee portion (base_fee_per_gas * gas_used) is NOT credited to any account
+5. The base fee amount is effectively burned (removed from total supply)
+6. No create_ether() call for base fee, only for priority fee to coinbase",,,[core/state_transition.go:547-566],"1. After execution, calculate fees (state_transition.go:547-566)
+2. effectiveTip = msg.GasPrice - baseFee for London+ (state_transition.go:548-550)
+3. Only effectiveTip * gasUsed credited to coinbase (state_transition.go:558-560)
+4. Base fee portion: gasUsed * baseFee is subtracted from sender but NOT added to any account
+5. No AddBalance call for base fee component
+6. Total supply decreases by gasUsed * baseFee
+7. Base fee burned (removed from circulation)",,
+EIP1559-OBL-025,block validation,consensus,The cumulative_transaction_gas_used MUST equal the block's gas_used.,"[fork.py:837, fork.py:202-205]","1. apply_body() processes all transactions (fork.py:558)
+2. Each process_transaction() call accumulates gas: block_output.block_gas_used += tx_gas_used_after_refund (fork.py:837)
+3. state_transition() validates block (fork.py:154)
+4. Checks block_output.block_gas_used == block.header.gas_used (fork.py:202)
+5. If mismatch, InvalidBlock is raised (fork.py:202-205)",,,"[core/state_processor.go:60-138, core/blockchain.go:1990-1998]","1. state_processor.Process executes all transactions (state_processor.go:60-138)
+2. usedGas accumulates across all transactions (state_processor.go:64-165)
+3. Each ApplyTransactionWithEVM adds to *usedGas (state_processor.go:105-165)
+4. Final usedGas returned in ProcessResult (state_processor.go:133-138)
+5. blockchain.writeBlockWithState validates (blockchain.go:1990-1998)
+6. Checks receipts.GasUsed == header.GasUsed (blockchain.go:1991-1994)
+7. If mismatch, returns error and rejects block",,
+EIP1559-OBL-026,tx validation,consensus,"Type 2 transactions MUST have TransactionPayload formatted as rlp([chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, destination, amount, data, access_list, signature_y_parity, signature_r, signature_s]).","[transactions.py:208-283, transactions.py:303-304]","1. Type 2 transaction is encoded via encode_transaction() (transactions.py:291)
+2. For FeeMarketTransaction, returns b""\x02"" + rlp.encode(tx) (transactions.py:303-304)
+3. RLP encodes dataclass fields in order: chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, destination, amount, data, access_list, y_parity, r, s (transactions.py:208-283)
+4. Transaction wire format is 0x02 || rlp([...])
+5. Decoding reverses this: checks tx[0] == 2, then rlp.decode_to(FeeMarketTransaction, tx[1:]) (transactions.py:320-321)",,,"[core/types/transaction.go:109-220, core/types/tx_dynamic_fee.go:119-125, core/types/tx_dynamic_fee.go:127-141]","1. Transaction.EncodeRLP encodes Type 2 tx (transaction.go:109-122)
+2. For typed tx, calls encodeTyped (transaction.go:114-121, 124-128)
+3. encodeTyped writes type byte (0x02) (transaction.go:126)
+4. Calls tx.inner.encode (tx_dynamic_fee.go:119-121)
+5. inner.encode RLP encodes DynamicFeeTx struct (tx_dynamic_fee.go:120)
+6. RLP encoding order: [chainID, nonce, gasTipCap, gasFeeCap, gas, to, value, data, accessList, v, r, s]
+7. DecodeRLP reverses: reads type, dispatches to decodeTyped (transaction.go:142-176, 200-220)
+8. Signature hash via sigHash excludes v,r,s (tx_dynamic_fee.go:127-141)",,
+EIP1559-OBL-027,tx validation,consensus,"Type 2 transaction signature MUST be a secp256k1 signature over keccak256(0x02 || rlp([chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, destination, amount, data, access_list])).","[transactions.py:447-452, transactions.py:533-557]","1. Transaction signature is validated in recover_sender() (transactions.py:405)
+2. For FeeMarketTransaction, signing_hash_1559() computes hash (transactions.py:451, 533-557)
+3. signing_hash_1559() computes: keccak256(0x02 || rlp([chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas, to, value, data, access_list])) (transactions.py:542-557)
+4. secp256k1_recover(r, s, y_parity, signing_hash) recovers public key (transactions.py:450)
+5. Address is derived from keccak256(public_key)[12:32] (transactions.py:454)
+6. Signature validation checks r, s bounds (transactions.py:419-423, 447-452)",,,"[core/types/tx_dynamic_fee.go:127-141, core/types/transaction_signing.go:254-270, core/types/transaction_signing.go:478-503]","1. Signature hash computed via sigHash (tx_dynamic_fee.go:127-141)
+2. prefixedRlpHash computes keccak256(0x02 || rlp([chainID, nonce, gasTipCap, gasFeeCap, gas, to, value, data, accessList])) (tx_dynamic_fee.go:128-140)
+3. Transaction signature validated via modernSigner (transaction_signing.go:254-270)
+4. Validates chainID matches (transaction_signing.go:262-264)
+5. recoverPlain performs secp256k1 recovery (transaction_signing.go:478-503)
+6. ValidateSignatureValues checks r,s in valid secp256k1 range (transaction_signing.go:483)
+7. Ecrecover recovers public key (transaction_signing.go:493)
+8. Address = keccak256(pubkey)[12:] (transaction_signing.go:501)",,
+EIP1559-OBL-028,tx validation,consensus,"Type 2 transaction ReceiptPayload MUST be formatted as rlp([status, cumulative_transaction_gas_used, logs_bloom, logs]).","[blocks.py:262-292, blocks.py:294-308]","1. Transaction execution completes, make_receipt() is called (fork.py:839-841)
+2. Receipt is created with succeeded, cumulative_gas_used, bloom, logs fields (fork.py:548-553)
+3. encode_receipt() is called (fork.py:555)
+4. For FeeMarketTransaction, returns b""\x02"" + rlp.encode(receipt) (blocks.py:305-306)
+5. RLP encodes: rlp([status, cumulative_transaction_gas_used, logs_bloom, logs]) (blocks.py:262-292)
+6. Receipt format is 0x02 || rlp([...]) (blocks.py:294-308)",,,"[core/types/receipt.go:121-152, core/types/receipt.go:91-96]","1. Receipt created via MakeReceipt (state_processor.go:175-204)
+2. Receipt.Type = tx.Type() (DynamicFeeTxType = 0x02) (state_processor.go:179)
+3. Receipt.EncodeRLP encodes receipt (receipt.go:121-135)
+4. For typed receipts, calls encodeTyped (receipt.go:132-135, 137-141)
+5. encodeTyped writes type byte (0x02) (receipt.go:138)
+6. RLP encodes receiptRLP struct (receipt.go:139-140, 91-96)
+7. receiptRLP = [PostStateOrStatus (status), CumulativeGasUsed, Bloom, Logs]
+8. Format: 0x02 || rlp([status, cumulative_gas_used, logs_bloom, logs])",,
+EIP1559-OBL-029,tx validation,consensus,The intrinsic cost of Type 2 transactions MUST be 21000 + 16 * non-zero calldata bytes + 4 * zero calldata bytes + 1900 * access list storage key count + 2400 * access list address count.,"[transactions.py:359-402, transactions.py:26-55]","1. validate_transaction() calls calculate_intrinsic_cost() (transactions.py:351, 359)
+2. Intrinsic cost calculation (transactions.py:359-402):
+   - Start with TX_BASE_COST (21000) (transactions.py:26, 402)
+   - Add data_cost: 16 * non_zero_bytes + 4 * zero_bytes (transactions.py:32, 37, 383-387)
+   - Add create_cost: 32000 if tx.to is empty (transactions.py:42, 389-392)
+   - Add access_list_cost for Type 2 tx (transactions.py:394-400):
+     * TX_ACCESS_LIST_ADDRESS_COST (2400) per address (transactions.py:47, 397)
+     * TX_ACCESS_LIST_STORAGE_KEY_COST (1900) per storage key (transactions.py:52, 398-399)
+3. Return: TX_BASE_COST + data_cost + create_cost + access_list_cost",,,[core/state_transition.go:70-117],"1. execute calls IntrinsicGas (state_transition.go:446)
+2. Base cost: 21000 for tx, 53000 for contract creation (state_transition.go:73-78)
+3. Data cost: count zero bytes (4 gas) and non-zero bytes (16 gas for Istanbul) (state_transition.go:79-99)
+4. Init code cost for contract creation with Shanghai (state_transition.go:101-107)
+5. Access list cost: 2400 * len(accessList) + 1900 * storageKeys (state_transition.go:109-111)
+6. Auth list cost (EIP-7702): 2600 * len(authList) (state_transition.go:113-115)
+7. Total intrinsic gas = base + data + accessList + authList
+8. Validated gasRemaining >= intrinsic (state_transition.go:450-452)",,
+EIP1559-OBL-030,block validation,consensus,"On the fork block, parent_gas_target MUST be set to parent.gas_limit (not divided by ELASTICITY_MULTIPLIER).",[fork.py:248],"1. calculate_base_fee_per_gas() is called for block at fork height (fork.py:222)
+2. parent_gas_target = parent_gas_limit // ELASTICITY_MULTIPLIER is computed (fork.py:248)
+3. On fork block, parent did not have EIP-1559, so parent.gas_limit is the actual target
+4. For fork block, parent_gas_target should equal parent.gas_limit (not divided)
+5. Code comment indicates special handling needed but may not be explicitly implemented (fork.py:248)",EIP-1559 spec does not explicitly detail how parent_gas_target should be calculated for the fork block when parent did not have EIP-1559. Ambiguity exists about whether to use parent.gas_limit or parent.gas_limit // ELASTICITY_MULTIPLIER.,"Code at fork.py:248 calculates parent_gas_target = parent_gas_limit // ELASTICITY_MULTIPLIER uniformly, but may need special handling for fork block. No explicit fork block check in calculate_base_fee_per_gas().",[consensus/misc/eip1559/eip1559.go:62],"1. CalcBaseFee calculates base fee for block (eip1559.go:56-98)
+2. parentGasTarget = parent.GasLimit / ElasticityMultiplier (eip1559.go:62)
+3. For fork block, parent is pre-London, so parent.GasLimit is actual target
+4. Code always divides by ElasticityMultiplier (2)
+5. This creates potential issue: fork block may not use parent.GasLimit as-is
+6. EIP-1559 spec suggests parent_gas_target = parent.gas_limit for fork block
+7. Geth implementation divides uniformly, may differ from spec intent",,
+EIP1559-OBL-031,block validation,consensus,"On the fork block, parent_gas_limit MUST be multiplied by ELASTICITY_MULTIPLIER when validating the current block's gas_limit.",[fork.py:249-250],"1. validate_header() calls check_gas_limit() for fork block (fork.py:249)
+2. check_gas_limit(gas_limit, parent_gas_limit) validates bounds (fork.py:855)
+3. On fork block, parent_gas_limit should be multiplied by ELASTICITY_MULTIPLIER for validation
+4. This allows fork block gas_limit to be 2x parent without violation (fork.py:249-250)
+5. Ensures smooth transition to elastic block gas limit",EIP-1559 spec does not clearly specify whether parent_gas_limit should be multiplied by ELASTICITY_MULTIPLIER when validating the fork block's gas_limit. This affects gas limit bound checking at the fork transition.,"Code at fork.py:249-250 has comment suggesting special fork block handling, but check_gas_limit() at fork.py:855 does not have fork block awareness. May need conditional logic to multiply parent_gas_limit by ELASTICITY_MULTIPLIER for fork block.","[consensus/misc/eip1559/eip1559.go:34-41, consensus/misc/gaslimit.go:27-41]","1. VerifyEIP1559Header validates fork block gas limit (eip1559.go:33-53)
+2. If !IsLondon(parent.Number), adjusts parentGasLimit (eip1559.go:36-38)
+3. parentGasLimit = parent.GasLimit * ElasticityMultiplier (eip1559.go:37)
+4. This allows fork block gas_limit up to 2x parent without violating bounds
+5. VerifyGaslimit checks adjusted parentGasLimit (eip1559.go:39, gaslimit.go:27-41)
+6. Enables smooth transition to elastic gas limit
+7. Fork block can set gas_limit = parent.gas_limit * 2 without error",,
+EIP1559-OBL-032,block validation,consensus,"After the fork block, parent_gas_target MUST be calculated as parent.gas_limit // ELASTICITY_MULTIPLIER.","[fork.py:248, fork.py:69]","1. For blocks after fork, calculate_base_fee_per_gas() is called (fork.py:222)
+2. parent_gas_target = parent_gas_limit // ELASTICITY_MULTIPLIER (fork.py:248, 69)
+3. ELASTICITY_MULTIPLIER = 2, so target is half the gas limit
+4. This creates elastic gas limit: target is 15M if limit is 30M
+5. Base fee adjusts based on deviation from this target",,,"[consensus/misc/eip1559/eip1559.go:62, params/config.go:412-414]","1. For post-fork blocks, CalcBaseFee calculates target (eip1559.go:56-98)
+2. parentGasTarget = parent.GasLimit / config.ElasticityMultiplier() (eip1559.go:62)
+3. ElasticityMultiplier() returns 2 for London+ (params/config.go:412-414)
+4. Gas target is half the gas limit
+5. If gas_limit = 30M, gas_target = 15M
+6. Base fee adjusts based on deviation from this target
+7. This applies to all post-London blocks",,
+EIP1559-OBL-033,execution semantics,non-consensus,Transactions with the same priority fee SHOULD be sorted by time received to protect against spam attacks.,[],"1. Transactions enter mempool (implementation-specific, not in spec)
+2. Mempool ordering by priority fee is standard practice
+3. For equal priority fees, time-based ordering protects against spam
+4. This obligation is about node behavior, not consensus rules
+5. No explicit code path in specification, left to client implementations",EIP-1559 mentions this as a recommendation but does not provide formal specification. Mempool ordering is implementation-specific and varies across clients.,No code implementation for mempool transaction ordering in execution-specs. This is a client-level implementation detail not present in the consensus specification.,"[core/txpool/legacypool/list.go:484-516, core/txpool/legacypool/legacypool.go:243-276]","1. Transaction pool maintains pending map by account (legacypool.go:243)
+2. priceHeap orders transactions by effective tip (list.go:484-516)
+3. priceHeap.Less compares via cmp() (list.go:492-501)
+4. cmp calculates effectiveTip = min(gasTipCap, gasFeeCap - baseFee) (list.go:504-508)
+5. Compares effectiveTip of two transactions (list.go:505)
+6. For equal tips, compares gasFeeCap, then gasTipCap (list.go:511-515)
+7. Time-based ordering for equal priority NOT explicitly implemented
+8. Mempool ordering is non-consensus implementation detail",,
+EIP1559-OBL-034,execution semantics,non-consensus,Miners SHOULD prefer transactions with higher priority fees from a selfish mining perspective.,[],"1. Block builder selects transactions from mempool (implementation-specific)
+2. Higher priority fees yield more revenue for miners
+3. Rational miner sorts by priority fee in descending order
+4. This is economic incentive, not enforced by consensus
+5. No explicit code path in specification, emergent behavior from incentives",EIP-1559 describes this as economic behavior but does not mandate it. Block builder strategies are not consensus rules.,No code implementation for miner transaction selection strategy in execution-specs. This is a client-level implementation detail not present in the consensus specification.,"[core/txpool/legacypool/list.go:484-516, core/miner/ordering.go:89-108]","1. Block builder selects transactions via transactionsByPriceAndNonce (ordering.go:89-108)
+2. Maintains per-account sorted by nonce, global sorted by price (ordering.go:91-102)
+3. Price comparison uses effectiveTip (gasPrice - baseFee for London+) 
+4. Higher effectiveTip = higher revenue for miner (ordering.go:104-105)
+5. priceHeap ensures highest paying transactions selected first (list.go:484-516)
+6. Rational miner behavior favors high priority fee transactions
+7. Not enforced by consensus, emergent from economic incentives
+8. Implementation in txpool and miner packages",,
