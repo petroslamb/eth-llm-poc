@@ -14,5 +14,4 @@ def ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
 
-def notes_root(repo_root: Path) -> Path:
-    return repo_root / "poc4_7" / "notes" / "generated"
+

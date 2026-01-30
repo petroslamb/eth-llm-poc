@@ -4,31 +4,17 @@ from __future__ import annotations
 
 import csv
 import json
-import os
 import re
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Optional
 
-import anyio
-
+from .agents import AgentProtocol
+from .llm import ClaudeConfig, build_claude_config, config_metadata
 from .prompts import load_prompt
 from .spec_index import write_spec_index_bundle
-from .utils import ensure_dir, notes_root, timestamp
-
-
-DEFAULT_ALLOWED_TOOLS = ["Read", "Write", "Bash", "Grep", "Glob"]
-
-
-@dataclass(frozen=True)
-class ClaudeConfig:
-    model: Optional[str]
-    max_turns: int
-    allowed_tools: list[str]
-    llm_mode: str = "live"
-    record_calls: bool = False
-    stub_response_path: Optional[Path] = None
+from .utils import ensure_dir, timestamp
 
 
 def normalize_eip_number(eip: Optional[str]) -> Optional[str]:
@@ -66,73 +52,44 @@ def infer_eip_number_from_csv(path: Path) -> Optional[str]:
     return None
 
 
-def resolve_eip(repo_root: Path, eip_file: Optional[str], eip_number: Optional[str]) -> tuple[Path, str]:
+def resolve_eip(eip_file: str, eip_number: Optional[str] = None) -> tuple[Path, str]:
+    """Resolve EIP file path and number. Requires explicit file path."""
+    path = Path(eip_file).expanduser().resolve()
+    if not path.exists():
+        raise FileNotFoundError(f"EIP file not found: {path}")
     normalized = normalize_eip_number(eip_number) if eip_number else None
-    if eip_file:
-        path = Path(eip_file).expanduser().resolve()
-        if not path.exists():
-            raise FileNotFoundError(f"EIP file not found: {path}")
-        if not normalized:
-            inferred = infer_eip_number_from_path(path)
-            if not inferred:
-                raise ValueError(
-                    f"Unable to infer EIP number from {path.name}. Provide --eip."
-                )
-            normalized = inferred
-        return path, normalized
-
     if not normalized:
-        normalized = "1559"
-
-    filename = f"eip-{normalized}.md"
-    specs_root = repo_root / "specs"
-    candidates = []
-    if specs_root.exists():
-        candidates.extend(specs_root.rglob(filename))
-    if not candidates:
-        candidates.extend(repo_root.rglob(filename))
-    if not candidates:
-        raise FileNotFoundError(f"Could not locate {filename}. Provide --eip-file.")
-    return candidates[0].resolve(), normalized
+        inferred = infer_eip_number_from_path(path)
+        if not inferred:
+            raise ValueError(
+                f"Unable to infer EIP number from {path.name}. Provide --eip."
+            )
+        normalized = inferred
+    return path, normalized
 
 
 def resolve_fork_root(
-    repo_root: Path,
-    fork: Optional[str],
-    spec_root: Optional[str],
+    spec_repo: str,
+    fork: Optional[str] = None,
 ) -> tuple[Path, str]:
-    if spec_root:
-        path = Path(spec_root).expanduser().resolve()
-        if not path.exists():
-            raise FileNotFoundError(f"Spec fork root not found: {path}")
-        fork_name = fork or path.name
-        return path, fork_name
-
+    """Resolve fork root directory. Requires explicit spec_repo path."""
     fork_name = (fork or "london").lower()
-    fork_root = (
-        repo_root / "specs" / "execution-specs" / "src" / "ethereum" / "forks" / fork_name
-    )
+    spec_root = Path(spec_repo).expanduser().resolve()
+    if not spec_root.exists():
+        raise FileNotFoundError(f"Spec repo not found: {spec_root}")
+    fork_root = spec_root / "src" / "ethereum" / "forks" / fork_name
     if not fork_root.exists():
         raise FileNotFoundError(f"Fork not found: {fork_root}")
     return fork_root.resolve(), fork_name
 
 
-def resolve_client_root(
-    repo_root: Path,
-    client_name: Optional[str],
-    client_root: Optional[str],
-) -> tuple[Path, str]:
-    name = (client_name or "geth").strip()
-    if client_root:
-        path = Path(client_root).expanduser().resolve()
-        if not path.exists():
-            raise FileNotFoundError(f"Client root not found: {path}")
-        return path, name
-
-    default_root = repo_root / "clients" / "execution" / name
-    if not default_root.exists():
-        raise FileNotFoundError(f"Client root not found: {default_root}")
-    return default_root.resolve(), name
+def resolve_client_root(client_repo: str) -> tuple[Path, str]:
+    """Resolve client root directory. Requires explicit client_repo path."""
+    path = Path(client_repo).expanduser().resolve()
+    if not path.exists():
+        raise FileNotFoundError(f"Client root not found: {path}")
+    name = path.name or "client"
+    return path, name
 
 
 def eip_label(eip_number: str) -> str:
@@ -156,123 +113,34 @@ def resolve_eip_number(
     return normalized or "1559"
 
 
-def build_claude_config(
-    model: Optional[str],
-    max_turns: int,
-    allowed_tools: Optional[Iterable[str]],
-    llm_mode: str = "live",
-    record_calls: bool = False,
-    stub_response_path: Optional[str] = None,
-) -> ClaudeConfig:
-    tools = list(allowed_tools) if allowed_tools else DEFAULT_ALLOWED_TOOLS
-    stub_path = Path(stub_response_path).expanduser().resolve() if stub_response_path else None
-    return ClaudeConfig(
-        model=model,
-        max_turns=max_turns,
-        allowed_tools=tools,
-        llm_mode=llm_mode,
-        record_calls=record_calls,
-        stub_response_path=stub_path,
-    )
+@dataclass(frozen=True)
+class PhaseContext:
+    phase: str
+    input_csv: Optional[Path] = None
+    output_csv: Optional[Path] = None
+    eip_number: Optional[str] = None
 
 
-def config_metadata(config: ClaudeConfig) -> dict[str, object]:
-    return {
-        "model": config.model,
-        "max_turns": config.max_turns,
-        "allowed_tools": list(config.allowed_tools),
-        "llm_mode": config.llm_mode,
-        "record_llm_calls": config.record_calls,
-        "stub_response_path": (
-            str(config.stub_response_path) if config.stub_response_path else None
-        ),
-    }
-
-
-def write_llm_call_record(
-    *,
-    output_path: Path,
+def run_query(
     prompt: str,
-    options_kwargs: dict[str, object],
+    output_path: Path,
+    cwd: Path,
     config: ClaudeConfig,
-    used_stub: bool,
-) -> Path:
-    record_path = output_path.with_suffix(".call.json")
-    record = {
-        "recorded_at": timestamp(),
-        "llm_mode": config.llm_mode,
-        "used_stub": used_stub,
-        "prompt": prompt,
-        "options": options_kwargs,
-        "stub_response_path": str(config.stub_response_path) if config.stub_response_path else None,
-        "output_path": str(output_path),
-    }
-    record_path.write_text(json.dumps(record, indent=2), encoding="utf-8")
-    return record_path
-
-
-async def _run_query(prompt: str, output_path: Path, repo_root: Path, config: ClaudeConfig) -> None:
-    options_kwargs = {
-        "allowed_tools": config.allowed_tools,
-        "permission_mode": "bypassPermissions",
-        "max_turns": config.max_turns,
-        "cwd": str(repo_root),
-    }
-    if config.model:
-        options_kwargs["model"] = config.model
-
-    if config.llm_mode == "stub":
-        write_llm_call_record(
-            output_path=output_path,
-            prompt=prompt,
-            options_kwargs=options_kwargs,
-            config=config,
-            used_stub=True,
-        )
-        if config.stub_response_path and config.stub_response_path.exists():
-            output_text = config.stub_response_path.read_text(encoding="utf-8")
-        else:
-            output_text = (
-                "STUB MODE: Claude call skipped.\n"
-                f"Recorded call metadata in {output_path.with_suffix('.call.json').name}.\n"
-            )
-        output_path.write_text(output_text, encoding="utf-8")
-        return
-
-    if not (os.getenv("ANTHROPIC_API_KEY") or os.getenv("ANTHROPIC_AUTH_TOKEN")):
-        raise RuntimeError(
-            "Missing API credentials. Set ANTHROPIC_API_KEY (or ANTHROPIC_AUTH_TOKEN) "
-            "in your environment before running."
-        )
-    try:
-        from claude_agent_sdk import AssistantMessage, ClaudeAgentOptions, TextBlock, query
-    except ModuleNotFoundError as exc:  # pragma: no cover - runtime dependency
-        raise RuntimeError(
-            "claude_agent_sdk is not installed. Install it with: uv pip install claude-agent-sdk"
-        ) from exc
-
-    options = ClaudeAgentOptions(**options_kwargs)
-    if config.record_calls:
-        write_llm_call_record(
-            output_path=output_path,
-            prompt=prompt,
-            options_kwargs=options_kwargs,
-            config=config,
-            used_stub=False,
-        )
-
-    text_chunks: list[str] = []
-    async for message in query(prompt=prompt, options=options):
-        if isinstance(message, AssistantMessage):
-            for block in message.content:
-                if isinstance(block, TextBlock):
-                    text_chunks.append(block.text)
-
-    output_path.write_text("".join(text_chunks), encoding="utf-8")
-
-
-def run_query(prompt: str, output_path: Path, repo_root: Path, config: ClaudeConfig) -> None:
-    anyio.run(_run_query, prompt, output_path, repo_root, config)
+    agent: AgentProtocol,
+    context: PhaseContext,
+) -> None:
+    agent.run(
+        prompt,
+        output_path,
+        cwd,
+        config,
+        {
+            "phase": context.phase,
+            "input_csv": str(context.input_csv) if context.input_csv else None,
+            "output_csv": str(context.output_csv) if context.output_csv else None,
+            "eip_number": context.eip_number,
+        },
+    )
 
 
 def write_prompt(path: Path, content: str) -> None:
@@ -285,84 +153,48 @@ def copy_csv(source: Path, dest: Path) -> None:
     shutil.copy2(source, dest)
 
 
-def write_stub_obligations_csv(path: Path, eip_number: str) -> None:
-    fieldnames = [
-        "id",
-        "category",
-        "enforcement_type",
-        "statement",
-        "locations",
-        "code_flow",
-        "obligation_gap",
-        "code_gap",
-    ]
-    with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerow(
-            {
-                "id": f"EIP{eip_number}-OBL-001",
-                "category": "stub",
-                "enforcement_type": "",
-                "statement": f"Stub obligation for EIP-{eip_number}.",
-                "locations": "",
-                "code_flow": "",
-                "obligation_gap": "",
-                "code_gap": "",
-            }
-        )
-
-
-def write_stub_client_csv(input_csv: Path, output_csv: Path) -> None:
-    with input_csv.open(encoding="utf-8", newline="") as handle:
-        reader = csv.DictReader(handle)
-        fieldnames = list(reader.fieldnames or [])
-        extras = [
-            "client_locations",
-            "client_code_flow",
-            "client_obligation_gap",
-            "client_code_gap",
-        ]
-        for col in extras:
-            if col not in fieldnames:
-                fieldnames.append(col)
-        rows = []
-        for row in reader:
-            for col in extras:
-                row.setdefault(col, "")
-            rows.append(row)
-
-    with output_csv.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
-        writer.writeheader()
-        for row in rows:
-            writer.writerow(row)
-
-
 def run_phase_0a(
-    repo_root: Path,
-    eip_file: Optional[str],
-    eip_number: Optional[str],
-    model: Optional[str],
-    max_turns: int,
-    allowed_tools: Optional[Iterable[str]],
-    llm_mode: str,
-    record_llm_calls: bool,
-    stub_response_path: Optional[str],
+    eip_file: str,
+    spec_repo: str,
+    output_dir: str,
+    eip_number: Optional[str] = None,
+    model: Optional[str] = None,
+    max_turns: int = 1,
+    allowed_tools: Optional[Iterable[str]] = None,
+    llm_mode: str = "live",
+    record_llm_calls: bool = False,
+    agent: Optional[AgentProtocol] = None,
 ) -> Path:
-    root_ts = timestamp()
-    root_dir = notes_root(repo_root) / root_ts
-    run_dir = root_dir / "phase0A_runs" / timestamp()
+    """Run Phase 0A: Extract obligations from EIP.
+    
+    Args:
+        eip_file: Path to the EIP markdown file (required)
+        spec_repo: Path to execution-specs repo (required)
+        output_dir: Directory for outputs (required)
+        eip_number: EIP number (inferred from filename if not provided)
+        model: Claude model identifier
+        max_turns: Maximum turns per query
+        allowed_tools: List of allowed tools for Claude
+        llm_mode: 'live' or 'fake'
+        record_llm_calls: Whether to record LLM call metadata
+        agent: Agent implementation (defaults to ClaudeAgent)
+    """
+    from .agents import ClaudeAgent
+    if agent is None:
+        agent = ClaudeAgent()
+    
+    run_dir = Path(output_dir).expanduser().resolve() / "phase0A_runs" / timestamp()
     ensure_dir(run_dir)
 
-    eip_path, resolved_eip_number = resolve_eip(repo_root, eip_file, eip_number)
+    eip_path, resolved_eip_number = resolve_eip(eip_file, eip_number)
     resolved_eip_number = resolve_eip_number(resolved_eip_number, eip_path=eip_path)
     output_csv = run_dir / "obligations_index.csv"
+    
+    # Claude runs from the EIP file's parent directory
+    cwd = eip_path.parent
 
     spec_outputs = write_spec_index_bundle(
-        repo_root=repo_root,
-        spec_root=None,
-        spec_readme=None,
+        spec_repo=spec_repo,
         output_dir=str(run_dir),
         eip_fork_map_path=str(run_dir / "eip_fork_map.json"),
         spec_index_path=str(run_dir / "spec_index.json"),
@@ -375,13 +207,13 @@ def run_phase_0a(
         allowed_tools,
         llm_mode=llm_mode,
         record_calls=record_llm_calls,
-        stub_response_path=stub_response_path,
     )
     run_manifest = {
         "phase": "0A",
         "generated_at": timestamp(),
         "eip_number": resolved_eip_number,
         "eip_file": str(eip_path),
+        "cwd": str(cwd),
         "spec_root": str(spec_outputs.spec_root),
         "spec_readme": str(spec_outputs.spec_readme),
         "spec_branch": spec_outputs.spec_branch,
@@ -410,27 +242,55 @@ def run_phase_0a(
     output_path = run_dir / "phase0A_output.txt"
 
     write_prompt(prompt_path, prompt)
-    run_query(prompt, output_path, repo_root, config)
-    if config.llm_mode == "stub" and not output_csv.exists():
-        write_stub_obligations_csv(output_csv, resolved_eip_number)
+    run_query(
+        prompt,
+        output_path,
+        cwd,
+        config,
+        agent,
+        PhaseContext(
+            phase="0A",
+            output_csv=output_csv,
+            eip_number=resolved_eip_number,
+        ),
+    )
     return run_dir
 
 
 def run_phase_1a(
-    repo_root: Path,
     parent_run: Path,
-    eip_number: Optional[str],
-    fork: Optional[str],
-    spec_root: Optional[str],
-    model: Optional[str],
-    max_turns: int,
-    allowed_tools: Optional[Iterable[str]],
-    llm_mode: str,
-    record_llm_calls: bool,
-    stub_response_path: Optional[str],
-    obligation_id: Optional[str],
+    spec_repo: str,
+    eip_number: Optional[str] = None,
+    fork: Optional[str] = None,
+    model: Optional[str] = None,
+    max_turns: int = 1,
+    allowed_tools: Optional[Iterable[str]] = None,
+    llm_mode: str = "live",
+    record_llm_calls: bool = False,
+    obligation_id: Optional[str] = None,
+    agent: Optional[AgentProtocol] = None,
     spec_map_strict: bool = False,
 ) -> Path:
+    """Run Phase 1A: Find spec locations for obligations.
+    
+    Args:
+        parent_run: Path to Phase 0A run directory (required)
+        spec_repo: Path to execution-specs repo (required)
+        eip_number: EIP number (inferred from parent run if not provided)
+        fork: Fork name (defaults to 'london')
+        model: Claude model identifier
+        max_turns: Maximum turns per query
+        allowed_tools: List of allowed tools for Claude
+        llm_mode: 'live' or 'fake'
+        record_llm_calls: Whether to record LLM call metadata
+        obligation_id: Limit to single obligation
+        agent: Agent implementation (defaults to ClaudeAgent)
+        spec_map_strict: Raise error on spec map mismatch
+    """
+    from .agents import ClaudeAgent
+    if agent is None:
+        agent = ClaudeAgent()
+    
     run_dir = parent_run / "phase1A_runs" / timestamp()
     ensure_dir(run_dir)
 
@@ -439,7 +299,11 @@ def run_phase_1a(
     copy_csv(input_csv, output_csv)
 
     resolved_eip_number = resolve_eip_number(eip_number, input_csv=input_csv)
-    fork_root, fork_name = resolve_fork_root(repo_root, fork, spec_root)
+    fork_root, fork_name = resolve_fork_root(spec_repo, fork)
+    
+    # Claude runs from the spec repo root
+    spec_root = Path(spec_repo).expanduser().resolve()
+    cwd = spec_root
 
     spec_map_path = parent_run / "eip_fork_map.json"
     spec_map_check = {
@@ -498,7 +362,6 @@ def run_phase_1a(
         allowed_tools,
         llm_mode=llm_mode,
         record_calls=record_llm_calls,
-        stub_response_path=stub_response_path,
     )
     run_manifest = {
         "phase": "1A",
@@ -508,8 +371,9 @@ def run_phase_1a(
         "eip_number": resolved_eip_number,
         "fork_name": fork_name,
         "fork_root": str(fork_root),
+        "spec_repo": str(spec_root),
+        "cwd": str(cwd),
         "spec_map_check": str(spec_map_check_path),
-        "spec_map_strict": spec_map_strict,
         "obligation_id": obligation_id,
         "parent_run": str(parent_run),
         **config_metadata(config),
@@ -535,28 +399,74 @@ def run_phase_1a(
     output_path = run_dir / "phase1A_output.txt"
 
     write_prompt(prompt_path, prompt)
-    run_query(prompt, output_path, repo_root, config)
+    run_query(
+        prompt,
+        output_path,
+        cwd,
+        config,
+        agent,
+        PhaseContext(
+            phase="1A",
+            input_csv=input_csv,
+            output_csv=output_csv,
+            eip_number=resolved_eip_number,
+        ),
+    )
     return run_dir
 
 
 def run_phase_1b(
-    repo_root: Path,
     parent_run: Path,
-    eip_number: Optional[str],
-    model: Optional[str],
-    max_turns: int,
-    allowed_tools: Optional[Iterable[str]],
-    llm_mode: str,
-    record_llm_calls: bool,
-    stub_response_path: Optional[str],
-    obligation_id: Optional[str],
+    spec_repo: Optional[str] = None,
+    eip_number: Optional[str] = None,
+    model: Optional[str] = None,
+    max_turns: int = 1,
+    allowed_tools: Optional[Iterable[str]] = None,
+    llm_mode: str = "live",
+    record_llm_calls: bool = False,
+    obligation_id: Optional[str] = None,
+    agent: Optional[AgentProtocol] = None,
 ) -> Path:
+    """Run Phase 1B: Analyze code flow for obligations.
+    
+    Args:
+        parent_run: Path to Phase 1A run directory (required)
+        spec_repo: Path to execution-specs repo (inferred from parent manifest if not provided)
+        eip_number: EIP number (inferred from parent run if not provided)
+        model: Claude model identifier
+        max_turns: Maximum turns per query
+        allowed_tools: List of allowed tools for Claude
+        llm_mode: 'live' or 'fake'
+        record_llm_calls: Whether to record LLM call metadata
+        obligation_id: Limit to single obligation
+        agent: Agent implementation (defaults to ClaudeAgent)
+    """
+    from .agents import ClaudeAgent
+    if agent is None:
+        agent = ClaudeAgent()
+    
     run_dir = parent_run / "phase1B_runs" / timestamp()
     ensure_dir(run_dir)
 
     input_csv = parent_run / "obligations_index.csv"
     output_csv = run_dir / "obligations_index.csv"
     copy_csv(input_csv, output_csv)
+
+    # Infer spec_repo from parent manifest if not provided
+    if not spec_repo:
+        parent_manifest = parent_run / "run_manifest.json"
+        if parent_manifest.exists():
+            try:
+                manifest_data = json.loads(parent_manifest.read_text(encoding="utf-8"))
+                spec_repo = manifest_data.get("spec_repo")
+            except (json.JSONDecodeError, KeyError):
+                pass
+    
+    if not spec_repo:
+        raise ValueError("spec_repo is required: provide --spec-repo or ensure parent run manifest contains spec_repo")
+    
+    # Claude runs from the spec repo root
+    cwd = Path(spec_repo).expanduser().resolve()
 
     resolved_eip_number = resolve_eip_number(eip_number, input_csv=input_csv)
     prompt_template = load_prompt("phase1B_codeflow")
@@ -577,7 +487,6 @@ def run_phase_1b(
         allowed_tools,
         llm_mode=llm_mode,
         record_calls=record_llm_calls,
-        stub_response_path=stub_response_path,
     )
     run_manifest = {
         "phase": "1B",
@@ -585,6 +494,8 @@ def run_phase_1b(
         "input_csv": str(input_csv),
         "output_csv": str(output_csv),
         "eip_number": resolved_eip_number,
+        "spec_repo": str(cwd),
+        "cwd": str(cwd),
         "obligation_id": obligation_id,
         "parent_run": str(parent_run),
         **config_metadata(config),
@@ -597,24 +508,52 @@ def run_phase_1b(
     output_path = run_dir / "phase1B_output.txt"
 
     write_prompt(prompt_path, prompt)
-    run_query(prompt, output_path, repo_root, config)
+    run_query(
+        prompt,
+        output_path,
+        cwd,
+        config,
+        agent,
+        PhaseContext(
+            phase="1B",
+            input_csv=input_csv,
+            output_csv=output_csv,
+            eip_number=resolved_eip_number,
+        ),
+    )
     return run_dir
 
 
 def run_phase_2a(
-    repo_root: Path,
     parent_run: Path,
-    eip_number: Optional[str],
-    client_name: Optional[str],
-    client_root: Optional[str],
-    model: Optional[str],
-    max_turns: int,
-    allowed_tools: Optional[Iterable[str]],
-    llm_mode: str,
-    record_llm_calls: bool,
-    stub_response_path: Optional[str],
-    obligation_id: Optional[str],
+    client_repo: str,
+    eip_number: Optional[str] = None,
+    model: Optional[str] = None,
+    max_turns: int = 1,
+    allowed_tools: Optional[Iterable[str]] = None,
+    llm_mode: str = "live",
+    record_llm_calls: bool = False,
+    obligation_id: Optional[str] = None,
+    agent: Optional[AgentProtocol] = None,
 ) -> Path:
+    """Run Phase 2A: Find client locations for obligations.
+    
+    Args:
+        parent_run: Path to Phase 1B run directory (required)
+        client_repo: Path to client repo (e.g., geth) (required)
+        eip_number: EIP number (inferred from parent run if not provided)
+        model: Claude model identifier
+        max_turns: Maximum turns per query
+        allowed_tools: List of allowed tools for Claude
+        llm_mode: 'live' or 'fake'
+        record_llm_calls: Whether to record LLM call metadata
+        obligation_id: Limit to single obligation
+        agent: Agent implementation (defaults to ClaudeAgent)
+    """
+    from .agents import ClaudeAgent
+    if agent is None:
+        agent = ClaudeAgent()
+    
     run_dir = parent_run / "phase2A_runs" / timestamp()
     ensure_dir(run_dir)
 
@@ -624,9 +563,11 @@ def run_phase_2a(
     output_csv = run_dir / "client_obligations_index.csv"
 
     resolved_eip_number = resolve_eip_number(eip_number, input_csv=input_csv)
-    resolved_client_root, resolved_client_name = resolve_client_root(
-        repo_root, client_name, client_root
-    )
+    resolved_client_root, resolved_client_name = resolve_client_root(client_repo)
+    
+    # Claude runs from the client repo root
+    cwd = resolved_client_root
+    
     prompt_template = load_prompt("phase2A_client_locations")
     prompt = prompt_template.format(
         input_csv=input_csv,
@@ -648,7 +589,6 @@ def run_phase_2a(
         allowed_tools,
         llm_mode=llm_mode,
         record_calls=record_llm_calls,
-        stub_response_path=stub_response_path,
     )
     run_manifest = {
         "phase": "2A",
@@ -658,6 +598,7 @@ def run_phase_2a(
         "eip_number": resolved_eip_number,
         "client_name": resolved_client_name,
         "client_root": str(resolved_client_root),
+        "cwd": str(cwd),
         "obligation_id": obligation_id,
         "parent_run": str(parent_run),
         **config_metadata(config),
@@ -670,26 +611,52 @@ def run_phase_2a(
     output_path = run_dir / "phase2A_output.txt"
 
     write_prompt(prompt_path, prompt)
-    run_query(prompt, output_path, repo_root, config)
-    if config.llm_mode == "stub" and not output_csv.exists():
-        write_stub_client_csv(input_csv, output_csv)
+    run_query(
+        prompt,
+        output_path,
+        cwd,
+        config,
+        agent,
+        PhaseContext(
+            phase="2A",
+            input_csv=input_csv,
+            output_csv=output_csv,
+            eip_number=resolved_eip_number,
+        ),
+    )
     return run_dir
 
 
 def run_phase_2b(
-    repo_root: Path,
     parent_run: Path,
-    eip_number: Optional[str],
-    client_name: Optional[str],
-    client_root: Optional[str],
-    model: Optional[str],
-    max_turns: int,
-    allowed_tools: Optional[Iterable[str]],
-    llm_mode: str,
-    record_llm_calls: bool,
-    stub_response_path: Optional[str],
-    obligation_id: Optional[str],
+    client_repo: str,
+    eip_number: Optional[str] = None,
+    model: Optional[str] = None,
+    max_turns: int = 1,
+    allowed_tools: Optional[Iterable[str]] = None,
+    llm_mode: str = "live",
+    record_llm_calls: bool = False,
+    obligation_id: Optional[str] = None,
+    agent: Optional[AgentProtocol] = None,
 ) -> Path:
+    """Run Phase 2B: Identify gaps in client implementation.
+    
+    Args:
+        parent_run: Path to Phase 2A run directory (required)
+        client_repo: Path to client repo (e.g., geth) (required)
+        eip_number: EIP number (inferred from parent run if not provided)
+        model: Claude model identifier
+        max_turns: Maximum turns per query
+        allowed_tools: List of allowed tools for Claude
+        llm_mode: 'live' or 'fake'
+        record_llm_calls: Whether to record LLM call metadata
+        obligation_id: Limit to single obligation
+        agent: Agent implementation (defaults to ClaudeAgent)
+    """
+    from .agents import ClaudeAgent
+    if agent is None:
+        agent = ClaudeAgent()
+    
     run_dir = parent_run / "phase2B_runs" / timestamp()
     ensure_dir(run_dir)
 
@@ -698,9 +665,11 @@ def run_phase_2b(
     copy_csv(input_csv, output_csv)
 
     resolved_eip_number = resolve_eip_number(eip_number, input_csv=input_csv)
-    resolved_client_root, resolved_client_name = resolve_client_root(
-        repo_root, client_name, client_root
-    )
+    resolved_client_root, resolved_client_name = resolve_client_root(client_repo)
+    
+    # Claude runs from the client repo root
+    cwd = resolved_client_root
+    
     prompt_template = load_prompt("phase2B_client_gaps")
     prompt = prompt_template.format(
         input_csv=input_csv,
@@ -722,7 +691,6 @@ def run_phase_2b(
         allowed_tools,
         llm_mode=llm_mode,
         record_calls=record_llm_calls,
-        stub_response_path=stub_response_path,
     )
     run_manifest = {
         "phase": "2B",
@@ -732,6 +700,7 @@ def run_phase_2b(
         "eip_number": resolved_eip_number,
         "client_name": resolved_client_name,
         "client_root": str(resolved_client_root),
+        "cwd": str(cwd),
         "obligation_id": obligation_id,
         "parent_run": str(parent_run),
         **config_metadata(config),
@@ -744,5 +713,17 @@ def run_phase_2b(
     output_path = run_dir / "phase2B_output.txt"
 
     write_prompt(prompt_path, prompt)
-    run_query(prompt, output_path, repo_root, config)
+    run_query(
+        prompt,
+        output_path,
+        cwd,
+        config,
+        agent,
+        PhaseContext(
+            phase="2B",
+            input_csv=input_csv,
+            output_csv=output_csv,
+            eip_number=resolved_eip_number,
+        ),
+    )
     return run_dir

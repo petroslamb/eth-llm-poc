@@ -121,7 +121,7 @@ This spec uses the installable `poc4_7` package as the foundation and extends it
 - `poc4_7 ci` wrapper to integrate with GitHub Actions and emit SARIF/Markdown.
 
 **Config extensions (proposed):**
-- `spec_root`: execution-specs fork root (selected via EIP/fork map).
+- `spec_repo`: execution-specs repo root (fork selected via EIP/fork map + `--fork`).
 - `client`: default `geth` (others remain optional but out of scope here).
 - `eip_fork_map_path`: path to parsed `eip_fork_map.json`.
 - `report_formats`: `json,md,sarif`.

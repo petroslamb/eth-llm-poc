@@ -93,7 +93,7 @@ We will use `claude_agent_sdk` with:
 ## Phase 2A — Client locations + code flow
 **Inputs**
 - Phase 1B CSV output.
-- client codebase under `clients/execution/<client>` (or an explicit `--client-root`).
+- client codebase under `clients/execution/geth` (or an explicit `--client-repo` path).
 
 **Process**
 - Create a new CSV derived from Phase 1B that adds client fields:

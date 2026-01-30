@@ -9,16 +9,10 @@ from pathlib import Path
 
 from .config import load_config
 from .reporting import write_report
+from .agents import AgentProtocol, ClaudeAgent
 from .runner import run_phase_0a, run_phase_1a, run_phase_1b, run_phase_2a, run_phase_2b
 from .spec_index import run_index_specs
-
-
-def normalize_repo_root(path: Path) -> Path:
-    if (path / "poc4_7" / "pyproject.toml").exists():
-        return path
-    if path.name == "poc4_7" and (path / "pyproject.toml").exists():
-        return path.parent
-    return path
+from .utils import timestamp
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -32,22 +26,22 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--config",
         default=None,
-        help="Path to config.yaml (defaults to poc4_7/config.yaml if present).",
+        help="Path to config.yaml (optional, looks for config.yaml in cwd if not specified).",
     )
     parser.add_argument(
-        "--repo-root",
+        "--output-dir",
         default=None,
-        help="Repository root path (defaults to current working directory).",
+        help="Directory for outputs (defaults to ./poc4_7_runs/<timestamp>).",
     )
     parser.add_argument(
         "--eip-file",
         default=None,
-        help="Path to an EIP markdown file (optional; overrides --eip).",
+        help="Path to an EIP markdown file (required for phase 0A).",
     )
     parser.add_argument(
         "--eip",
         default=None,
-        help="EIP number or eip-<num> (default: 1559).",
+        help="EIP number or eip-<num> (inferred from --eip-file if not provided).",
     )
     parser.add_argument(
         "--fork",
@@ -55,14 +49,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="Execution-specs fork name (default: london).",
     )
     parser.add_argument(
-        "--spec-root",
+        "--spec-repo",
         default=None,
-        help="Path to execution-specs fork root (overrides --fork).",
+        help="Path to execution-specs repo root (required for phases 0A, 1A).",
     )
     parser.add_argument(
         "--parent-run",
         default=None,
-        help="Path to previous phase run folder (required for phases 1A and 1B).",
+        help="Path to previous phase run folder (required for phases 1A, 1B, 2A, 2B).",
     )
     parser.add_argument(
         "--obligation-id",
@@ -70,19 +64,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Limit processing to a single obligation ID (phases 1A/1B/2A/2B).",
     )
     parser.add_argument(
-        "--geth-root",
+        "--client-repo",
         default=None,
-        help="Path to the geth repo root (legacy alias for --client-root).",
-    )
-    parser.add_argument(
-        "--client",
-        default=None,
-        help="Client name under clients/execution (default: geth).",
-    )
-    parser.add_argument(
-        "--client-root",
-        default=None,
-        help="Path to the client repo root (overrides --client).",
+        help="Path to the execution client repo root (required for phases 2A, 2B).",
     )
     parser.add_argument(
         "--model",
@@ -103,23 +87,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--llm-mode",
         default=None,
-        choices=["live", "stub"],
-        help="LLM mode: live (default) or stub (record-only).",
+        choices=["live", "fake"],
+        help="LLM mode: live (default) or fake (record-only).",
     )
     parser.add_argument(
         "--record-llm-calls",
         action="store_true",
         help="Record LLM call metadata alongside outputs.",
-    )
-    parser.add_argument(
-        "--stub-response-path",
-        default=None,
-        help="Path to stub response text (used when --llm-mode=stub).",
-    )
-    parser.add_argument(
-        "--spec-map-strict",
-        action="store_true",
-        help="Fail if README vs fork __init__.py EIP lists mismatch for the selected fork.",
     )
     return parser
 
@@ -127,24 +101,19 @@ def build_parser() -> argparse.ArgumentParser:
 def build_index_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="PoC 4.7 spec indexer")
     parser.add_argument(
-        "--repo-root",
-        default=None,
-        help="Repository root path (defaults to current working directory).",
+        "--spec-repo",
+        required=True,
+        help="Path to execution-specs repo root (required).",
     )
     parser.add_argument(
-        "--spec-root",
-        default=None,
-        help="Path to execution-specs repo root (default: specs/execution-specs).",
+        "--output-dir",
+        required=True,
+        help="Directory for index outputs (required).",
     )
     parser.add_argument(
         "--spec-readme",
         default=None,
-        help="Path to execution-specs README.md (default: <spec-root>/README.md).",
-    )
-    parser.add_argument(
-        "--output-dir",
-        default=None,
-        help="Directory for index outputs (default: poc4_7/notes/generated/index_runs/<timestamp>).",
+        help="Path to execution-specs README.md (default: <spec-repo>/README.md).",
     )
     parser.add_argument(
         "--eip-fork-map",
@@ -184,21 +153,22 @@ def build_report_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def resolve_agent(llm_mode: str) -> AgentProtocol:
+    if llm_mode == "fake":
+        from .fake_agent import FakeClaudeAgent
+
+        return FakeClaudeAgent()
+    return ClaudeAgent()
+
+
 def main() -> int:
     if len(sys.argv) > 1 and sys.argv[1] == "index-specs":
         index_parser = build_index_parser()
         index_args = index_parser.parse_args(sys.argv[2:])
-        repo_root = (
-            Path(index_args.repo_root).resolve()
-            if index_args.repo_root
-            else Path.cwd().resolve()
-        )
-        repo_root = normalize_repo_root(repo_root)
         run_index_specs(
-            repo_root=repo_root,
-            spec_root=index_args.spec_root,
-            spec_readme=index_args.spec_readme,
+            spec_repo=index_args.spec_repo,
             output_dir=index_args.output_dir,
+            spec_readme=index_args.spec_readme,
             eip_fork_map_path=index_args.eip_fork_map,
             spec_index_path=index_args.spec_index,
             run_manifest_path=index_args.run_manifest,
@@ -223,36 +193,36 @@ def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
 
-    repo_root = Path(args.repo_root).resolve() if args.repo_root else Path.cwd().resolve()
-    repo_root = normalize_repo_root(repo_root)
-    config_path = Path(args.config).resolve() if args.config else repo_root / "poc4_7" / "config.yaml"
-    cfg = load_config(config_path)
+    # Load config from explicit path, cwd, or skip if not found
+    cfg: dict = {}
+    if args.config:
+        config_path = Path(args.config).resolve()
+        cfg = load_config(config_path)
+    else:
+        cwd_config = Path.cwd() / "config.yaml"
+        if cwd_config.exists():
+            cfg = load_config(cwd_config)
+
+    # Resolve output directory
+    output_dir = args.output_dir or cfg.get("output_dir")
+    if not output_dir:
+        output_dir = str(Path.cwd() / "poc4_7_runs" / timestamp())
 
     eip_file = args.eip_file or cfg.get("eip_file")
     eip_number = args.eip or cfg.get("eip") or cfg.get("eip_number")
     fork = args.fork or cfg.get("fork")
-    spec_root = args.spec_root or cfg.get("spec_root")
+    spec_repo = args.spec_repo or cfg.get("spec_repo")
     model = args.model or cfg.get("model")
     max_turns = args.max_turns if args.max_turns is not None else cfg.get("max_turns", 1)
-    client_name = args.client or cfg.get("client") or cfg.get("client_name")
-    client_root = args.client_root or cfg.get("client_root")
-    geth_root = args.geth_root or cfg.get("geth_root")
-    if not client_root and geth_root:
-        client_root = geth_root
+    client_repo = args.client_repo or cfg.get("client_repo")
     allowed_tools = cfg.get("allowed_tools")
     if args.allowed_tools:
         allowed_tools = [t.strip() for t in args.allowed_tools.split(",") if t.strip()]
-    spec_map_strict = bool(cfg.get("spec_map_strict", False))
-    env_strict = os.getenv("POC4_7_SPEC_MAP_STRICT", "").strip().lower()
-    if env_strict in {"1", "true", "yes", "y"}:
-        spec_map_strict = True
-    if args.spec_map_strict:
-        spec_map_strict = True
 
     llm_mode = args.llm_mode or cfg.get("llm_mode") or os.getenv("POC4_7_LLM_MODE", "")
     llm_mode = (llm_mode or "live").strip().lower()
-    if llm_mode not in {"live", "stub"}:
-        parser.error("--llm-mode must be 'live' or 'stub'")
+    if llm_mode not in {"live", "fake"}:
+        parser.error("--llm-mode must be 'live' or 'fake'")
 
     record_llm_calls = bool(cfg.get("record_llm_calls", False))
     env_record = os.getenv("POC4_7_RECORD_LLM_CALLS", "").strip().lower()
@@ -261,43 +231,44 @@ def main() -> int:
     if args.record_llm_calls:
         record_llm_calls = True
 
-    stub_response_path = (
-        args.stub_response_path
-        or cfg.get("stub_response_path")
-        or os.getenv("POC4_7_STUB_RESPONSE_PATH")
-    )
+    agent = resolve_agent(llm_mode)
 
     if args.phase == "0A":
+        if not eip_file:
+            parser.error("--eip-file is required for phase 0A")
+        if not spec_repo:
+            parser.error("--spec-repo is required for phase 0A")
         run_phase_0a(
-            repo_root=repo_root,
             eip_file=eip_file,
+            spec_repo=spec_repo,
+            output_dir=output_dir,
             eip_number=eip_number,
             model=model,
             max_turns=max_turns,
             allowed_tools=allowed_tools,
             llm_mode=llm_mode,
             record_llm_calls=record_llm_calls,
-            stub_response_path=stub_response_path,
+            agent=agent,
         )
         return 0
 
     if args.phase == "1A":
         if not args.parent_run:
             parser.error("--parent-run is required for phase 1A")
+        if not spec_repo:
+            parser.error("--spec-repo is required for phase 1A")
         run_phase_1a(
-            repo_root=repo_root,
             parent_run=Path(args.parent_run).resolve(),
+            spec_repo=spec_repo,
             eip_number=eip_number,
             fork=fork,
-            spec_root=spec_root,
             model=model,
             max_turns=max_turns,
             allowed_tools=allowed_tools,
             llm_mode=llm_mode,
             record_llm_calls=record_llm_calls,
-            stub_response_path=stub_response_path,
             obligation_id=args.obligation_id,
-            spec_map_strict=spec_map_strict,
+            agent=agent,
         )
         return 0
 
@@ -305,54 +276,54 @@ def main() -> int:
         if not args.parent_run:
             parser.error("--parent-run is required for phase 1B")
         run_phase_1b(
-            repo_root=repo_root,
             parent_run=Path(args.parent_run).resolve(),
+            spec_repo=spec_repo,  # Can be None, will be inferred from parent manifest
             eip_number=eip_number,
             model=model,
             max_turns=max_turns,
             allowed_tools=allowed_tools,
             llm_mode=llm_mode,
             record_llm_calls=record_llm_calls,
-            stub_response_path=stub_response_path,
             obligation_id=args.obligation_id,
+            agent=agent,
         )
         return 0
 
     if args.phase == "2A":
         if not args.parent_run:
             parser.error("--parent-run is required for phase 2A")
+        if not client_repo:
+            parser.error("--client-repo is required for phase 2A")
         run_phase_2a(
-            repo_root=repo_root,
             parent_run=Path(args.parent_run).resolve(),
+            client_repo=client_repo,
             eip_number=eip_number,
-            client_name=client_name,
-            client_root=client_root,
             model=model,
             max_turns=max_turns,
             allowed_tools=allowed_tools,
             llm_mode=llm_mode,
             record_llm_calls=record_llm_calls,
-            stub_response_path=stub_response_path,
             obligation_id=args.obligation_id,
+            agent=agent,
         )
         return 0
 
     if args.phase == "2B":
         if not args.parent_run:
             parser.error("--parent-run is required for phase 2B")
+        if not client_repo:
+            parser.error("--client-repo is required for phase 2B")
         run_phase_2b(
-            repo_root=repo_root,
             parent_run=Path(args.parent_run).resolve(),
+            client_repo=client_repo,
             eip_number=eip_number,
-            client_name=client_name,
-            client_root=client_root,
             model=model,
             max_turns=max_turns,
             allowed_tools=allowed_tools,
             llm_mode=llm_mode,
             record_llm_calls=record_llm_calls,
-            stub_response_path=stub_response_path,
             obligation_id=args.obligation_id,
+            agent=agent,
         )
         return 0
 

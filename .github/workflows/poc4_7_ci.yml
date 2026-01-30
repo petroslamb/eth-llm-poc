@@ -54,19 +54,14 @@ on:
         default: "mainnet"
         type: string
       llm_mode:
-        description: "LLM mode (live or stub)"
+        description: "LLM mode (live or fake)"
         required: false
-        default: "stub"
+        default: "fake"
         type: string
       record_llm_calls:
         description: "Record LLM calls (true/false)"
         required: false
         default: "true"
-        type: string
-      stub_response_path:
-        description: "Stub response path (used when llm_mode=stub)"
-        required: false
-        default: "poc4_7/fixtures/stub_response.txt"
         type: string
     secrets:
       ANTHROPIC_API_KEY:
@@ -114,17 +109,13 @@ on:
         required: false
         default: "mainnet"
       llm_mode:
-        description: "LLM mode (live or stub)"
+        description: "LLM mode (live or fake)"
         required: false
-        default: "stub"
+        default: "fake"
       record_llm_calls:
         description: "Record LLM calls (true/false)"
         required: false
         default: "true"
-      stub_response_path:
-        description: "Stub response path (used when llm_mode=stub)"
-        required: false
-        default: "poc4_7/fixtures/stub_response.txt"
 
 permissions:
   contents: read
@@ -139,9 +130,8 @@ env:
   DEFAULT_MAX_TURNS: "20"
   DEFAULT_EIPS_REF: "master"
   DEFAULT_EXECUTION_SPECS_REF: "mainnet"
-  DEFAULT_LLM_MODE: "stub"
+  DEFAULT_LLM_MODE: "fake"
   DEFAULT_RECORD_LLM_CALLS: "true"
-  DEFAULT_STUB_RESPONSE_PATH: "poc4_7/fixtures/stub_response.txt"
   DEFAULT_BESU_REF: "25.11.0-RC2"
   DEFAULT_ERIGON_REF: "v0.9.39"
   DEFAULT_GETH_REF: "v0.9.39"
@@ -183,7 +173,6 @@ jobs:
           EXECUTION_SPECS_REF="${{ inputs.execution_specs_ref || github.event.inputs.execution_specs_ref || env.DEFAULT_EXECUTION_SPECS_REF }}"
           LLM_MODE="${{ inputs.llm_mode || github.event.inputs.llm_mode || env.DEFAULT_LLM_MODE }}"
           RECORD_LLM_CALLS="${{ inputs.record_llm_calls || github.event.inputs.record_llm_calls || env.DEFAULT_RECORD_LLM_CALLS }}"
-          STUB_RESPONSE_PATH="${{ inputs.stub_response_path || github.event.inputs.stub_response_path || env.DEFAULT_STUB_RESPONSE_PATH }}"
           CLIENT_REF_INPUT="${{ inputs.client_ref || github.event.inputs.client_ref || '' }}"
           PHASES_RAW="${{ inputs.phases || github.event.inputs.phases || '' }}"
           STEPS_RAW="${{ inputs.steps || github.event.inputs.steps || '' }}"
@@ -212,7 +201,6 @@ jobs:
           echo "phases=$PHASES_COMBINED" >> "$GITHUB_OUTPUT"
           echo "llm_mode=$LLM_MODE" >> "$GITHUB_OUTPUT"
           echo "record_llm_calls=$RECORD_LLM_CALLS" >> "$GITHUB_OUTPUT"
-          echo "stub_response_path=$STUB_RESPONSE_PATH" >> "$GITHUB_OUTPUT"
 
       - name: Validate inputs
         id: validated
@@ -229,7 +217,6 @@ jobs:
           CLIENT_REF_INPUT="${{ steps.resolved.outputs.client_ref_input }}"
           LLM_MODE="${{ steps.resolved.outputs.llm_mode }}"
           RECORD_LLM_CALLS="${{ steps.resolved.outputs.record_llm_calls }}"
-          STUB_RESPONSE_PATH="${{ steps.resolved.outputs.stub_response_path }}"
           HAS_KEY="${{ steps.detect_key.outputs.has_key }}"
           case "$EIP" in
             ''|*[!0-9]*)
@@ -262,10 +249,10 @@ jobs:
               ;;
           esac
           case "$LLM_MODE" in
-            live|stub)
+            live|fake)
               ;;
             *)
-              echo "Invalid llm_mode: '$LLM_MODE' (allowed: live, stub)" >> "$GITHUB_STEP_SUMMARY"
+              echo "Invalid llm_mode: '$LLM_MODE' (allowed: live, fake)" >> "$GITHUB_STEP_SUMMARY"
               exit 1
               ;;
           esac
@@ -369,7 +356,7 @@ jobs:
           echo "target_phase=${ORDER[$MAX_INDEX]}" >> "$GITHUB_OUTPUT"
           echo "Resolved phase plan: ${RUN_PHASES[*]}" >> "$GITHUB_STEP_SUMMARY"
           SHOULD_RUN="false"
-          if [ "$LLM_MODE" = "stub" ]; then
+          if [ "$LLM_MODE" = "fake" ]; then
             SHOULD_RUN="true"
           elif [ "$HAS_KEY" = "true" ]; then
             SHOULD_RUN="true"
@@ -452,14 +439,10 @@ jobs:
           MAX_TURNS="${{ steps.resolved.outputs.max_turns }}"
           LLM_MODE="${{ steps.resolved.outputs.llm_mode }}"
           RECORD_LLM_CALLS="${{ steps.resolved.outputs.record_llm_calls }}"
-          STUB_RESPONSE_PATH="${{ steps.resolved.outputs.stub_response_path }}"
           PHASE_PLAN="${{ steps.validated.outputs.phase_plan }}"
           LLM_ARGS="--llm-mode $LLM_MODE"
           if [ "$RECORD_LLM_CALLS" = "true" ]; then
             LLM_ARGS="$LLM_ARGS --record-llm-calls"
-          fi
-          if [ -n "$STUB_RESPONSE_PATH" ]; then
-            LLM_ARGS="$LLM_ARGS --stub-response-path $STUB_RESPONSE_PATH"
           fi
           EIP_FILE="specs/EIPs/EIPS/eip-${EIP}.md"
           if [ ! -f "$EIP_FILE" ]; then
@@ -492,13 +475,13 @@ jobs:
                 LAST_OUTPUT="$PARENT_RUN/phase1B_output.txt"
                 ;;
               2A)
-                poc4_7 --phase 2A --parent-run "$PARENT_RUN" --eip "$EIP" --client "$CLIENT" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
+                poc4_7 --phase 2A --parent-run "$PARENT_RUN" --eip "$EIP" --client-repo "clients/execution/$CLIENT" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
                 PARENT_RUN=$(ls -td "$PARENT_RUN/phase2A_runs"/* | head -1)
                 LAST_PHASE="2A"
                 LAST_OUTPUT="$PARENT_RUN/phase2A_output.txt"
                 ;;
               2B)
-                poc4_7 --phase 2B --parent-run "$PARENT_RUN" --eip "$EIP" --client "$CLIENT" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
+                poc4_7 --phase 2B --parent-run "$PARENT_RUN" --eip "$EIP" --client-repo "clients/execution/$CLIENT" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
                 LAST_PHASE="2B"
                 LAST_OUTPUT=$(ls -td "$PARENT_RUN/phase2B_runs"/* | head -1)/phase2B_output.txt
                 ;;

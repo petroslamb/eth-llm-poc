@@ -21,9 +21,7 @@ CONFIG_KEYS = [
     "max_turns",
     "llm_mode",
     "record_llm_calls",
-    "stub_response_path",
     "allowed_tools",
-    "spec_map_strict",
     "obligation_id",
 ]
 
@@ -196,9 +194,7 @@ def write_report(
             f"- Max turns: {format_value(run_config.get('max_turns'))}",
             f"- LLM mode: {format_value(run_config.get('llm_mode'))}",
             f"- Record LLM calls: {format_value(run_config.get('record_llm_calls'))}",
-            f"- Stub response: {format_value(run_config.get('stub_response_path'))}",
             f"- Allowed tools: {format_value(run_config.get('allowed_tools'))}",
-            f"- Spec map strict: {format_value(run_config.get('spec_map_strict'))}",
             f"- Obligation filter: {format_value(run_config.get('obligation_id'))}",
             "",
             "## Phases",

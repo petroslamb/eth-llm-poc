@@ -1,4 +1,0 @@
-STUB RESPONSE
-
-This is a deterministic placeholder response for test runs.
-It is used to validate workflow wiring without calling Claude.

@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-from .utils import ensure_dir, notes_root, timestamp
+from .utils import ensure_dir, timestamp
 
 
 TABLE_HEADER = "### Ethereum Protocol Releases"
@@ -154,19 +154,16 @@ def write_spec_index_report(report_path: Path, eip_fork_map: dict[str, object], 
 
 
 def write_spec_index_bundle(
-    repo_root: Path,
-    spec_root: Optional[str],
-    spec_readme: Optional[str],
-    output_dir: Optional[str],
-    eip_fork_map_path: Optional[str],
-    spec_index_path: Optional[str],
-    report_path: Optional[str],
+    spec_repo: str,
+    output_dir: str,
+    spec_readme: Optional[str] = None,
+    eip_fork_map_path: Optional[str] = None,
+    spec_index_path: Optional[str] = None,
+    report_path: Optional[str] = None,
 ) -> SpecIndexOutputs:
-    resolved_spec_root = (
-        Path(spec_root).expanduser().resolve()
-        if spec_root
-        else (repo_root / "specs" / "execution-specs").resolve()
-    )
+    resolved_spec_root = Path(spec_repo).expanduser().resolve()
+    if not resolved_spec_root.exists():
+        raise FileNotFoundError(f"Spec repo not found: {resolved_spec_root}")
     readme_path = (
         Path(spec_readme).expanduser().resolve()
         if spec_readme
@@ -175,11 +172,7 @@ def write_spec_index_bundle(
     if not readme_path.exists():
         raise FileNotFoundError(f"Spec README not found: {readme_path}")
 
-    root_dir = (
-        Path(output_dir).expanduser().resolve()
-        if output_dir
-        else (notes_root(repo_root) / "index_runs" / timestamp())
-    )
+    root_dir = Path(output_dir).expanduser().resolve()
     ensure_dir(root_dir)
 
     eip_fork_map_file = (
@@ -234,19 +227,17 @@ def write_spec_index_bundle(
 
 
 def run_index_specs(
-    repo_root: Path,
-    spec_root: Optional[str],
-    spec_readme: Optional[str],
-    output_dir: Optional[str],
-    eip_fork_map_path: Optional[str],
-    spec_index_path: Optional[str],
-    run_manifest_path: Optional[str],
+    spec_repo: str,
+    output_dir: str,
+    spec_readme: Optional[str] = None,
+    eip_fork_map_path: Optional[str] = None,
+    spec_index_path: Optional[str] = None,
+    run_manifest_path: Optional[str] = None,
 ) -> Path:
     outputs = write_spec_index_bundle(
-        repo_root=repo_root,
-        spec_root=spec_root,
-        spec_readme=spec_readme,
+        spec_repo=spec_repo,
         output_dir=output_dir,
+        spec_readme=spec_readme,
         eip_fork_map_path=eip_fork_map_path,
         spec_index_path=spec_index_path,
         report_path=None,
