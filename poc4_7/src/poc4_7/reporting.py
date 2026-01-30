@@ -8,6 +8,40 @@ from typing import Optional
 
 from .utils import ensure_dir, timestamp
 
+PHASE_DESCRIPTIONS = {
+    "0A": "Obligation extraction + indexing",
+    "1A": "Per-obligation implementation locations",
+    "1B": "Code flow + gap hints per obligation",
+    "2A": "Client implementation locations",
+    "2B": "Client gap analysis",
+}
+
+CONFIG_KEYS = [
+    "model",
+    "max_turns",
+    "llm_mode",
+    "record_llm_calls",
+    "stub_response_path",
+    "allowed_tools",
+    "spec_map_strict",
+    "obligation_id",
+]
+
+
+def phase_label(phase: str) -> str:
+    description = PHASE_DESCRIPTIONS.get(phase)
+    return f"{phase} — {description}" if description else phase
+
+
+def _merge_run_config(latest_by_phase: dict[str, Optional[dict]]) -> dict[str, object]:
+    merged: dict[str, object] = {}
+    for phase in ["0A", "1A", "1B", "2A", "2B"]:
+        manifest = latest_by_phase.get(phase) or {}
+        for key in CONFIG_KEYS:
+            if key not in merged and key in manifest:
+                merged[key] = manifest.get(key)
+    return merged
+
 
 def _parse_timestamp(value: Optional[str]) -> Optional[str]:
     if not value:
@@ -92,6 +126,7 @@ def build_summary(run_root: Path) -> dict[str, object]:
     phase1a = latest_by_phase.get("1A")
     phase2a = latest_by_phase.get("2A")
     phase2b = latest_by_phase.get("2B")
+    run_config = _merge_run_config(latest_by_phase)
 
     spec_map_check = None
     if phase1a and phase1a.get("spec_map_check"):
@@ -111,6 +146,7 @@ def build_summary(run_root: Path) -> dict[str, object]:
         "spec_commit": (phase0 or {}).get("spec_commit"),
         "mismatch_forks": (phase0 or {}).get("mismatch_forks", []),
         "spec_map_check": spec_map_check,
+        "run_config": run_config,
         "manifests": [
             {"phase": m.get("_phase"), "path": m.get("_path")}
             for m in sorted(manifests, key=lambda x: x.get("_path", ""))
@@ -137,24 +173,48 @@ def write_report(
         )
 
     if "md" in formats:
+        def format_value(value: object) -> str:
+            if value is None:
+                return "None"
+            if isinstance(value, list):
+                return ", ".join(str(item) for item in value) if value else "None"
+            return str(value)
+
+        run_config = summary.get("run_config", {}) or {}
         lines = [
             "# PoC 4.7 Run Summary",
             "",
+            "## Run configuration",
             f"- Run root: {summary.get('run_root')}",
             f"- Generated at: {summary.get('generated_at')}",
-            f"- EIP: {summary.get('eip_number')}",
-            f"- Fork: {summary.get('fork_name')}",
-            f"- Client: {summary.get('client_name')}",
-            f"- Spec branch: {summary.get('spec_branch')}",
-            f"- Spec commit: {summary.get('spec_commit')}",
+            f"- EIP: {format_value(summary.get('eip_number'))}",
+            f"- Fork: {format_value(summary.get('fork_name'))}",
+            f"- Client: {format_value(summary.get('client_name'))}",
+            f"- Spec branch: {format_value(summary.get('spec_branch'))}",
+            f"- Spec commit: {format_value(summary.get('spec_commit'))}",
+            f"- Model: {format_value(run_config.get('model'))}",
+            f"- Max turns: {format_value(run_config.get('max_turns'))}",
+            f"- LLM mode: {format_value(run_config.get('llm_mode'))}",
+            f"- Record LLM calls: {format_value(run_config.get('record_llm_calls'))}",
+            f"- Stub response: {format_value(run_config.get('stub_response_path'))}",
+            f"- Allowed tools: {format_value(run_config.get('allowed_tools'))}",
+            f"- Spec map strict: {format_value(run_config.get('spec_map_strict'))}",
+            f"- Obligation filter: {format_value(run_config.get('obligation_id'))}",
             "",
             "## Phases",
         ]
         for phase in summary.get("phases_present", []):
-            lines.append(f"- {phase}: {summary['latest_manifests'].get(phase)}")
+            lines.append(
+                f"- {phase_label(phase)}: {summary['latest_manifests'].get(phase)}"
+            )
         lines.append("")
         mismatches = summary.get("mismatch_forks", [])
-        lines.append(f"## Spec Map Mismatches: {len(mismatches)}")
+        lines.append("## Spec Map Mismatches")
+        lines.append(
+            "These are forks where execution-specs README EIP lists disagree with "
+            "fork __init__ EIP lists (captured in Phase 0A)."
+        )
+        lines.append(f"- Count: {len(mismatches)}")
         if mismatches:
             lines.extend([f"- {fork}" for fork in mismatches])
         else:
@@ -162,6 +222,13 @@ def write_report(
         lines.append("")
         if summary.get("spec_map_check"):
             lines.append("## Spec Map Check (Phase 1A)")
+            lines.append(
+                "Phase 1A validates the selected fork against the Phase 0A EIP→fork map "
+                "and reports whether the README and fork __init__ agree."
+            )
+            lines.append(
+                "Status meanings: ok, mismatch, fork_not_found, invalid_json, missing."
+            )
             lines.append("```json")
             lines.append(json.dumps(summary["spec_map_check"], indent=2))
             lines.append("```")

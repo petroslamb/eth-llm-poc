@@ -176,6 +176,19 @@ def build_claude_config(
     )
 
 
+def config_metadata(config: ClaudeConfig) -> dict[str, object]:
+    return {
+        "model": config.model,
+        "max_turns": config.max_turns,
+        "allowed_tools": list(config.allowed_tools),
+        "llm_mode": config.llm_mode,
+        "record_llm_calls": config.record_calls,
+        "stub_response_path": (
+            str(config.stub_response_path) if config.stub_response_path else None
+        ),
+    }
+
+
 def write_llm_call_record(
     *,
     output_path: Path,
@@ -356,6 +369,14 @@ def run_phase_0a(
         report_path=str(run_dir / "spec_index_report.md"),
     )
 
+    config = build_claude_config(
+        model,
+        max_turns,
+        allowed_tools,
+        llm_mode=llm_mode,
+        record_calls=record_llm_calls,
+        stub_response_path=stub_response_path,
+    )
     run_manifest = {
         "phase": "0A",
         "generated_at": timestamp(),
@@ -370,6 +391,7 @@ def run_phase_0a(
         "spec_index_report": str(spec_outputs.report_path) if spec_outputs.report_path else None,
         "mismatch_forks": spec_outputs.mismatch_forks,
         "output_csv": str(output_csv),
+        **config_metadata(config),
     }
     (run_dir / "run_manifest.json").write_text(
         json.dumps(run_manifest, indent=2), encoding="utf-8"
@@ -388,14 +410,6 @@ def run_phase_0a(
     output_path = run_dir / "phase0A_output.txt"
 
     write_prompt(prompt_path, prompt)
-    config = build_claude_config(
-        model,
-        max_turns,
-        allowed_tools,
-        llm_mode=llm_mode,
-        record_calls=record_llm_calls,
-        stub_response_path=stub_response_path,
-    )
     run_query(prompt, output_path, repo_root, config)
     if config.llm_mode == "stub" and not output_csv.exists():
         write_stub_obligations_csv(output_csv, resolved_eip_number)
@@ -478,6 +492,14 @@ def run_phase_1a(
             f"fork-only: {spec_map_check.get('fork_init_only')}"
         )
 
+    config = build_claude_config(
+        model,
+        max_turns,
+        allowed_tools,
+        llm_mode=llm_mode,
+        record_calls=record_llm_calls,
+        stub_response_path=stub_response_path,
+    )
     run_manifest = {
         "phase": "1A",
         "generated_at": timestamp(),
@@ -488,7 +510,9 @@ def run_phase_1a(
         "fork_root": str(fork_root),
         "spec_map_check": str(spec_map_check_path),
         "spec_map_strict": spec_map_strict,
+        "obligation_id": obligation_id,
         "parent_run": str(parent_run),
+        **config_metadata(config),
     }
     (run_dir / "run_manifest.json").write_text(
         json.dumps(run_manifest, indent=2), encoding="utf-8"
@@ -511,14 +535,6 @@ def run_phase_1a(
     output_path = run_dir / "phase1A_output.txt"
 
     write_prompt(prompt_path, prompt)
-    config = build_claude_config(
-        model,
-        max_turns,
-        allowed_tools,
-        llm_mode=llm_mode,
-        record_calls=record_llm_calls,
-        stub_response_path=stub_response_path,
-    )
     run_query(prompt, output_path, repo_root, config)
     return run_dir
 
@@ -555,13 +571,23 @@ def run_phase_1b(
             "Leave all other rows unchanged.\n"
         )
 
+    config = build_claude_config(
+        model,
+        max_turns,
+        allowed_tools,
+        llm_mode=llm_mode,
+        record_calls=record_llm_calls,
+        stub_response_path=stub_response_path,
+    )
     run_manifest = {
         "phase": "1B",
         "generated_at": timestamp(),
         "input_csv": str(input_csv),
         "output_csv": str(output_csv),
         "eip_number": resolved_eip_number,
+        "obligation_id": obligation_id,
         "parent_run": str(parent_run),
+        **config_metadata(config),
     }
     (run_dir / "run_manifest.json").write_text(
         json.dumps(run_manifest, indent=2), encoding="utf-8"
@@ -571,14 +597,6 @@ def run_phase_1b(
     output_path = run_dir / "phase1B_output.txt"
 
     write_prompt(prompt_path, prompt)
-    config = build_claude_config(
-        model,
-        max_turns,
-        allowed_tools,
-        llm_mode=llm_mode,
-        record_calls=record_llm_calls,
-        stub_response_path=stub_response_path,
-    )
     run_query(prompt, output_path, repo_root, config)
     return run_dir
 
@@ -624,6 +642,14 @@ def run_phase_2a(
             "Leave all other rows unchanged.\n"
         )
 
+    config = build_claude_config(
+        model,
+        max_turns,
+        allowed_tools,
+        llm_mode=llm_mode,
+        record_calls=record_llm_calls,
+        stub_response_path=stub_response_path,
+    )
     run_manifest = {
         "phase": "2A",
         "generated_at": timestamp(),
@@ -632,7 +658,9 @@ def run_phase_2a(
         "eip_number": resolved_eip_number,
         "client_name": resolved_client_name,
         "client_root": str(resolved_client_root),
+        "obligation_id": obligation_id,
         "parent_run": str(parent_run),
+        **config_metadata(config),
     }
     (run_dir / "run_manifest.json").write_text(
         json.dumps(run_manifest, indent=2), encoding="utf-8"
@@ -642,14 +670,6 @@ def run_phase_2a(
     output_path = run_dir / "phase2A_output.txt"
 
     write_prompt(prompt_path, prompt)
-    config = build_claude_config(
-        model,
-        max_turns,
-        allowed_tools,
-        llm_mode=llm_mode,
-        record_calls=record_llm_calls,
-        stub_response_path=stub_response_path,
-    )
     run_query(prompt, output_path, repo_root, config)
     if config.llm_mode == "stub" and not output_csv.exists():
         write_stub_client_csv(input_csv, output_csv)
@@ -696,6 +716,14 @@ def run_phase_2b(
             "Leave all other rows unchanged.\n"
         )
 
+    config = build_claude_config(
+        model,
+        max_turns,
+        allowed_tools,
+        llm_mode=llm_mode,
+        record_calls=record_llm_calls,
+        stub_response_path=stub_response_path,
+    )
     run_manifest = {
         "phase": "2B",
         "generated_at": timestamp(),
@@ -704,7 +732,9 @@ def run_phase_2b(
         "eip_number": resolved_eip_number,
         "client_name": resolved_client_name,
         "client_root": str(resolved_client_root),
+        "obligation_id": obligation_id,
         "parent_run": str(parent_run),
+        **config_metadata(config),
     }
     (run_dir / "run_manifest.json").write_text(
         json.dumps(run_manifest, indent=2), encoding="utf-8"
@@ -714,13 +744,5 @@ def run_phase_2b(
     output_path = run_dir / "phase2B_output.txt"
 
     write_prompt(prompt_path, prompt)
-    config = build_claude_config(
-        model,
-        max_turns,
-        allowed_tools,
-        llm_mode=llm_mode,
-        record_calls=record_llm_calls,
-        stub_response_path=stub_response_path,
-    )
     run_query(prompt, output_path, repo_root, config)
     return run_dir

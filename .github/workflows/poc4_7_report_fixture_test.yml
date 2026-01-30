@@ -68,6 +68,16 @@ jobs:
 
           LAST_PHASE=""
           LAST_OUTPUT=""
+          phase_desc() {
+            case "$1" in
+              0A) echo "Obligation extraction + indexing" ;;
+              1A) echo "Per-obligation implementation locations" ;;
+              1B) echo "Code flow + gap hints per obligation" ;;
+              2A) echo "Client implementation locations" ;;
+              2B) echo "Client gap analysis" ;;
+              *) echo "Phase output" ;;
+            esac
+          }
           for phase in 2B 2A 1B 1A 0A; do
             candidate=$(find "$FIXTURE_ROOT" -type f -name "phase${phase}_output.txt" | sort | tail -n 1)
             if [ -n "$candidate" ]; then
@@ -84,7 +94,8 @@ jobs:
             candidate=$(find "$FIXTURE_ROOT" -type f -name "phase${phase}_output.txt" | sort | tail -n 1)
             if [ -n "$candidate" ]; then
               echo "" >> "$GITHUB_STEP_SUMMARY"
-              echo "<details><summary>Phase ${phase} output</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
+              desc=$(phase_desc "$phase")
+              echo "<details><summary>Phase ${phase} — ${desc} output</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
               escape_html "$candidate" >> "$GITHUB_STEP_SUMMARY"
               echo "</pre></details>" >> "$GITHUB_STEP_SUMMARY"
             fi
@@ -92,7 +103,8 @@ jobs:
 
           if [ -f "$LAST_OUTPUT" ]; then
             echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "<details><summary>Last phase output ($LAST_PHASE)</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
+            last_desc=$(phase_desc "$LAST_PHASE")
+            echo "<details><summary>Last phase output ($LAST_PHASE — $last_desc)</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
             escape_html "$LAST_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
             echo "</pre></details>" >> "$GITHUB_STEP_SUMMARY"
 
@@ -107,7 +119,7 @@ jobs:
             fi
             if [ -n "$LAST_CSV" ] && [ -f "$LAST_CSV" ]; then
               echo "" >> "$GITHUB_STEP_SUMMARY"
-              echo "<details><summary>Last phase CSV ($LAST_PHASE)</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
+              echo "<details><summary>Last phase CSV ($LAST_PHASE — $last_desc)</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
               escape_html "$LAST_CSV" >> "$GITHUB_STEP_SUMMARY"
               echo "</pre></details>" >> "$GITHUB_STEP_SUMMARY"
             fi

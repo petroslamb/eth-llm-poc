@@ -527,6 +527,16 @@ jobs:
           RUN_ROOT="${{ steps.run_root.outputs.run_root }}"
           LAST_PHASE="${{ steps.run_phases.outputs.last_phase }}"
           LAST_OUTPUT="${{ steps.run_phases.outputs.last_output }}"
+          phase_desc() {
+            case "$1" in
+              0A) echo "Obligation extraction + indexing" ;;
+              1A) echo "Per-obligation implementation locations" ;;
+              1B) echo "Code flow + gap hints per obligation" ;;
+              2A) echo "Client implementation locations" ;;
+              2B) echo "Client gap analysis" ;;
+              *) echo "Phase output" ;;
+            esac
+          }
           escape_html() {
             sed -e 's/&/\\&amp;/g' -e 's/</\\&lt;/g' -e 's/>/\\&gt;/g' "$1"
           }
@@ -537,14 +547,16 @@ jobs:
             candidate=$(find "$RUN_ROOT" -type f -name "phase${phase}_output.txt" | sort | tail -n 1)
             if [ -n "$candidate" ]; then
               echo "" >> "$GITHUB_STEP_SUMMARY"
-              echo "<details><summary>Phase ${phase} output</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
+              desc=$(phase_desc "$phase")
+              echo "<details><summary>Phase ${phase} — ${desc} output</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
               escape_html "$candidate" >> "$GITHUB_STEP_SUMMARY"
               echo "</pre></details>" >> "$GITHUB_STEP_SUMMARY"
             fi
           done
           if [ -n "$LAST_OUTPUT" ] && [ -f "$LAST_OUTPUT" ]; then
             echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "<details><summary>Last phase output ($LAST_PHASE)</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
+            last_desc=$(phase_desc "$LAST_PHASE")
+            echo "<details><summary>Last phase output ($LAST_PHASE — $last_desc)</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
             escape_html "$LAST_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
             echo "</pre></details>" >> "$GITHUB_STEP_SUMMARY"
             LAST_DIR=$(dirname "$LAST_OUTPUT")
@@ -558,7 +570,7 @@ jobs:
             fi
             if [ -n "$LAST_CSV" ] && [ -f "$LAST_CSV" ]; then
               echo "" >> "$GITHUB_STEP_SUMMARY"
-              echo "<details><summary>Last phase CSV ($LAST_PHASE)</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
+              echo "<details><summary>Last phase CSV ($LAST_PHASE — $last_desc)</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
               escape_html "$LAST_CSV" >> "$GITHUB_STEP_SUMMARY"
               echo "</pre></details>" >> "$GITHUB_STEP_SUMMARY"
             fi
