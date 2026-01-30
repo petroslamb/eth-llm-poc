@@ -53,6 +53,21 @@ on:
         required: false
         default: "mainnet"
         type: string
+      llm_mode:
+        description: "LLM mode (live or stub)"
+        required: false
+        default: "stub"
+        type: string
+      record_llm_calls:
+        description: "Record LLM calls (true/false)"
+        required: false
+        default: "true"
+        type: string
+      stub_response_path:
+        description: "Stub response path (used when llm_mode=stub)"
+        required: false
+        default: "poc4_7/fixtures/stub_response.txt"
+        type: string
     secrets:
       ANTHROPIC_API_KEY:
         required: false
@@ -98,6 +113,18 @@ on:
         description: "Execution-specs repo ref (branch, tag, or commit)"
         required: false
         default: "mainnet"
+      llm_mode:
+        description: "LLM mode (live or stub)"
+        required: false
+        default: "stub"
+      record_llm_calls:
+        description: "Record LLM calls (true/false)"
+        required: false
+        default: "true"
+      stub_response_path:
+        description: "Stub response path (used when llm_mode=stub)"
+        required: false
+        default: "poc4_7/fixtures/stub_response.txt"
 
 permissions:
   contents: read
@@ -112,6 +139,9 @@ env:
   DEFAULT_MAX_TURNS: "20"
   DEFAULT_EIPS_REF: "master"
   DEFAULT_EXECUTION_SPECS_REF: "mainnet"
+  DEFAULT_LLM_MODE: "stub"
+  DEFAULT_RECORD_LLM_CALLS: "true"
+  DEFAULT_STUB_RESPONSE_PATH: "poc4_7/fixtures/stub_response.txt"
   DEFAULT_BESU_REF: "25.11.0-RC2"
   DEFAULT_ERIGON_REF: "v0.9.39"
   DEFAULT_GETH_REF: "v0.9.39"
@@ -141,7 +171,6 @@ jobs:
           fi
 
       - name: Resolve inputs
-        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
         id: resolved
         run: |
           set -euo pipefail
@@ -152,6 +181,9 @@ jobs:
           MAX_TURNS="${{ inputs.max_turns || github.event.inputs.max_turns || env.DEFAULT_MAX_TURNS }}"
           EIPS_REF="${{ inputs.eips_ref || github.event.inputs.eips_ref || env.DEFAULT_EIPS_REF }}"
           EXECUTION_SPECS_REF="${{ inputs.execution_specs_ref || github.event.inputs.execution_specs_ref || env.DEFAULT_EXECUTION_SPECS_REF }}"
+          LLM_MODE="${{ inputs.llm_mode || github.event.inputs.llm_mode || env.DEFAULT_LLM_MODE }}"
+          RECORD_LLM_CALLS="${{ inputs.record_llm_calls || github.event.inputs.record_llm_calls || env.DEFAULT_RECORD_LLM_CALLS }}"
+          STUB_RESPONSE_PATH="${{ inputs.stub_response_path || github.event.inputs.stub_response_path || env.DEFAULT_STUB_RESPONSE_PATH }}"
           CLIENT_REF_INPUT="${{ inputs.client_ref || github.event.inputs.client_ref || '' }}"
           PHASES_RAW="${{ inputs.phases || github.event.inputs.phases || '' }}"
           STEPS_RAW="${{ inputs.steps || github.event.inputs.steps || '' }}"
@@ -178,9 +210,11 @@ jobs:
           echo "execution_specs_ref=$EXECUTION_SPECS_REF" >> "$GITHUB_OUTPUT"
           echo "client_ref_input=$CLIENT_REF_INPUT" >> "$GITHUB_OUTPUT"
           echo "phases=$PHASES_COMBINED" >> "$GITHUB_OUTPUT"
+          echo "llm_mode=$LLM_MODE" >> "$GITHUB_OUTPUT"
+          echo "record_llm_calls=$RECORD_LLM_CALLS" >> "$GITHUB_OUTPUT"
+          echo "stub_response_path=$STUB_RESPONSE_PATH" >> "$GITHUB_OUTPUT"
 
       - name: Validate inputs
-        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
         id: validated
         run: |
           set -euo pipefail
@@ -193,6 +227,10 @@ jobs:
           EIPS_REF="${{ steps.resolved.outputs.eips_ref }}"
           EXECUTION_SPECS_REF="${{ steps.resolved.outputs.execution_specs_ref }}"
           CLIENT_REF_INPUT="${{ steps.resolved.outputs.client_ref_input }}"
+          LLM_MODE="${{ steps.resolved.outputs.llm_mode }}"
+          RECORD_LLM_CALLS="${{ steps.resolved.outputs.record_llm_calls }}"
+          STUB_RESPONSE_PATH="${{ steps.resolved.outputs.stub_response_path }}"
+          HAS_KEY="${{ steps.detect_key.outputs.has_key }}"
           case "$EIP" in
             ''|*[!0-9]*)
               echo "Invalid EIP: '$EIP' (must be numeric)" >> "$GITHUB_STEP_SUMMARY"
@@ -220,6 +258,22 @@ jobs:
               ;;
             *)
               echo "Invalid model: '$MODEL' (allowed: claude-haiku-4-5, claude-sonnet-4-5, claude-opus-4-5)" >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+              ;;
+          esac
+          case "$LLM_MODE" in
+            live|stub)
+              ;;
+            *)
+              echo "Invalid llm_mode: '$LLM_MODE' (allowed: live, stub)" >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+              ;;
+          esac
+          case "$RECORD_LLM_CALLS" in
+            true|false)
+              ;;
+            *)
+              echo "Invalid record_llm_calls: '$RECORD_LLM_CALLS' (allowed: true, false)" >> "$GITHUB_STEP_SUMMARY"
               exit 1
               ;;
           esac
@@ -314,9 +368,19 @@ jobs:
           echo "phase_plan=${RUN_PHASES[*]}" >> "$GITHUB_OUTPUT"
           echo "target_phase=${ORDER[$MAX_INDEX]}" >> "$GITHUB_OUTPUT"
           echo "Resolved phase plan: ${RUN_PHASES[*]}" >> "$GITHUB_STEP_SUMMARY"
+          SHOULD_RUN="false"
+          if [ "$LLM_MODE" = "stub" ]; then
+            SHOULD_RUN="true"
+          elif [ "$HAS_KEY" = "true" ]; then
+            SHOULD_RUN="true"
+          fi
+          echo "should_run=$SHOULD_RUN" >> "$GITHUB_OUTPUT"
+          if [ "$SHOULD_RUN" = "false" ]; then
+            echo "ANTHROPIC_API_KEY is not set and llm_mode=live; skipping PoC 4.7 run." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Checkout dependency repos (shallow)
-        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        if: ${{ steps.validated.outputs.should_run == 'true' }}
         run: |
           set -euo pipefail
           EIPS_REF="${{ steps.resolved.outputs.eips_ref }}"
@@ -365,17 +429,17 @@ jobs:
           clone_ref "$CLIENT_REPO" "clients/execution/$CLIENT" "$CLIENT_REF"
 
       - name: Set up Python
-        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        if: ${{ steps.validated.outputs.should_run == 'true' }}
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install PoC 4.7
-        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        if: ${{ steps.validated.outputs.should_run == 'true' }}
         run: python -m pip install -e poc4_7
 
       - name: Run PoC 4.7 phases
-        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        if: ${{ steps.validated.outputs.should_run == 'true' }}
         id: run_phases
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -386,7 +450,17 @@ jobs:
           CLIENT="${{ steps.resolved.outputs.client }}"
           MODEL="${{ steps.resolved.outputs.model }}"
           MAX_TURNS="${{ steps.resolved.outputs.max_turns }}"
+          LLM_MODE="${{ steps.resolved.outputs.llm_mode }}"
+          RECORD_LLM_CALLS="${{ steps.resolved.outputs.record_llm_calls }}"
+          STUB_RESPONSE_PATH="${{ steps.resolved.outputs.stub_response_path }}"
           PHASE_PLAN="${{ steps.validated.outputs.phase_plan }}"
+          LLM_ARGS="--llm-mode $LLM_MODE"
+          if [ "$RECORD_LLM_CALLS" = "true" ]; then
+            LLM_ARGS="$LLM_ARGS --record-llm-calls"
+          fi
+          if [ -n "$STUB_RESPONSE_PATH" ]; then
+            LLM_ARGS="$LLM_ARGS --stub-response-path $STUB_RESPONSE_PATH"
+          fi
           EIP_FILE="specs/EIPs/EIPS/eip-${EIP}.md"
           if [ ! -f "$EIP_FILE" ]; then
             echo "EIP file not found: $EIP_FILE" >> "$GITHUB_STEP_SUMMARY"
@@ -399,32 +473,32 @@ jobs:
           for phase in $PHASE_PLAN; do
             case "$phase" in
               0A)
-                poc4_7 --phase 0A --eip "$EIP" --eip-file "$EIP_FILE" --model "$MODEL" --max-turns "$MAX_TURNS"
+                poc4_7 --phase 0A --eip "$EIP" --eip-file "$EIP_FILE" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
                 RUN_ROOT=$(ls -td poc4_7/notes/generated/*/ | grep -v 'index_runs' | head -1)
                 PARENT_RUN=$(ls -td "$RUN_ROOT/phase0A_runs"/* | head -1)
                 LAST_PHASE="0A"
                 LAST_OUTPUT="$PARENT_RUN/phase0A_output.txt"
                 ;;
               1A)
-                poc4_7 --phase 1A --parent-run "$PARENT_RUN" --eip "$EIP" --fork "$FORK" --model "$MODEL" --max-turns "$MAX_TURNS"
+                poc4_7 --phase 1A --parent-run "$PARENT_RUN" --eip "$EIP" --fork "$FORK" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
                 PARENT_RUN=$(ls -td "$PARENT_RUN/phase1A_runs"/* | head -1)
                 LAST_PHASE="1A"
                 LAST_OUTPUT="$PARENT_RUN/phase1A_output.txt"
                 ;;
               1B)
-                poc4_7 --phase 1B --parent-run "$PARENT_RUN" --eip "$EIP" --model "$MODEL" --max-turns "$MAX_TURNS"
+                poc4_7 --phase 1B --parent-run "$PARENT_RUN" --eip "$EIP" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
                 PARENT_RUN=$(ls -td "$PARENT_RUN/phase1B_runs"/* | head -1)
                 LAST_PHASE="1B"
                 LAST_OUTPUT="$PARENT_RUN/phase1B_output.txt"
                 ;;
               2A)
-                poc4_7 --phase 2A --parent-run "$PARENT_RUN" --eip "$EIP" --client "$CLIENT" --model "$MODEL" --max-turns "$MAX_TURNS"
+                poc4_7 --phase 2A --parent-run "$PARENT_RUN" --eip "$EIP" --client "$CLIENT" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
                 PARENT_RUN=$(ls -td "$PARENT_RUN/phase2A_runs"/* | head -1)
                 LAST_PHASE="2A"
                 LAST_OUTPUT="$PARENT_RUN/phase2A_output.txt"
                 ;;
               2B)
-                poc4_7 --phase 2B --parent-run "$PARENT_RUN" --eip "$EIP" --client "$CLIENT" --model "$MODEL" --max-turns "$MAX_TURNS"
+                poc4_7 --phase 2B --parent-run "$PARENT_RUN" --eip "$EIP" --client "$CLIENT" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
                 LAST_PHASE="2B"
                 LAST_OUTPUT=$(ls -td "$PARENT_RUN/phase2B_runs"/* | head -1)/phase2B_output.txt
                 ;;
@@ -434,20 +508,20 @@ jobs:
           echo "last_output=$LAST_OUTPUT" >> "$GITHUB_OUTPUT"
 
       - name: Find run root
-        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        if: ${{ steps.validated.outputs.should_run == 'true' }}
         id: run_root
         run: |
           RUN_ROOT=$(ls -td poc4_7/notes/generated/*/ | grep -v 'index_runs' | head -1)
           echo "run_root=$RUN_ROOT" >> "$GITHUB_OUTPUT"
 
       - name: Build summary
-        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        if: ${{ steps.validated.outputs.should_run == 'true' }}
         run: |
           poc4_7 report --run-root "${{ steps.run_root.outputs.run_root }}"
           cat "${{ steps.run_root.outputs.run_root }}/summary.md" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Append last phase output
-        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        if: ${{ steps.validated.outputs.should_run == 'true' }}
         run: |
           set -euo pipefail
           RUN_ROOT="${{ steps.run_root.outputs.run_root }}"
@@ -496,7 +570,7 @@ jobs:
           fi
 
       - name: Upload summary
-        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        if: ${{ steps.validated.outputs.should_run == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: poc4_7-summary
@@ -504,13 +578,13 @@ jobs:
             ${{ steps.run_root.outputs.run_root }}/summary.json
             ${{ steps.run_root.outputs.run_root }}/summary.md
       - name: Upload run artifacts
-        if: ${{ steps.detect_key.outputs.has_key == 'true' }}
+        if: ${{ steps.validated.outputs.should_run == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: poc4_7-run-artifacts
           path: ${{ steps.run_root.outputs.run_root }}/
 
       - name: Skip run (missing ANTHROPIC_API_KEY)
-        if: ${{ steps.detect_key.outputs.has_key == 'false' }}
+        if: ${{ steps.validated.outputs.should_run == 'false' }}
         run: |
-          echo "ANTHROPIC_API_KEY is not set; skipping PoC 4.7 run." >> "$GITHUB_STEP_SUMMARY"
+          echo "ANTHROPIC_API_KEY is not set and llm_mode=live; skipping PoC 4.7 run." >> "$GITHUB_STEP_SUMMARY"
