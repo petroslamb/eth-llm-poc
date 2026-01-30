@@ -43,6 +43,11 @@ on:
         required: false
         default: "20"
         type: string
+      report_only:
+        description: "Run report-only job and skip full pipeline (true/false)"
+        required: false
+        default: "false"
+        type: string
       eips_ref:
         description: "EIPs repo branch (default: master)"
         required: false
@@ -90,6 +95,10 @@ on:
         description: "Max turns per phase"
         required: false
         default: "20"
+      report_only:
+        description: "Run report-only job and skip full pipeline (true/false)"
+        required: false
+        default: "false"
       eips_ref:
         description: "EIPs repo branch (default: master)"
         required: false
@@ -162,6 +171,7 @@ jobs:
 
   poc4_7:
     runs-on: ubuntu-latest
+    if: ${{ (inputs.report_only || github.event.inputs.report_only || 'false') != 'true' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
