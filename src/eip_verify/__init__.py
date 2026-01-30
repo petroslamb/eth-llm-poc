@@ -1,4 +1,4 @@
-"""PoC 4.7 package."""
+"""EIP verification package."""
 
 from .prompts import list_prompts, load_prompt
 

@@ -1,9 +1,9 @@
 import json
 from pathlib import Path
 
-from poc4_7.llm import DEFAULT_ALLOWED_TOOLS, build_claude_config
-from poc4_7.runner import PhaseContext, run_query
-from poc4_7.fake_agent import FakeClaudeAgent
+from eip_verify.llm import DEFAULT_ALLOWED_TOOLS, build_claude_config
+from eip_verify.runner import PhaseContext, run_query
+from eip_verify.fake_agent import FakeClaudeAgent
 
 
 def test_fake_mode_records_call_and_output(tmp_path: Path) -> None:

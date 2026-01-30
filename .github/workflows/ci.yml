@@ -1,4 +1,4 @@
-name: poc4_7-ci
+name: eip-verify-ci
 
 on:
   workflow_call:
@@ -29,14 +29,9 @@ on:
         default: "claude-sonnet-4-5"
         type: string
       phases:
-        description: "Comma-separated phase list (e.g. 0A,1A,1B,2A,2B)"
+        description: "Comma-separated phase list (e.g. extract,locate-spec,analyze-spec,locate-client,analyze-client)"
         required: false
-        default: "2B"
-        type: string
-      steps:
-        description: "Alias for phases (comma-separated). If set, merges with phases."
-        required: false
-        default: ""
+        default: "analyze-client"
         type: string
       max_turns:
         description: "Max turns per phase"
@@ -89,13 +84,9 @@ on:
         required: false
         default: "claude-sonnet-4-5"
       phases:
-        description: "Comma-separated phase list (e.g. 0A,1A,1B,2A,2B)"
+        description: "Comma-separated phase list (e.g. extract,locate-spec,analyze-spec,locate-client,analyze-client)"
         required: false
-        default: "2B"
-      steps:
-        description: "Alias for phases (comma-separated). If set, merges with phases."
-        required: false
-        default: ""
+        default: "analyze-client"
       max_turns:
         description: "Max turns per phase"
         required: false
@@ -126,7 +117,7 @@ env:
   DEFAULT_FORK: "prague"
   DEFAULT_CLIENT: "geth"
   DEFAULT_MODEL: "claude-sonnet-4-5"
-  DEFAULT_PHASES: "2B"
+  DEFAULT_PHASES: "analyze-client"
   DEFAULT_MAX_TURNS: "20"
   DEFAULT_EIPS_REF: "master"
   DEFAULT_EXECUTION_SPECS_REF: "mainnet"
@@ -139,7 +130,7 @@ env:
   DEFAULT_RETH_REF: "v1.10.0-rc.2"
 
 jobs:
-  poc4_7:
+  eip-verify:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -175,20 +166,8 @@ jobs:
           RECORD_LLM_CALLS="${{ inputs.record_llm_calls || github.event.inputs.record_llm_calls || env.DEFAULT_RECORD_LLM_CALLS }}"
           CLIENT_REF_INPUT="${{ inputs.client_ref || github.event.inputs.client_ref || '' }}"
           PHASES_RAW="${{ inputs.phases || github.event.inputs.phases || '' }}"
-          STEPS_RAW="${{ inputs.steps || github.event.inputs.steps || '' }}"
-          PHASES_COMBINED=""
-          if [ -n "$PHASES_RAW" ]; then
-            PHASES_COMBINED="$PHASES_RAW"
-          fi
-          if [ -n "$STEPS_RAW" ]; then
-            if [ -n "$PHASES_COMBINED" ]; then
-              PHASES_COMBINED="$PHASES_COMBINED,$STEPS_RAW"
-            else
-              PHASES_COMBINED="$STEPS_RAW"
-            fi
-          fi
-          if [ -z "$PHASES_COMBINED" ]; then
-            PHASES_COMBINED="${{ env.DEFAULT_PHASES }}"
+          if [ -z "$PHASES_RAW" ]; then
+            PHASES_RAW="${{ env.DEFAULT_PHASES }}"
           fi
           echo "eip=$EIP" >> "$GITHUB_OUTPUT"
           echo "fork=$FORK" >> "$GITHUB_OUTPUT"
@@ -198,7 +177,7 @@ jobs:
           echo "eips_ref=$EIPS_REF" >> "$GITHUB_OUTPUT"
           echo "execution_specs_ref=$EXECUTION_SPECS_REF" >> "$GITHUB_OUTPUT"
           echo "client_ref_input=$CLIENT_REF_INPUT" >> "$GITHUB_OUTPUT"
-          echo "phases=$PHASES_COMBINED" >> "$GITHUB_OUTPUT"
+          echo "phases=$PHASES_RAW" >> "$GITHUB_OUTPUT"
           echo "llm_mode=$LLM_MODE" >> "$GITHUB_OUTPUT"
           echo "record_llm_calls=$RECORD_LLM_CALLS" >> "$GITHUB_OUTPUT"
 
@@ -228,7 +207,7 @@ jobs:
             frontier|homestead|tangerine-whistle|spurious-dragon|byzantium|constantinople|petersburg|istanbul|muir-glacier|berlin|london|arrow-glacier|gray-glacier|paris|shanghai|cancun|prague)
               ;;
             *)
-              echo "Invalid fork: '$FORK' (allowed: frontier, homestead, tangerine-whistle, spurious-dragon, byzantium, constantinople, petersburg, istanbul, muir-glacier, berlin, london, arrow-glacier, gray-glacier, paris, shanghai, cancun, prague)" >> "$GITHUB_STEP_SUMMARY"
+              echo "Invalid fork: '$FORK'" >> "$GITHUB_STEP_SUMMARY"
               exit 1
               ;;
           esac
@@ -236,7 +215,7 @@ jobs:
             geth|besu|erigon|nethermind|reth)
               ;;
             *)
-              echo "Invalid client: '$CLIENT' (allowed: geth, besu, erigon, nethermind, reth)" >> "$GITHUB_STEP_SUMMARY"
+              echo "Invalid client: '$CLIENT'" >> "$GITHUB_STEP_SUMMARY"
               exit 1
               ;;
           esac
@@ -244,7 +223,7 @@ jobs:
             claude-haiku-4-5|claude-sonnet-4-5|claude-opus-4-5)
               ;;
             *)
-              echo "Invalid model: '$MODEL' (allowed: claude-haiku-4-5, claude-sonnet-4-5, claude-opus-4-5)" >> "$GITHUB_STEP_SUMMARY"
+              echo "Invalid model: '$MODEL'" >> "$GITHUB_STEP_SUMMARY"
               exit 1
               ;;
           esac
@@ -252,7 +231,7 @@ jobs:
             live|fake)
               ;;
             *)
-              echo "Invalid llm_mode: '$LLM_MODE' (allowed: live, fake)" >> "$GITHUB_STEP_SUMMARY"
+              echo "Invalid llm_mode: '$LLM_MODE'" >> "$GITHUB_STEP_SUMMARY"
               exit 1
               ;;
           esac
@@ -260,38 +239,18 @@ jobs:
             true|false)
               ;;
             *)
-              echo "Invalid record_llm_calls: '$RECORD_LLM_CALLS' (allowed: true, false)" >> "$GITHUB_STEP_SUMMARY"
+              echo "Invalid record_llm_calls: '$RECORD_LLM_CALLS'" >> "$GITHUB_STEP_SUMMARY"
               exit 1
               ;;
           esac
           case "$MAX_TURNS" in
             ''|*[!0-9]*)
-              echo "Invalid max_turns: '$MAX_TURNS' (must be numeric)" >> "$GITHUB_STEP_SUMMARY"
+              echo "Invalid max_turns: '$MAX_TURNS'" >> "$GITHUB_STEP_SUMMARY"
               exit 1
               ;;
           esac
           if [ "$MAX_TURNS" -lt 1 ]; then
             echo "Invalid max_turns: '$MAX_TURNS' (must be >= 1)" >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
-          for ref in "$EIPS_REF" "$EXECUTION_SPECS_REF"; do
-            case "$ref" in
-              ''|*[!A-Za-z0-9._/-]*)
-                echo "Invalid ref: '$ref' (allowed: A-Z a-z 0-9 . _ / -)" >> "$GITHUB_STEP_SUMMARY"
-                exit 1
-                ;;
-            esac
-          done
-          if [ -n "$CLIENT_REF_INPUT" ]; then
-            case "$CLIENT_REF_INPUT" in
-              *[!A-Za-z0-9._/-]*)
-                echo "Invalid client_ref: '$CLIENT_REF_INPUT' (allowed: A-Z a-z 0-9 . _ / -)" >> "$GITHUB_STEP_SUMMARY"
-                exit 1
-                ;;
-            esac
-          fi
-          if [[ "$EIPS_REF" =~ ^[0-9a-f]{7,40}$ ]]; then
-            echo "Invalid eips_ref: '$EIPS_REF' (EIPs must use a branch name, not a commit)" >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
           CLIENT_REF="$CLIENT_REF_INPUT"
@@ -314,32 +273,14 @@ jobs:
                 ;;
             esac
           fi
+          # Resolve phase plan from subcommand names
           PHASES_RAW="${PHASES_RAW// /}"
-          if [ -z "$PHASES_RAW" ]; then
-            echo "Invalid phases: empty list" >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
+          ORDER=(extract locate-spec analyze-spec locate-client analyze-client)
           IFS=',' read -r -a PHASE_ITEMS <<< "$PHASES_RAW"
-          declare -A SEEN
-          ORDER=(0A 1A 1B 2A 2B)
           MAX_INDEX=-1
           for item in "${PHASE_ITEMS[@]}"; do
-            if [ -z "$item" ]; then
-              continue
-            fi
-            phase=$(echo "$item" | tr '[:lower:]' '[:upper:]')
-            phase="${phase#PHASE}"
-            case "$phase" in
-              0A|1A|1B|2A|2B)
-                ;;
-              *)
-                echo "Invalid phase entry: '$item' (allowed: 0A,1A,1B,2A,2B)" >> "$GITHUB_STEP_SUMMARY"
-                exit 1
-                ;;
-            esac
-            if [ -z "${SEEN[$phase]+x}" ]; then
-              SEEN[$phase]=1
-            fi
+            if [ -z "$item" ]; then continue; fi
+            phase=$(echo "$item" | tr '[:upper:]' '[:lower:]')
             for i in "${!ORDER[@]}"; do
               if [ "${ORDER[$i]}" = "$phase" ] && [ "$i" -gt "$MAX_INDEX" ]; then
                 MAX_INDEX="$i"
@@ -363,7 +304,7 @@ jobs:
           fi
           echo "should_run=$SHOULD_RUN" >> "$GITHUB_OUTPUT"
           if [ "$SHOULD_RUN" = "false" ]; then
-            echo "ANTHROPIC_API_KEY is not set and llm_mode=live; skipping PoC 4.7 run." >> "$GITHUB_STEP_SUMMARY"
+            echo "ANTHROPIC_API_KEY is not set and llm_mode=live; skipping run." >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Checkout dependency repos (shallow)
@@ -374,11 +315,6 @@ jobs:
           EXECUTION_SPECS_REF="${{ steps.resolved.outputs.execution_specs_ref }}"
           CLIENT="${{ steps.resolved.outputs.client }}"
           CLIENT_REF="${{ steps.validated.outputs.client_ref }}"
-
-          if ! git ls-remote --heads https://github.com/ethereum/EIPs.git "$EIPS_REF" | grep -q .; then
-            echo "EIPs branch not found: $EIPS_REF" >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
 
           clone_ref() {
             local url="$1"
@@ -421,11 +357,11 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install PoC 4.7
+      - name: Install eip-verify
         if: ${{ steps.validated.outputs.should_run == 'true' }}
-        run: python -m pip install -e poc4_7
+        run: python -m pip install -e .
 
-      - name: Run PoC 4.7 phases
+      - name: Run eip-verify phases
         if: ${{ steps.validated.outputs.should_run == 'true' }}
         id: run_phases
         env:
@@ -455,34 +391,34 @@ jobs:
           LAST_OUTPUT=""
           for phase in $PHASE_PLAN; do
             case "$phase" in
-              0A)
-                poc4_7 --phase 0A --eip "$EIP" --eip-file "$EIP_FILE" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
-                RUN_ROOT=$(ls -td poc4_7/notes/generated/*/ | grep -v 'index_runs' | head -1)
+              extract)
+                eip-verify extract --eip "$EIP" --eip-file "$EIP_FILE" --spec-repo specs/execution-specs --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
+                RUN_ROOT=$(ls -td runs/*/ | head -1)
                 PARENT_RUN=$(ls -td "$RUN_ROOT/phase0A_runs"/* | head -1)
-                LAST_PHASE="0A"
+                LAST_PHASE="extract"
                 LAST_OUTPUT="$PARENT_RUN/phase0A_output.txt"
                 ;;
-              1A)
-                poc4_7 --phase 1A --parent-run "$PARENT_RUN" --eip "$EIP" --fork "$FORK" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
+              locate-spec)
+                eip-verify locate-spec --parent-run "$PARENT_RUN" --spec-repo specs/execution-specs --eip "$EIP" --fork "$FORK" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
                 PARENT_RUN=$(ls -td "$PARENT_RUN/phase1A_runs"/* | head -1)
-                LAST_PHASE="1A"
+                LAST_PHASE="locate-spec"
                 LAST_OUTPUT="$PARENT_RUN/phase1A_output.txt"
                 ;;
-              1B)
-                poc4_7 --phase 1B --parent-run "$PARENT_RUN" --eip "$EIP" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
+              analyze-spec)
+                eip-verify analyze-spec --parent-run "$PARENT_RUN" --eip "$EIP" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
                 PARENT_RUN=$(ls -td "$PARENT_RUN/phase1B_runs"/* | head -1)
-                LAST_PHASE="1B"
+                LAST_PHASE="analyze-spec"
                 LAST_OUTPUT="$PARENT_RUN/phase1B_output.txt"
                 ;;
-              2A)
-                poc4_7 --phase 2A --parent-run "$PARENT_RUN" --eip "$EIP" --client-repo "clients/execution/$CLIENT" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
+              locate-client)
+                eip-verify locate-client --parent-run "$PARENT_RUN" --client-repo "clients/execution/$CLIENT" --eip "$EIP" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
                 PARENT_RUN=$(ls -td "$PARENT_RUN/phase2A_runs"/* | head -1)
-                LAST_PHASE="2A"
+                LAST_PHASE="locate-client"
                 LAST_OUTPUT="$PARENT_RUN/phase2A_output.txt"
                 ;;
-              2B)
-                poc4_7 --phase 2B --parent-run "$PARENT_RUN" --eip "$EIP" --client-repo "clients/execution/$CLIENT" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
-                LAST_PHASE="2B"
+              analyze-client)
+                eip-verify analyze-client --parent-run "$PARENT_RUN" --client-repo "clients/execution/$CLIENT" --eip "$EIP" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
+                LAST_PHASE="analyze-client"
                 LAST_OUTPUT=$(ls -td "$PARENT_RUN/phase2B_runs"/* | head -1)/phase2B_output.txt
                 ;;
             esac
@@ -494,13 +430,13 @@ jobs:
         if: ${{ steps.validated.outputs.should_run == 'true' }}
         id: run_root
         run: |
-          RUN_ROOT=$(ls -td poc4_7/notes/generated/*/ | grep -v 'index_runs' | head -1)
+          RUN_ROOT=$(ls -td runs/*/ | head -1)
           echo "run_root=$RUN_ROOT" >> "$GITHUB_OUTPUT"
 
       - name: Build summary
         if: ${{ steps.validated.outputs.should_run == 'true' }}
         run: |
-          poc4_7 report --run-root "${{ steps.run_root.outputs.run_root }}"
+          eip-verify report --run-root "${{ steps.run_root.outputs.run_root }}"
           cat "${{ steps.run_root.outputs.run_root }}/summary.md" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Append last phase output
@@ -512,63 +448,30 @@ jobs:
           LAST_OUTPUT="${{ steps.run_phases.outputs.last_output }}"
           phase_desc() {
             case "$1" in
-              0A) echo "Obligation extraction + indexing" ;;
-              1A) echo "Per-obligation implementation locations" ;;
-              1B) echo "Code flow + gap hints per obligation" ;;
-              2A) echo "Client implementation locations" ;;
-              2B) echo "Client gap analysis" ;;
+              extract) echo "Obligation extraction" ;;
+              locate-spec) echo "Spec implementation locations" ;;
+              analyze-spec) echo "Spec code flow + gap hints" ;;
+              locate-client) echo "Client implementation locations" ;;
+              analyze-client) echo "Client gap analysis" ;;
               *) echo "Phase output" ;;
             esac
           }
           escape_html() {
             sed -e 's/&/\\&amp;/g' -e 's/</\\&lt;/g' -e 's/>/\\&gt;/g' "$1"
           }
-          for phase in 0A 1A 1B 2A 2B; do
-            if [ "$phase" = "$LAST_PHASE" ]; then
-              continue
-            fi
-            candidate=$(find "$RUN_ROOT" -type f -name "phase${phase}_output.txt" | sort | tail -n 1)
-            if [ -n "$candidate" ]; then
-              echo "" >> "$GITHUB_STEP_SUMMARY"
-              desc=$(phase_desc "$phase")
-              echo "<details><summary>Phase ${phase} — ${desc} output</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
-              escape_html "$candidate" >> "$GITHUB_STEP_SUMMARY"
-              echo "</pre></details>" >> "$GITHUB_STEP_SUMMARY"
-            fi
-          done
           if [ -n "$LAST_OUTPUT" ] && [ -f "$LAST_OUTPUT" ]; then
             echo "" >> "$GITHUB_STEP_SUMMARY"
             last_desc=$(phase_desc "$LAST_PHASE")
             echo "<details><summary>Last phase output ($LAST_PHASE — $last_desc)</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
             escape_html "$LAST_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
             echo "</pre></details>" >> "$GITHUB_STEP_SUMMARY"
-            LAST_DIR=$(dirname "$LAST_OUTPUT")
-            LAST_CSV=""
-            if [ -f "$LAST_DIR/client_obligations_index.csv" ]; then
-              LAST_CSV="$LAST_DIR/client_obligations_index.csv"
-            elif [ -f "$LAST_DIR/obligations_index.csv" ]; then
-              LAST_CSV="$LAST_DIR/obligations_index.csv"
-            else
-              LAST_CSV=$(find "$LAST_DIR" -maxdepth 1 -type f -name "*obligations_index.csv" | sort | head -n 1)
-            fi
-            if [ -n "$LAST_CSV" ] && [ -f "$LAST_CSV" ]; then
-              echo "" >> "$GITHUB_STEP_SUMMARY"
-              echo "<details><summary>Last phase CSV ($LAST_PHASE — $last_desc)</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
-              escape_html "$LAST_CSV" >> "$GITHUB_STEP_SUMMARY"
-              echo "</pre></details>" >> "$GITHUB_STEP_SUMMARY"
-            fi
-          else
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "## Last phase output" >> "$GITHUB_STEP_SUMMARY"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "No phase output file found at: $LAST_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Upload summary
         if: ${{ steps.validated.outputs.should_run == 'true' }}
         uses: actions/upload-artifact@v4
         with:
-          name: poc4_7-summary
+          name: eip-verify-summary
           path: |
             ${{ steps.run_root.outputs.run_root }}/summary.json
             ${{ steps.run_root.outputs.run_root }}/summary.md
@@ -576,10 +479,10 @@ jobs:
         if: ${{ steps.validated.outputs.should_run == 'true' }}
         uses: actions/upload-artifact@v4
         with:
-          name: poc4_7-run-artifacts
+          name: eip-verify-run-artifacts
           path: ${{ steps.run_root.outputs.run_root }}/
 
       - name: Skip run (missing ANTHROPIC_API_KEY)
         if: ${{ steps.validated.outputs.should_run == 'false' }}
         run: |
-          echo "ANTHROPIC_API_KEY is not set and llm_mode=live; skipping PoC 4.7 run." >> "$GITHUB_STEP_SUMMARY"
+          echo "ANTHROPIC_API_KEY is not set and llm_mode=live; skipping run." >> "$GITHUB_STEP_SUMMARY"

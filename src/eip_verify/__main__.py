@@ -1,4 +1,4 @@
-"""Module entry point for `python -m poc4_7`."""
+"""Module entry point for `python -m eip_verify`."""
 
 from .cli import main
 

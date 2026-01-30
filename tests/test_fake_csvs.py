@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from poc4_7.fake_agent import _write_fake_client_csv, _write_fake_obligations_csv
+from eip_verify.fake_agent import _write_fake_client_csv, _write_fake_obligations_csv
 
 
 def test_write_fake_obligations_csv(tmp_path: Path) -> None:

@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "poc4_7"
+name = "eip-verify"
 version = "0.1.0"
-description = "PoC 4.7 package for per-obligation mapping of EIPs to execution-specs forks and execution clients."
+description = "LLM-powered verification of EIP obligations against execution-specs and client implementations."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
@@ -21,7 +21,7 @@ test = [
 ]
 
 [project.scripts]
-poc4_7 = "poc4_7.cli:main"
+eip-verify = "eip_verify.cli:main"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
@@ -31,7 +31,7 @@ include-package-data = true
 where = ["src"]
 
 [tool.setuptools.package-data]
-poc4_7 = ["prompts/*.txt"]
+eip_verify = ["prompts/*.txt"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
