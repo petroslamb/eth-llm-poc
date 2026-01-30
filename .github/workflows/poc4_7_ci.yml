@@ -43,11 +43,6 @@ on:
         required: false
         default: "20"
         type: string
-      report_only:
-        description: "Run report-only job and skip full pipeline (true/false)"
-        required: false
-        default: "false"
-        type: string
       eips_ref:
         description: "EIPs repo branch (default: master)"
         required: false
@@ -95,10 +90,6 @@ on:
         description: "Max turns per phase"
         required: false
         default: "20"
-      report_only:
-        description: "Run report-only job and skip full pipeline (true/false)"
-        required: false
-        default: "false"
       eips_ref:
         description: "EIPs repo branch (default: master)"
         required: false
@@ -128,51 +119,8 @@ env:
   DEFAULT_RETH_REF: "v1.10.0-rc.2"
 
 jobs:
-  poc4_7_report_only:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: false
-          fetch-depth: 1
-          persist-credentials: false
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install PoC 4.7
-        run: python -m pip install -e poc4_7
-
-      - name: Report-only (fixture)
-        run: |
-          set -euo pipefail
-          FIXTURE_ROOT="poc4_8/tests/fixtures/run_20260129_161814"
-          OUT_DIR="$FIXTURE_ROOT/report"
-          poc4_7 report --run-root "$FIXTURE_ROOT" --output-dir "$OUT_DIR"
-          cat "$OUT_DIR/summary.md" >> "$GITHUB_STEP_SUMMARY"
-          LAST_PHASE=""
-          LAST_OUTPUT=""
-          for phase in 2B 2A 1B 1A 0A; do
-            candidate=$(find "$FIXTURE_ROOT" -type f -name "phase${phase}_output.txt" | sort | tail -n 1)
-            if [ -n "$candidate" ]; then
-              LAST_PHASE="$phase"
-              LAST_OUTPUT="$candidate"
-              break
-            fi
-          done
-          if [ -f "$LAST_OUTPUT" ]; then
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "<details><summary>Last phase output ($LAST_PHASE)</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
-            sed -e 's/&/\\&amp;/g' -e 's/</\\&lt;/g' -e 's/>/\\&gt;/g' "$LAST_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
-            echo "</pre></details>" >> "$GITHUB_STEP_SUMMARY"
-          fi
-
   poc4_7:
     runs-on: ubuntu-latest
-    if: ${{ (inputs.report_only || github.event.inputs.report_only || 'false') != 'true' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -502,13 +450,44 @@ jobs:
         if: ${{ steps.detect_key.outputs.has_key == 'true' }}
         run: |
           set -euo pipefail
+          RUN_ROOT="${{ steps.run_root.outputs.run_root }}"
           LAST_PHASE="${{ steps.run_phases.outputs.last_phase }}"
           LAST_OUTPUT="${{ steps.run_phases.outputs.last_output }}"
+          escape_html() {
+            sed -e 's/&/\\&amp;/g' -e 's/</\\&lt;/g' -e 's/>/\\&gt;/g' "$1"
+          }
+          for phase in 0A 1A 1B 2A 2B; do
+            if [ "$phase" = "$LAST_PHASE" ]; then
+              continue
+            fi
+            candidate=$(find "$RUN_ROOT" -type f -name "phase${phase}_output.txt" | sort | tail -n 1)
+            if [ -n "$candidate" ]; then
+              echo "" >> "$GITHUB_STEP_SUMMARY"
+              echo "<details><summary>Phase ${phase} output</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
+              escape_html "$candidate" >> "$GITHUB_STEP_SUMMARY"
+              echo "</pre></details>" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
           if [ -n "$LAST_OUTPUT" ] && [ -f "$LAST_OUTPUT" ]; then
             echo "" >> "$GITHUB_STEP_SUMMARY"
             echo "<details><summary>Last phase output ($LAST_PHASE)</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
-            sed -e 's/&/\\&amp;/g' -e 's/</\\&lt;/g' -e 's/>/\\&gt;/g' "$LAST_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
+            escape_html "$LAST_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
             echo "</pre></details>" >> "$GITHUB_STEP_SUMMARY"
+            LAST_DIR=$(dirname "$LAST_OUTPUT")
+            LAST_CSV=""
+            if [ -f "$LAST_DIR/client_obligations_index.csv" ]; then
+              LAST_CSV="$LAST_DIR/client_obligations_index.csv"
+            elif [ -f "$LAST_DIR/obligations_index.csv" ]; then
+              LAST_CSV="$LAST_DIR/obligations_index.csv"
+            else
+              LAST_CSV=$(find "$LAST_DIR" -maxdepth 1 -type f -name "*obligations_index.csv" | sort | head -n 1)
+            fi
+            if [ -n "$LAST_CSV" ] && [ -f "$LAST_CSV" ]; then
+              echo "" >> "$GITHUB_STEP_SUMMARY"
+              echo "<details><summary>Last phase CSV ($LAST_PHASE)</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
+              escape_html "$LAST_CSV" >> "$GITHUB_STEP_SUMMARY"
+              echo "</pre></details>" >> "$GITHUB_STEP_SUMMARY"
+            fi
           else
             echo "" >> "$GITHUB_STEP_SUMMARY"
             echo "## Last phase output" >> "$GITHUB_STEP_SUMMARY"

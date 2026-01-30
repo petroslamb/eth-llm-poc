@@ -6,6 +6,7 @@
 
 - **PoC 4.7 package**: `poc4_7/` (installable Python package + CLI)
 - **Reusable workflow**: `.github/workflows/poc4_7_ci.yml`
+- **Report-only fixture test**: `.github/workflows/poc4_7_report_fixture_test.yml`
 - **Roadmap**: `ROADMAP.md` (RFP-aligned priorities)
 
 ## Quick start (use from another repo)
@@ -45,6 +46,16 @@ jobs:
 - **max_turns**: Agent run count (default `20`)
 - **eips_ref / execution_specs_ref**: Git refs used for shallow checkout
 - **client_ref**: Optional client ref override (branch/tag/commit). If empty, uses the default ref for the selected client.
+
+## Report-only fixture test
+
+Run the fixture-based report job without invoking the full pipeline. This is useful for validating report rendering and summaries.
+
+```yaml
+jobs:
+  report-fixture:
+    uses: petroslamb/eth-llm-poc/.github/workflows/poc4_7_report_fixture_test.yml@main
+```
 
 ## Artifacts
 
