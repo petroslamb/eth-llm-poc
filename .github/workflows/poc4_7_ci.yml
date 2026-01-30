@@ -156,17 +156,9 @@ jobs:
           LAST_OUTPUT="$FIXTURE_ROOT/phase0A_runs/20260129_161814/phase0A_output.txt"
           if [ -f "$LAST_OUTPUT" ]; then
             echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "## Last phase output (0A)" >> "$GITHUB_STEP_SUMMARY"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            FILE_SIZE=$(wc -c < "$LAST_OUTPUT" | tr -d ' ')
-            if [ "$FILE_SIZE" -le 900000 ]; then
-              echo "```text" >> "$GITHUB_STEP_SUMMARY"
-              cat "$LAST_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
-              echo "```" >> "$GITHUB_STEP_SUMMARY"
-            else
-              echo "Output is ${FILE_SIZE} bytes, too large for the Actions summary." >> "$GITHUB_STEP_SUMMARY"
-              echo "See the full file in the run artifacts." >> "$GITHUB_STEP_SUMMARY"
-            fi
+            echo "<details><summary>Last phase output (0A)</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
+            sed -e 's/&/\\&amp;/g' -e 's/</\\&lt;/g' -e 's/>/\\&gt;/g' "$LAST_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
+            echo "</pre></details>" >> "$GITHUB_STEP_SUMMARY"
           fi
 
   poc4_7:
@@ -505,17 +497,9 @@ jobs:
           LAST_OUTPUT="${{ steps.run_phases.outputs.last_output }}"
           if [ -n "$LAST_OUTPUT" ] && [ -f "$LAST_OUTPUT" ]; then
             echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "## Last phase output ($LAST_PHASE)" >> "$GITHUB_STEP_SUMMARY"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            FILE_SIZE=$(wc -c < "$LAST_OUTPUT" | tr -d ' ')
-            if [ "$FILE_SIZE" -le 900000 ]; then
-              echo "```text" >> "$GITHUB_STEP_SUMMARY"
-              cat "$LAST_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
-              echo "```" >> "$GITHUB_STEP_SUMMARY"
-            else
-              echo "Output is ${FILE_SIZE} bytes, too large for the Actions summary." >> "$GITHUB_STEP_SUMMARY"
-              echo "See the full file in the run artifacts." >> "$GITHUB_STEP_SUMMARY"
-            fi
+            echo "<details><summary>Last phase output ($LAST_PHASE)</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
+            sed -e 's/&/\\&amp;/g' -e 's/</\\&lt;/g' -e 's/>/\\&gt;/g' "$LAST_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
+            echo "</pre></details>" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "" >> "$GITHUB_STEP_SUMMARY"
             echo "## Last phase output" >> "$GITHUB_STEP_SUMMARY"
