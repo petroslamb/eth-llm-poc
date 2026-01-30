@@ -140,6 +140,7 @@ Each phase now also writes a `run_manifest.json` in its run folder with metadata
 
 ### Notes
 - The CLI runs the Claude agent with tool permissions auto-approved so it can read/write files without interactive prompts.
+- Set `--llm-mode stub` (or `llm_mode: stub`) to skip real LLM calls and record prompt/options metadata.
 - Phase requirements (constraint splitting, enforcement hops, location validation) are defined in `poc4_7/PHASE_PLAN.md`.
 
 ### Optional config
@@ -153,9 +154,20 @@ spec_root: specs/execution-specs/src/ethereum/forks/london
 model: claude-sonnet-4-5
 max_turns: 1
 allowed_tools: ["Read", "Write", "Bash", "Grep", "Glob"]
+llm_mode: live
+record_llm_calls: false
+stub_response_path: poc4_7/fixtures/stub_response.txt
 client: geth
 client_root: clients/execution/geth
 geth_root: clients/execution/geth
 ```
 
 CLI flags always override config values.
+
+### Tests
+Run tests from the package root:
+
+```bash
+python -m pip install -e ".[test]"
+pytest -q
+```

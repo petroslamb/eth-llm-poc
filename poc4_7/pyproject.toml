@@ -15,6 +15,11 @@ dependencies = [
   "PyYAML>=6.0",
 ]
 
+[project.optional-dependencies]
+test = [
+  "pytest>=7.0",
+]
+
 [project.scripts]
 poc4_7 = "poc4_7.cli:main"
 
@@ -27,3 +32,6 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 poc4_7 = ["prompts/*.txt"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

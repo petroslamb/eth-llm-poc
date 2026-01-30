@@ -101,6 +101,22 @@ def build_parser() -> argparse.ArgumentParser:
         help="Comma-separated list of allowed tools (default: Read,Write,Bash,Grep,Glob).",
     )
     parser.add_argument(
+        "--llm-mode",
+        default=None,
+        choices=["live", "stub"],
+        help="LLM mode: live (default) or stub (record-only).",
+    )
+    parser.add_argument(
+        "--record-llm-calls",
+        action="store_true",
+        help="Record LLM call metadata alongside outputs.",
+    )
+    parser.add_argument(
+        "--stub-response-path",
+        default=None,
+        help="Path to stub response text (used when --llm-mode=stub).",
+    )
+    parser.add_argument(
         "--spec-map-strict",
         action="store_true",
         help="Fail if README vs fork __init__.py EIP lists mismatch for the selected fork.",
@@ -233,6 +249,24 @@ def main() -> int:
     if args.spec_map_strict:
         spec_map_strict = True
 
+    llm_mode = args.llm_mode or cfg.get("llm_mode") or os.getenv("POC4_7_LLM_MODE", "")
+    llm_mode = (llm_mode or "live").strip().lower()
+    if llm_mode not in {"live", "stub"}:
+        parser.error("--llm-mode must be 'live' or 'stub'")
+
+    record_llm_calls = bool(cfg.get("record_llm_calls", False))
+    env_record = os.getenv("POC4_7_RECORD_LLM_CALLS", "").strip().lower()
+    if env_record in {"1", "true", "yes", "y"}:
+        record_llm_calls = True
+    if args.record_llm_calls:
+        record_llm_calls = True
+
+    stub_response_path = (
+        args.stub_response_path
+        or cfg.get("stub_response_path")
+        or os.getenv("POC4_7_STUB_RESPONSE_PATH")
+    )
+
     if args.phase == "0A":
         run_phase_0a(
             repo_root=repo_root,
@@ -241,6 +275,9 @@ def main() -> int:
             model=model,
             max_turns=max_turns,
             allowed_tools=allowed_tools,
+            llm_mode=llm_mode,
+            record_llm_calls=record_llm_calls,
+            stub_response_path=stub_response_path,
         )
         return 0
 
@@ -256,6 +293,9 @@ def main() -> int:
             model=model,
             max_turns=max_turns,
             allowed_tools=allowed_tools,
+            llm_mode=llm_mode,
+            record_llm_calls=record_llm_calls,
+            stub_response_path=stub_response_path,
             obligation_id=args.obligation_id,
             spec_map_strict=spec_map_strict,
         )
@@ -271,6 +311,9 @@ def main() -> int:
             model=model,
             max_turns=max_turns,
             allowed_tools=allowed_tools,
+            llm_mode=llm_mode,
+            record_llm_calls=record_llm_calls,
+            stub_response_path=stub_response_path,
             obligation_id=args.obligation_id,
         )
         return 0
@@ -287,6 +330,9 @@ def main() -> int:
             model=model,
             max_turns=max_turns,
             allowed_tools=allowed_tools,
+            llm_mode=llm_mode,
+            record_llm_calls=record_llm_calls,
+            stub_response_path=stub_response_path,
             obligation_id=args.obligation_id,
         )
         return 0
@@ -303,6 +349,9 @@ def main() -> int:
             model=model,
             max_turns=max_turns,
             allowed_tools=allowed_tools,
+            llm_mode=llm_mode,
+            record_llm_calls=record_llm_calls,
+            stub_response_path=stub_response_path,
             obligation_id=args.obligation_id,
         )
         return 0

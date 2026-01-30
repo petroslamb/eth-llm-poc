@@ -8,6 +8,7 @@
 - **Reusable workflow**: `.github/workflows/poc4_7_ci.yml`
 - **Report-only fixture test**: `.github/workflows/poc4_7_report_fixture_test.yml`
 - **Roadmap**: `ROADMAP.md` (RFP-aligned priorities)
+- **Docs**: `docs/` (implementation spec, pipeline brainstorming, RFP copy)
 
 ## Quick start (use from another repo)
 

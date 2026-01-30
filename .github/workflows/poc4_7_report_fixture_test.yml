@@ -26,6 +26,34 @@ jobs:
       - name: Install PoC 4.7
         run: python -m pip install -e poc4_7
 
+      - name: Stub mode sanity check
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          from poc4_7.runner import build_claude_config, run_query
+
+          repo_root = Path.cwd().resolve()
+          out_dir = repo_root / "poc4_7" / "notes" / "generated" / "stub_sanity"
+          out_dir.mkdir(parents=True, exist_ok=True)
+          output_path = out_dir / "stub_output.txt"
+          config = build_claude_config(
+              model="claude-sonnet-4-5",
+              max_turns=1,
+              allowed_tools=None,
+              llm_mode="stub",
+              record_calls=True,
+              stub_response_path=str(repo_root / "poc4_7" / "fixtures" / "stub_response.txt"),
+          )
+          run_query("Stub sanity check prompt.", output_path, repo_root, config)
+          print(output_path.read_text(encoding="utf-8"))
+          print((output_path.with_suffix(".call.json")).read_text(encoding="utf-8"))
+          PY
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "<details><summary>Stub mode sanity output</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
+          sed -e 's/&/\\&amp;/g' -e 's/</\\&lt;/g' -e 's/>/\\&gt;/g' "poc4_7/notes/generated/stub_sanity/stub_output.txt" >> "$GITHUB_STEP_SUMMARY"
+          echo "</pre></details>" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Report-only (fixture)
         run: |
           set -euo pipefail

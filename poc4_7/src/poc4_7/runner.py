@@ -26,6 +26,9 @@ class ClaudeConfig:
     model: Optional[str]
     max_turns: int
     allowed_tools: list[str]
+    llm_mode: str = "live"
+    record_calls: bool = False
+    stub_response_path: Optional[Path] = None
 
 
 def normalize_eip_number(eip: Optional[str]) -> Optional[str]:
@@ -157,12 +160,72 @@ def build_claude_config(
     model: Optional[str],
     max_turns: int,
     allowed_tools: Optional[Iterable[str]],
+    llm_mode: str = "live",
+    record_calls: bool = False,
+    stub_response_path: Optional[str] = None,
 ) -> ClaudeConfig:
     tools = list(allowed_tools) if allowed_tools else DEFAULT_ALLOWED_TOOLS
-    return ClaudeConfig(model=model, max_turns=max_turns, allowed_tools=tools)
+    stub_path = Path(stub_response_path).expanduser().resolve() if stub_response_path else None
+    return ClaudeConfig(
+        model=model,
+        max_turns=max_turns,
+        allowed_tools=tools,
+        llm_mode=llm_mode,
+        record_calls=record_calls,
+        stub_response_path=stub_path,
+    )
+
+
+def write_llm_call_record(
+    *,
+    output_path: Path,
+    prompt: str,
+    options_kwargs: dict[str, object],
+    config: ClaudeConfig,
+    used_stub: bool,
+) -> Path:
+    record_path = output_path.with_suffix(".call.json")
+    record = {
+        "recorded_at": timestamp(),
+        "llm_mode": config.llm_mode,
+        "used_stub": used_stub,
+        "prompt": prompt,
+        "options": options_kwargs,
+        "stub_response_path": str(config.stub_response_path) if config.stub_response_path else None,
+        "output_path": str(output_path),
+    }
+    record_path.write_text(json.dumps(record, indent=2), encoding="utf-8")
+    return record_path
 
 
 async def _run_query(prompt: str, output_path: Path, repo_root: Path, config: ClaudeConfig) -> None:
+    options_kwargs = {
+        "allowed_tools": config.allowed_tools,
+        "permission_mode": "bypassPermissions",
+        "max_turns": config.max_turns,
+        "cwd": str(repo_root),
+    }
+    if config.model:
+        options_kwargs["model"] = config.model
+
+    if config.llm_mode == "stub":
+        write_llm_call_record(
+            output_path=output_path,
+            prompt=prompt,
+            options_kwargs=options_kwargs,
+            config=config,
+            used_stub=True,
+        )
+        if config.stub_response_path and config.stub_response_path.exists():
+            output_text = config.stub_response_path.read_text(encoding="utf-8")
+        else:
+            output_text = (
+                "STUB MODE: Claude call skipped.\n"
+                f"Recorded call metadata in {output_path.with_suffix('.call.json').name}.\n"
+            )
+        output_path.write_text(output_text, encoding="utf-8")
+        return
+
     if not (os.getenv("ANTHROPIC_API_KEY") or os.getenv("ANTHROPIC_AUTH_TOKEN")):
         raise RuntimeError(
             "Missing API credentials. Set ANTHROPIC_API_KEY (or ANTHROPIC_AUTH_TOKEN) "
@@ -175,15 +238,15 @@ async def _run_query(prompt: str, output_path: Path, repo_root: Path, config: Cl
             "claude_agent_sdk is not installed. Install it with: uv pip install claude-agent-sdk"
         ) from exc
 
-    options_kwargs = {
-        "allowed_tools": config.allowed_tools,
-        "permission_mode": "bypassPermissions",
-        "max_turns": config.max_turns,
-        "cwd": str(repo_root),
-    }
-    if config.model:
-        options_kwargs["model"] = config.model
     options = ClaudeAgentOptions(**options_kwargs)
+    if config.record_calls:
+        write_llm_call_record(
+            output_path=output_path,
+            prompt=prompt,
+            options_kwargs=options_kwargs,
+            config=config,
+            used_stub=False,
+        )
 
     text_chunks: list[str] = []
     async for message in query(prompt=prompt, options=options):
@@ -216,6 +279,9 @@ def run_phase_0a(
     model: Optional[str],
     max_turns: int,
     allowed_tools: Optional[Iterable[str]],
+    llm_mode: str,
+    record_llm_calls: bool,
+    stub_response_path: Optional[str],
 ) -> Path:
     root_ts = timestamp()
     root_dir = notes_root(repo_root) / root_ts
@@ -268,7 +334,14 @@ def run_phase_0a(
     output_path = run_dir / "phase0A_output.txt"
 
     write_prompt(prompt_path, prompt)
-    config = build_claude_config(model, max_turns, allowed_tools)
+    config = build_claude_config(
+        model,
+        max_turns,
+        allowed_tools,
+        llm_mode=llm_mode,
+        record_calls=record_llm_calls,
+        stub_response_path=stub_response_path,
+    )
     run_query(prompt, output_path, repo_root, config)
     return run_dir
 
@@ -282,6 +355,9 @@ def run_phase_1a(
     model: Optional[str],
     max_turns: int,
     allowed_tools: Optional[Iterable[str]],
+    llm_mode: str,
+    record_llm_calls: bool,
+    stub_response_path: Optional[str],
     obligation_id: Optional[str],
     spec_map_strict: bool = False,
 ) -> Path:
@@ -379,7 +455,14 @@ def run_phase_1a(
     output_path = run_dir / "phase1A_output.txt"
 
     write_prompt(prompt_path, prompt)
-    config = build_claude_config(model, max_turns, allowed_tools)
+    config = build_claude_config(
+        model,
+        max_turns,
+        allowed_tools,
+        llm_mode=llm_mode,
+        record_calls=record_llm_calls,
+        stub_response_path=stub_response_path,
+    )
     run_query(prompt, output_path, repo_root, config)
     return run_dir
 
@@ -391,6 +474,9 @@ def run_phase_1b(
     model: Optional[str],
     max_turns: int,
     allowed_tools: Optional[Iterable[str]],
+    llm_mode: str,
+    record_llm_calls: bool,
+    stub_response_path: Optional[str],
     obligation_id: Optional[str],
 ) -> Path:
     run_dir = parent_run / "phase1B_runs" / timestamp()
@@ -429,7 +515,14 @@ def run_phase_1b(
     output_path = run_dir / "phase1B_output.txt"
 
     write_prompt(prompt_path, prompt)
-    config = build_claude_config(model, max_turns, allowed_tools)
+    config = build_claude_config(
+        model,
+        max_turns,
+        allowed_tools,
+        llm_mode=llm_mode,
+        record_calls=record_llm_calls,
+        stub_response_path=stub_response_path,
+    )
     run_query(prompt, output_path, repo_root, config)
     return run_dir
 
@@ -443,6 +536,9 @@ def run_phase_2a(
     model: Optional[str],
     max_turns: int,
     allowed_tools: Optional[Iterable[str]],
+    llm_mode: str,
+    record_llm_calls: bool,
+    stub_response_path: Optional[str],
     obligation_id: Optional[str],
 ) -> Path:
     run_dir = parent_run / "phase2A_runs" / timestamp()
@@ -490,7 +586,14 @@ def run_phase_2a(
     output_path = run_dir / "phase2A_output.txt"
 
     write_prompt(prompt_path, prompt)
-    config = build_claude_config(model, max_turns, allowed_tools)
+    config = build_claude_config(
+        model,
+        max_turns,
+        allowed_tools,
+        llm_mode=llm_mode,
+        record_calls=record_llm_calls,
+        stub_response_path=stub_response_path,
+    )
     run_query(prompt, output_path, repo_root, config)
     return run_dir
 
@@ -504,6 +607,9 @@ def run_phase_2b(
     model: Optional[str],
     max_turns: int,
     allowed_tools: Optional[Iterable[str]],
+    llm_mode: str,
+    record_llm_calls: bool,
+    stub_response_path: Optional[str],
     obligation_id: Optional[str],
 ) -> Path:
     run_dir = parent_run / "phase2B_runs" / timestamp()
@@ -550,6 +656,13 @@ def run_phase_2b(
     output_path = run_dir / "phase2B_output.txt"
 
     write_prompt(prompt_path, prompt)
-    config = build_claude_config(model, max_turns, allowed_tools)
+    config = build_claude_config(
+        model,
+        max_turns,
+        allowed_tools,
+        llm_mode=llm_mode,
+        record_calls=record_llm_calls,
+        stub_response_path=stub_response_path,
+    )
     run_query(prompt, output_path, repo_root, config)
     return run_dir
