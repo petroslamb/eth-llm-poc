@@ -272,6 +272,60 @@ def copy_csv(source: Path, dest: Path) -> None:
     shutil.copy2(source, dest)
 
 
+def write_stub_obligations_csv(path: Path, eip_number: str) -> None:
+    fieldnames = [
+        "id",
+        "category",
+        "enforcement_type",
+        "statement",
+        "locations",
+        "code_flow",
+        "obligation_gap",
+        "code_gap",
+    ]
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerow(
+            {
+                "id": f"EIP{eip_number}-OBL-001",
+                "category": "stub",
+                "enforcement_type": "",
+                "statement": f"Stub obligation for EIP-{eip_number}.",
+                "locations": "",
+                "code_flow": "",
+                "obligation_gap": "",
+                "code_gap": "",
+            }
+        )
+
+
+def write_stub_client_csv(input_csv: Path, output_csv: Path) -> None:
+    with input_csv.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        fieldnames = list(reader.fieldnames or [])
+        extras = [
+            "client_locations",
+            "client_code_flow",
+            "client_obligation_gap",
+            "client_code_gap",
+        ]
+        for col in extras:
+            if col not in fieldnames:
+                fieldnames.append(col)
+        rows = []
+        for row in reader:
+            for col in extras:
+                row.setdefault(col, "")
+            rows.append(row)
+
+    with output_csv.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
+
+
 def run_phase_0a(
     repo_root: Path,
     eip_file: Optional[str],
@@ -343,6 +397,8 @@ def run_phase_0a(
         stub_response_path=stub_response_path,
     )
     run_query(prompt, output_path, repo_root, config)
+    if config.llm_mode == "stub" and not output_csv.exists():
+        write_stub_obligations_csv(output_csv, resolved_eip_number)
     return run_dir
 
 
@@ -595,6 +651,8 @@ def run_phase_2a(
         stub_response_path=stub_response_path,
     )
     run_query(prompt, output_path, repo_root, config)
+    if config.llm_mode == "stub" and not output_csv.exists():
+        write_stub_client_csv(input_csv, output_csv)
     return run_dir
 
 
