@@ -153,10 +153,19 @@ jobs:
           OUT_DIR="$FIXTURE_ROOT/report"
           poc4_7 report --run-root "$FIXTURE_ROOT" --output-dir "$OUT_DIR"
           cat "$OUT_DIR/summary.md" >> "$GITHUB_STEP_SUMMARY"
-          LAST_OUTPUT="$FIXTURE_ROOT/phase0A_runs/20260129_161814/phase0A_output.txt"
+          LAST_PHASE=""
+          LAST_OUTPUT=""
+          for phase in 2B 2A 1B 1A 0A; do
+            candidate=$(find "$FIXTURE_ROOT" -type f -name "phase${phase}_output.txt" | sort | tail -n 1)
+            if [ -n "$candidate" ]; then
+              LAST_PHASE="$phase"
+              LAST_OUTPUT="$candidate"
+              break
+            fi
+          done
           if [ -f "$LAST_OUTPUT" ]; then
             echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "<details><summary>Last phase output (0A)</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
+            echo "<details><summary>Last phase output ($LAST_PHASE)</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
             sed -e 's/&/\\&amp;/g' -e 's/</\\&lt;/g' -e 's/>/\\&gt;/g' "$LAST_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
             echo "</pre></details>" >> "$GITHUB_STEP_SUMMARY"
           fi
