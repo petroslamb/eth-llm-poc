@@ -1,0 +1,126 @@
+name: Manual Run (Batch)
+
+on:
+  workflow_dispatch:
+    inputs:
+      eip:
+        description: "EIP number(s) (comma-separated, leave empty for all in fork)"
+        required: false
+        default: ""
+        type: string
+      fork:
+        description: "Execution-specs fork (used if EIP list is empty)"
+        required: false
+        default: "prague"
+        type: string
+      client:
+        description: "Execution client"
+        required: false
+        default: "geth"
+        type: string
+      client_ref:
+        description: "Execution client ref"
+        required: false
+        default: ""
+        type: string
+      phases:
+        description: "Comma-separated phase list"
+        required: false
+        default: "extract,locate-spec,analyze-spec,locate-client,analyze-client"
+        type: string
+      model:
+        description: "Claude model"
+        required: false
+        default: "claude-sonnet-4-5"
+        type: string
+      max_turns:
+        description: "Max turns per phase"
+        required: false
+        default: "20"
+        type: string
+      eips_ref:
+        description: "EIPs repo branch"
+        required: false
+        default: "master"
+        type: string
+      execution_specs_ref:
+        description: "Execution-specs repo ref"
+        required: false
+        default: "mainnet"
+        type: string
+      llm_mode:
+        description: "LLM mode (live or fake)"
+        required: false
+        default: "fake"
+        type: string
+      pypi_package:
+        description: "Git ref or PyPI version to install eip-verify from (default: local path)"
+        required: false
+        default: "."
+        type: string
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout eip-verify
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Checkout Execution Specs
+        run: |
+          mkdir -p specs/execution-specs
+          git init specs/execution-specs
+          cd specs/execution-specs
+          git remote add origin https://github.com/ethereum/execution-specs.git
+          git fetch --depth 1 origin "${{ inputs.execution_specs_ref }}"
+          git checkout FETCH_HEAD
+
+      - name: Resolve EIP Matrix
+        id: set-matrix
+        run: |
+          # Install current package to get cli_ci
+          pip install .
+          
+          # Run the resolver
+          echo "Resolving EIPs for fork '${{ inputs.fork }}'..."
+          MATRIX_JSON=$(eip-verify get-matrix \
+            --eip "${{ inputs.eip }}" \
+            --fork "${{ inputs.fork }}" \
+            --spec-repo "specs/execution-specs")
+          
+          echo "Found EIPs: $MATRIX_JSON"
+          echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
+
+  verify:
+    needs: discover
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        eip: ${{ fromJson(needs.discover.outputs.matrix) }}
+    uses: ./.github/workflows/ci.yml
+    with:
+      eip: ${{ matrix.eip }}
+      fork: ${{ inputs.fork }}
+      client: ${{ inputs.client }}
+      client_ref: ${{ inputs.client_ref }}
+      phases: ${{ inputs.phases }}
+      model: ${{ inputs.model }}
+      max_turns: ${{ inputs.max_turns }}
+      eips_ref: ${{ inputs.eips_ref }}
+      execution_specs_ref: ${{ inputs.execution_specs_ref }}
+      llm_mode: ${{ inputs.llm_mode }}
+      pypi_package: ${{ inputs.pypi_package }}
+    secrets:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

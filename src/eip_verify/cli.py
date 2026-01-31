@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import os
+import sys
 from pathlib import Path
 from typing import Optional
 
@@ -356,6 +358,72 @@ class CLI:
         root = Path(run_root).resolve() if run_root else Path.cwd().resolve()
         fmt_list = [f.strip() for f in formats.split(",") if f.strip()]
         write_report(run_root=root, output_dir=output_dir, formats=fmt_list)
+
+
+    def get_matrix(
+        self,
+        spec_repo: str,
+        fork: str,
+        eip: Optional[str] = None,
+    ):
+        """
+        Resolve EIP matrix for CI.
+
+        Args:
+            spec_repo: Path to execution-specs repo.
+            fork: Fork name (e.g. London).
+            eip: Optional comma-separated list of EIPs.
+        """
+        resolved_spec_repo = Path(spec_repo).resolve()
+        
+        # Determine strict eip list
+        eip_list = []
+        if eip:
+            if isinstance(eip, (list, tuple)):
+                # Flatten valid items
+                for item in eip:
+                    if isinstance(item, str):
+                        eip_list.extend([x.strip() for x in item.split(",") if x.strip()])
+                    else:
+                        eip_list.append(str(item))
+            elif isinstance(eip, str):
+                eip_list = [e.strip() for e in eip.split(",") if e.strip()]
+        
+        # 1. If explicit EIPs provided, use them
+        if eip_list:
+            print(json.dumps(eip_list))
+            return
+
+        # 2. If no EIPs, look up the fork in the spec repo
+        if not resolved_spec_repo.exists():
+            # Print error to stderr so it doesn't pollute the JSON output on stdout (if captured blindly)
+            # But normally fire handles exceptions.
+            raise FileNotFoundError(f"Spec repo not found at {resolved_spec_repo}")
+
+        readme_path = resolved_spec_repo / "README.md"
+        if not readme_path.exists():
+            raise FileNotFoundError(f"Spec README not found at {readme_path}")
+
+        # Use the existing logic to parse the table
+        eip_fork_map = spec_index.build_eip_fork_map(readme_path, resolved_spec_repo)
+        
+        forks_data = eip_fork_map.get("forks", [])
+        # Case-insensitive lookup
+        target_fork_data = next((f for f in forks_data if f["fork"].lower() == fork.lower()), None)
+
+        if not target_fork_data:
+            available = [f["fork"] for f in forks_data]
+            raise ValueError(f"Fork '{fork}' not found in spec README. Available: {available}")
+
+        # Prefer the 'eips_fork_init' (actual python code) if available, 
+        # otherwise fallback to 'eips_readme' (table)
+        eips = target_fork_data.get("eips_fork_init")
+        if eips is None:
+            eips = target_fork_data.get("eips_readme")
+        
+        # Convert to strings
+        result = [str(e) for e in eips] if eips else []
+        print(json.dumps(result))
 
 
 def main():
