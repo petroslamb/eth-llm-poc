@@ -1,0 +1,82 @@
+name: Manual Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      eip:
+        description: "EIP number"
+        required: false
+        default: "7702"
+        type: string
+      fork:
+        description: "Execution-specs fork"
+        required: false
+        default: "prague"
+        type: string
+      client:
+        description: "Execution client"
+        required: false
+        default: "geth"
+        type: string
+      client_ref:
+        description: "Execution client ref"
+        required: false
+        default: ""
+        type: string
+      phases:
+        description: "Comma-separated phase list"
+        required: false
+        default: "extract,locate-spec,analyze-spec,locate-client,analyze-client"
+        type: string
+      model:
+        description: "Claude model"
+        required: false
+        default: "claude-sonnet-4-5"
+        type: string
+      max_turns:
+        description: "Max turns per phase"
+        required: false
+        default: "20"
+        type: string
+      eips_ref:
+        description: "EIPs repo branch"
+        required: false
+        default: "master"
+        type: string
+      execution_specs_ref:
+        description: "Execution-specs repo ref"
+        required: false
+        default: "mainnet"
+        type: string
+      llm_mode:
+        description: "LLM mode (live or fake)"
+        required: false
+        default: "fake"
+        type: string
+      pypi_package:
+        description: "Git ref or PyPI version to install eip-verify from (default: local path)"
+        required: false
+        default: "."
+        type: string
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  run-scan:
+    uses: ./.github/workflows/ci.yml
+    with:
+      eip: ${{ inputs.eip }}
+      fork: ${{ inputs.fork }}
+      client: ${{ inputs.client }}
+      client_ref: ${{ inputs.client_ref }}
+      phases: ${{ inputs.phases }}
+      model: ${{ inputs.model }}
+      max_turns: ${{ inputs.max_turns }}
+      eips_ref: ${{ inputs.eips_ref }}
+      execution_specs_ref: ${{ inputs.execution_specs_ref }}
+      llm_mode: ${{ inputs.llm_mode }}
+      pypi_package: ${{ inputs.pypi_package }}
+    secrets:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
