@@ -31,6 +31,61 @@ def github_log_group(title: str):
 PHASE_ORDER = ["extract", "locate-spec", "analyze-spec", "locate-client", "analyze-client"]
 
 
+
+def _log_phase_to_summary(phase: str, run_dir: Path) -> None:
+    """Append phase artifacts (prompt/output) to GitHub Step Summary."""
+    step_summary = os.getenv("GITHUB_STEP_SUMMARY")
+    if not step_summary:
+        return
+
+    # Find prompt and output files. 
+    # Usually locally named 'prompt.txt' or similar inside the run_dir.
+    # The runner saves them directly in run_dir as phase is leaf.
+    
+    # We'll look for common patterns or just list .txt files if needed.
+    # But usually runners produce: {phase}_prompt.txt and {phase}_output.txt OR just prompt.txt
+    # Looking at runner.py, it seems varied.
+    # Phase 0A: writes to `run_manifest` but not always text files? 
+    # Actually, the llm agent `run()` method saves `prompt.txt` and `response.txt` usually?
+    # No, `ClaudeAgent.run` saves `*_prompt.txt` and `*_call.json` and `*_output.txt`? 
+    # Let's just look for any .txt file that isn't empty.
+    
+    # Better approach: check specifically for likely artifact names based on common patterns
+    # or just list prompt/output files.
+    
+    artifacts = []
+    
+    # Simple heuristic: look for *prompt.txt and *output.txt
+    for path in sorted(run_dir.glob("*.txt")):
+        if "prompt" in path.name or "output" in path.name:
+            artifacts.append(path)
+            
+    if not artifacts:
+        return
+
+    try:
+        with open(step_summary, "a", encoding="utf-8") as f:
+            f.write(f"\n<details>\n<summary>Phase {phase} Artifacts</summary>\n\n")
+            
+            for art in artifacts:
+                name = art.name
+                content = art.read_text(encoding="utf-8", errors="replace")
+                
+                # Truncate to 20KB
+                MAX_SIZE = 20 * 1024
+                if len(content) > MAX_SIZE:
+                    content = content[:MAX_SIZE] + "\n... (Truncated)"
+                
+                f.write(f"#### {name}\n")
+                f.write("```text\n")
+                f.write(content)
+                f.write("\n```\n\n")
+                
+            f.write("</details>\n")
+    except Exception as e:
+        print(f"Failed to write to step summary: {e}")
+
+
 def run_pipeline(
     eip: str,
     phases: List[str],
@@ -82,6 +137,8 @@ def run_pipeline(
         with github_log_group(f"Phase: {phase}"):
             print(f"\n=== Running Phase: {phase} ===")
         
+        phase_output_dir = None
+
         if phase == "extract":
             run_phase_0a(
                 eip_file=eip_file,
@@ -102,6 +159,7 @@ def run_pipeline(
             phase_runs = list((run_root / "phase0A_runs").glob("*"))
             if phase_runs:
                 current_parent_run = sorted(phase_runs)[-1]
+                phase_output_dir = current_parent_run
             else:
                 raise RuntimeError("Phase extract failed to produce output directory")
 
@@ -125,6 +183,7 @@ def run_pipeline(
             phase_runs = list((current_parent_run / "phase1A_runs").glob("*"))
             if phase_runs:
                 current_parent_run = sorted(phase_runs)[-1]
+                phase_output_dir = current_parent_run
 
         elif phase == "analyze-spec":
             if not current_parent_run:
@@ -144,6 +203,7 @@ def run_pipeline(
             phase_runs = list((current_parent_run / "phase1B_runs").glob("*"))
             if phase_runs:
                 current_parent_run = sorted(phase_runs)[-1]
+                phase_output_dir = current_parent_run
 
         elif phase == "locate-client":
             if not current_parent_run:
@@ -165,6 +225,7 @@ def run_pipeline(
             phase_runs = list((current_parent_run / "phase2A_runs").glob("*"))
             if phase_runs:
                 current_parent_run = sorted(phase_runs)[-1]
+                phase_output_dir = current_parent_run
 
         elif phase == "analyze-client":
             if not current_parent_run:
@@ -183,7 +244,16 @@ def run_pipeline(
                 obligation_id=obligation_id,
                 agent=agent,
             )
-            # Last phase, no update needed
+            # Last phase, no update needed to current_parent_run logically for next step, 
+            # but we define phase_output_dir for logging.
+            # Usually it's in phase2B_runs/timestamp
+            phase_runs = list((current_parent_run / "phase2B_runs").glob("*"))
+            if phase_runs:
+                phase_output_dir = sorted(phase_runs)[-1]
+        
+        # Log to GitHub Step Summary if running in Actions
+        if phase_output_dir:
+            _log_phase_to_summary(phase, phase_output_dir)
 
     # Generate report at the end
     print("\n=== Generating Report ===")
