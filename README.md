@@ -4,6 +4,26 @@ LLM-powered verification of EIP obligations against execution-specs and client i
 
 ## Installation
 
+## Repository Map
+
+```
+/
+├── .github/workflows/   # CI/CD definitions (standard & batched phases)
+├── docs/                # Project roadmap, implementation specs, and RFP docs
+├── src/eip_verify/      # Main Python package
+│   ├── agents.py        # LLM agent adapters
+│   ├── cli.py           # CLI entrypoint (Fire-based)
+│   ├── pipeline.py      # Multi-stage verification orchestrator
+│   ├── runner.py        # Phase-specific execution logic
+│   ├── spec_index.py    # Execution-spec parsing & fork mapping
+│   └── prompts/         # System prompts for each verification phase
+├── tests/               # Unit and integration tests
+├── example_config.yaml  # Template configuration file
+└── pyproject.toml       # Build system & dependency definitions
+```
+
+## Installation
+
 ```sh
 pip install -e .
 ```
