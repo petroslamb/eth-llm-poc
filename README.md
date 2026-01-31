@@ -24,6 +24,36 @@ Set your Anthropic API key:
 export ANTHROPIC_API_KEY="..."
 ```
 
+### Configuration
+
+The tool supports configuration via CLI arguments, a YAML config file, and environment variables.
+
+**Precedence (Highest to Lowest):**
+1. CLI Arguments (`--llm-mode fake`)
+2. Config File (`config.yaml` in CWD, or via `--config`)
+3. Environment Variables
+4. Default Values
+
+**Environment Variables:**
+*   `ANTHROPIC_API_KEY`: **Required** for live mode.
+*   `EIP_VERIFY_LLM_MODE`: Set default mode (`live` or `fake`).
+*   `EIP_VERIFY_RECORD_LLM_CALLS`: Set to `true` to record interactions.
+
+**Config File:**
+A template is available at `example_config.yaml`. Copy it to `config.yaml` to use:
+
+```sh
+cp example_config.yaml config.yaml
+# Edit config.yaml...
+eip-verify pipeline ...
+```
+
+Or pass it explicitly:
+
+```sh
+eip-verify pipeline --config ./my-config.yaml ...
+```
+
 ### Commands
 
 ```

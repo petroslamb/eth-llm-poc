@@ -1,0 +1,73 @@
+# eip-verify Configuration Example
+#
+# USAGE:
+# 1. Copy this file to `config.yaml` in your working directory to have it automatically picked up.
+# 2. Or pass it explicitly via CLI: `eip-verify pipeline --config ./example_config.yaml ...`
+#
+# PRECEDENCE ORDER (Highest to Lowest):
+# 1. CLI Arguments (e.g. --llm-mode fake)
+# 2. Config File (from --config or ./config.yaml)
+# 3. Environment Variables (e.g. EIP_VERIFY_LLM_MODE)
+# 4. Default Values
+#
+# ENVIRONMENT VARIABLES:
+# - ANTHROPIC_API_KEY: Required for 'live' mode. NOT set in this config file for security.
+# - EIP_VERIFY_LLM_MODE: Override llm_mode (default: live)
+# - EIP_VERIFY_RECORD_LLM_CALLS: Override record_llm_calls (default: false)
+
+# -----------------------------------------------------------------------------
+# Global Settings
+# -----------------------------------------------------------------------------
+
+# mode for LLM interactions.
+# Options: "live" (calls API), "fake" (mock responses)
+# Default: "live"
+llm_mode: "live"
+
+# Record LLM API calls to JSON files for debugging or replay cost analysis.
+# Default: false
+# record_llm_calls: false
+
+# Directory where run artifacts, logs, and reports will be saved.
+# Default: ./runs/<timestamp>
+# output_dir: "./runs/my-run"
+
+# The path to the execution-specs repository (local clone).
+# Required for most phases.
+spec_repo: "/path/to/execution-specs"
+
+# The path to the client repository (e.g., go-ethereum local clone).
+# Required for client-related phases (locate-client, analyze-client).
+client_repo: "/path/to/go-ethereum"
+
+# The EIP number to verify (as a string or integer).
+eip: "1559"
+
+# The LLM model identifier to use.
+# Default: Varies by agent, usually a high-capability model like Claude 3.5 Sonnet.
+model: "claude-3-5-sonnet-20241022"
+
+# Maximum number of turns the agent is allowed to take per phase.
+# Default: 1 (for single-step tasks) or 20 (for pipeline/complex tasks)
+max_turns: 20
+
+# Comma-separated list of allowed tools for the agent.
+# If omitted, the agent uses its default set of tools.
+# allowed_tools: "grep_search,view_file,read_file"
+
+
+# -----------------------------------------------------------------------------
+# Phase Specific Settings
+# -----------------------------------------------------------------------------
+
+# -- Extract Phase --
+# Path to the specific EIP markdown file.
+# If not provided, it tries to find `EIPs/eip-{number}.md` in the spec_repo.
+# eip_file: "/path/to/EIPs/eip-1559.md"
+
+# -- Spec Phases (locate-spec, analyze-spec) --
+# The target Ethereum fork name (e.g., london, paris, shanghai).
+fork: "london"
+
+# Specific obligation ID to focus on (optional).
+# obligation_id: "OBL-001"

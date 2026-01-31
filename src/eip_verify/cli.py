@@ -67,7 +67,21 @@ class CLI:
         llm_mode: Optional[str] = None,
         record_llm_calls: bool = False,
     ):
-        """Extract obligations from EIP markdown."""
+        """
+        Extract obligations from EIP markdown.
+
+        Args:
+            eip_file: Path to the EIP markdown file.
+            spec_repo: Path to the execution-specs repository.
+            eip: EIP number (e.g., "1559").
+            output_dir: Directory to save results.
+            config: Path to a YAML config file (default: config.yaml in CWD).
+            model: LLM model to use.
+            max_turns: Maximum conversation turns.
+            allowed_tools: Comma-separated list of allowed tools.
+            llm_mode: Agent mode ("live" or "fake").
+            record_llm_calls: Whether to record LLM interactions.
+        """
         cfg = _resolve_config(config)
         llm_mode = _resolve_llm_mode(llm_mode, cfg)
         run_phase_0a(
@@ -97,7 +111,22 @@ class CLI:
         record_llm_calls: bool = False,
         obligation_id: Optional[str] = None,
     ):
-        """Find implementation locations in execution-specs."""
+        """
+        Find implementation locations in execution-specs.
+
+        Args:
+            parent_run: Path to the output directory of the previous 'extract' phase.
+            spec_repo: Path to the execution-specs repository.
+            eip: EIP number.
+            fork: Target fork name (e.g., "london").
+            config: Path to a YAML config file.
+            model: LLM model to use.
+            max_turns: Maximum conversation turns.
+            allowed_tools: Comma-separated list of tools.
+            llm_mode: Agent mode ("live" or "fake").
+            record_llm_calls: Whether to record LLM interactions.
+            obligation_id: Specific obligation ID to locate.
+        """
         cfg = _resolve_config(config)
         llm_mode = _resolve_llm_mode(llm_mode, cfg)
         run_phase_1a(
@@ -127,7 +156,21 @@ class CLI:
         record_llm_calls: bool = False,
         obligation_id: Optional[str] = None,
     ):
-        """Analyze code flow and gaps in spec."""
+        """
+        Analyze code flow and gaps in spec.
+
+        Args:
+            parent_run: Path to the output directory of the previous 'locate-spec' phase.
+            eip: EIP number.
+            spec_repo: Path to the execution-specs repository.
+            config: Path to a YAML config file.
+            model: LLM model to use.
+            max_turns: Maximum conversation turns.
+            allowed_tools: Comma-separated list of tools.
+            llm_mode: Agent mode ("live" or "fake").
+            record_llm_calls: Whether to record LLM interactions.
+            obligation_id: Specific obligation ID to analyze.
+        """
         cfg = _resolve_config(config)
         llm_mode = _resolve_llm_mode(llm_mode, cfg)
         run_phase_1b(
@@ -156,7 +199,21 @@ class CLI:
         record_llm_calls: bool = False,
         obligation_id: Optional[str] = None,
     ):
-        """Find implementation locations in client repo."""
+        """
+        Find implementation locations in client repo.
+
+        Args:
+            parent_run: Path to the output directory of the previous phase.
+            client_repo: Path to the client repository (e.g., go-ethereum).
+            eip: EIP number.
+            config: Path to a YAML config file.
+            model: LLM model to use.
+            max_turns: Maximum conversation turns.
+            allowed_tools: Comma-separated list of tools.
+            llm_mode: Agent mode ("live" or "fake").
+            record_llm_calls: Whether to record LLM interactions.
+            obligation_id: Specific obligation ID to locate.
+        """
         cfg = _resolve_config(config)
         llm_mode = _resolve_llm_mode(llm_mode, cfg)
         run_phase_2a(
@@ -185,7 +242,21 @@ class CLI:
         record_llm_calls: bool = False,
         obligation_id: Optional[str] = None,
     ):
-        """Analyze code flow and gaps in client."""
+        """
+        Analyze code flow and gaps in client.
+
+        Args:
+            parent_run: Path to the output directory of the previous phase.
+            client_repo: Path to the client repository.
+            eip: EIP number.
+            config: Path to a YAML config file.
+            model: LLM model to use.
+            max_turns: Maximum conversation turns.
+            allowed_tools: Comma-separated list of tools.
+            llm_mode: Agent mode ("live" or "fake").
+            record_llm_calls: Whether to record LLM interactions.
+            obligation_id: Specific obligation ID to analyze.
+        """
         cfg = _resolve_config(config)
         llm_mode = _resolve_llm_mode(llm_mode, cfg)
         run_phase_2b(
@@ -218,7 +289,25 @@ class CLI:
         record_llm_calls: bool = False,
         obligation_id: Optional[str] = None,
     ):
-        """Run multiple verification phases in sequence."""
+        """
+        Run multiple verification phases in sequence.
+
+        Args:
+            eip: EIP number (e.g., "1559").
+            phases: Comma-separated list of phases to run.
+            spec_repo: Path to the execution-specs repository.
+            client_repo: Path to the client repository.
+            eip_file: Path to specific EIP markdown file (optional).
+            fork: Target fork name.
+            output_dir: Directory to save results.
+            config: Path to a YAML config file.
+            model: LLM model to use.
+            max_turns: Maximum turns per phase.
+            allowed_tools: Comma-separated list of tools.
+            llm_mode: Agent mode ("live" or "fake").
+            record_llm_calls: Whether to record LLM interactions.
+            obligation_id: Specific obligation ID to verify.
+        """
         cfg = _resolve_config(config)
         llm_mode = _resolve_llm_mode(llm_mode, cfg)
         run_pipeline(
