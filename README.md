@@ -39,39 +39,20 @@ Commands:
   report          Generate run summary report
 ```
 
-### Example: Full pipeline
+### Full Pipeline (Local or CI)
+
+Run the entire verification process in one command:
 
 ```sh
-# Extract obligations from EIP
-eip-verify extract \
-  --eip-file ~/specs/EIPs/EIPS/eip-1559.md \
+eip-verify pipeline \
+  --eip 1559 \
+  --phases "extract,locate-spec,analyze-spec,locate-client,analyze-client" \
   --spec-repo ~/specs/execution-specs \
-  --model claude-sonnet-4-5 --max-turns 8
-
-# Locate spec implementations (using previous run output)
-eip-verify locate-spec \
-  --parent-run ./runs/<timestamp>/phase0A_runs/<timestamp> \
-  --spec-repo ~/specs/execution-specs \
-  --fork london \
-  --model claude-sonnet-4-5 --max-turns 8
-
-# Analyze spec code flow
-eip-verify analyze-spec \
-  --parent-run ./runs/.../phase1A_runs/<timestamp> \
-  --model claude-sonnet-4-5 --max-turns 12
-
-# Locate client implementations
-eip-verify locate-client \
-  --parent-run ./runs/.../phase1B_runs/<timestamp> \
   --client-repo ~/clients/geth \
-  --model claude-sonnet-4-5 --max-turns 20
-
-# Analyze client gaps
-eip-verify analyze-client \
-  --parent-run ./runs/.../phase2A_runs/<timestamp> \
-  --client-repo ~/clients/geth \
-  --model claude-sonnet-4-5 --max-turns 20
+  --model claude-sonnet-4-5
 ```
+
+### Manual Steps (Subcommands)
 
 ### Fake mode (no LLM calls)
 

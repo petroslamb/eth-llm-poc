@@ -23,5 +23,5 @@ def load_prompt(name: str) -> str:
         load_prompt("phase0A_obligations.txt")
     """
     filename = name if name.endswith(".txt") else f"{name}.txt"
-    pkg = resources.files("poc4_7").joinpath("prompts")
+    pkg = resources.files("eip_verify").joinpath("prompts")
     return pkg.joinpath(filename).read_text(encoding="utf-8")

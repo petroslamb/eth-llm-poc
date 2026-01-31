@@ -14,24 +14,24 @@ on:
         default: "prague"
         type: string
       client:
-        description: "Execution client (geth, besu, erigon, nethermind, reth)"
+        description: "Execution client"
         required: false
         default: "geth"
         type: string
       client_ref:
-        description: "Execution client ref (branch, tag, or commit). If empty, uses default for the chosen client."
+        description: "Execution client ref"
         required: false
         default: ""
         type: string
+      phases:
+        description: "Comma-separated phase list"
+        required: false
+        default: "extract,locate-spec,analyze-spec,locate-client,analyze-client"
+        type: string
       model:
-        description: "Claude model (claude-haiku-4-5, claude-sonnet-4-5, claude-opus-4-5)"
+        description: "Claude model"
         required: false
         default: "claude-sonnet-4-5"
-        type: string
-      phases:
-        description: "Comma-separated phase list (e.g. extract,locate-spec,analyze-spec,locate-client,analyze-client)"
-        required: false
-        default: "analyze-client"
         type: string
       max_turns:
         description: "Max turns per phase"
@@ -39,12 +39,12 @@ on:
         default: "20"
         type: string
       eips_ref:
-        description: "EIPs repo branch (default: master)"
+        description: "EIPs repo branch"
         required: false
         default: "master"
         type: string
       execution_specs_ref:
-        description: "Execution-specs repo ref (branch, tag, or commit)"
+        description: "Execution-specs repo ref"
         required: false
         default: "mainnet"
         type: string
@@ -53,60 +53,14 @@ on:
         required: false
         default: "fake"
         type: string
-      record_llm_calls:
-        description: "Record LLM calls (true/false)"
+      pypi_package:
+        description: "Git ref or PyPI version to install eip-verify from (default: local path)"
         required: false
-        default: "true"
+        default: "."
         type: string
     secrets:
       ANTHROPIC_API_KEY:
         required: false
-  workflow_dispatch:
-    inputs:
-      eip:
-        description: "EIP number"
-        required: false
-        default: "7702"
-      fork:
-        description: "Execution-specs fork"
-        required: false
-        default: "prague"
-      client:
-        description: "Execution client (geth, besu, erigon, nethermind, reth)"
-        required: false
-        default: "geth"
-      client_ref:
-        description: "Execution client ref (branch, tag, or commit). If empty, uses default for the chosen client."
-        required: false
-        default: ""
-      model:
-        description: "Claude model (claude-haiku-4-5, claude-sonnet-4-5, claude-opus-4-5)"
-        required: false
-        default: "claude-sonnet-4-5"
-      phases:
-        description: "Comma-separated phase list (e.g. extract,locate-spec,analyze-spec,locate-client,analyze-client)"
-        required: false
-        default: "analyze-client"
-      max_turns:
-        description: "Max turns per phase"
-        required: false
-        default: "20"
-      eips_ref:
-        description: "EIPs repo branch (default: master)"
-        required: false
-        default: "master"
-      execution_specs_ref:
-        description: "Execution-specs repo ref (branch, tag, or commit)"
-        required: false
-        default: "mainnet"
-      llm_mode:
-        description: "LLM mode (live or fake)"
-        required: false
-        default: "fake"
-      record_llm_calls:
-        description: "Record LLM calls (true/false)"
-        required: false
-        default: "true"
 
 permissions:
   contents: read
@@ -116,21 +70,18 @@ env:
   DEFAULT_EIP: "7702"
   DEFAULT_FORK: "prague"
   DEFAULT_CLIENT: "geth"
-  DEFAULT_MODEL: "claude-sonnet-4-5"
-  DEFAULT_PHASES: "analyze-client"
-  DEFAULT_MAX_TURNS: "20"
+  DEFAULT_PHASES: "extract,locate-spec,analyze-spec,locate-client,analyze-client"
   DEFAULT_EIPS_REF: "master"
   DEFAULT_EXECUTION_SPECS_REF: "mainnet"
   DEFAULT_LLM_MODE: "fake"
-  DEFAULT_RECORD_LLM_CALLS: "true"
-  DEFAULT_BESU_REF: "25.11.0-RC2"
-  DEFAULT_ERIGON_REF: "v0.9.39"
-  DEFAULT_GETH_REF: "v0.9.39"
-  DEFAULT_NETHERMIND_REF: "1.4.3"
-  DEFAULT_RETH_REF: "v1.10.0-rc.2"
+  DEFAULT_GETH_REF: "v1.13.14"
+  DEFAULT_BESU_REF: "24.3.0"
+  DEFAULT_ERIGON_REF: "v2.59.0"
+  DEFAULT_NETHERMIND_REF: "1.26.0"
+  DEFAULT_RETH_REF: "v0.2.0-beta.5"
 
 jobs:
-  eip-verify:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -138,351 +89,86 @@ jobs:
         with:
           submodules: false
           fetch-depth: 1
-          persist-credentials: false
 
-      - name: Detect API key
-        id: detect_key
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      - name: Resolve inputs and defaults
+        id: config
         run: |
-          if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
-            echo "has_key=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_key=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Resolve inputs
-        id: resolved
-        run: |
-          set -euo pipefail
-          EIP="${{ inputs.eip || github.event.inputs.eip || env.DEFAULT_EIP }}"
-          FORK="${{ inputs.fork || github.event.inputs.fork || env.DEFAULT_FORK }}"
-          CLIENT="${{ inputs.client || github.event.inputs.client || env.DEFAULT_CLIENT }}"
-          MODEL="${{ inputs.model || github.event.inputs.model || env.DEFAULT_MODEL }}"
-          MAX_TURNS="${{ inputs.max_turns || github.event.inputs.max_turns || env.DEFAULT_MAX_TURNS }}"
-          EIPS_REF="${{ inputs.eips_ref || github.event.inputs.eips_ref || env.DEFAULT_EIPS_REF }}"
-          EXECUTION_SPECS_REF="${{ inputs.execution_specs_ref || github.event.inputs.execution_specs_ref || env.DEFAULT_EXECUTION_SPECS_REF }}"
-          LLM_MODE="${{ inputs.llm_mode || github.event.inputs.llm_mode || env.DEFAULT_LLM_MODE }}"
-          RECORD_LLM_CALLS="${{ inputs.record_llm_calls || github.event.inputs.record_llm_calls || env.DEFAULT_RECORD_LLM_CALLS }}"
-          CLIENT_REF_INPUT="${{ inputs.client_ref || github.event.inputs.client_ref || '' }}"
-          PHASES_RAW="${{ inputs.phases || github.event.inputs.phases || '' }}"
-          if [ -z "$PHASES_RAW" ]; then
-            PHASES_RAW="${{ env.DEFAULT_PHASES }}"
-          fi
-          echo "eip=$EIP" >> "$GITHUB_OUTPUT"
-          echo "fork=$FORK" >> "$GITHUB_OUTPUT"
-          echo "client=$CLIENT" >> "$GITHUB_OUTPUT"
-          echo "model=$MODEL" >> "$GITHUB_OUTPUT"
-          echo "max_turns=$MAX_TURNS" >> "$GITHUB_OUTPUT"
-          echo "eips_ref=$EIPS_REF" >> "$GITHUB_OUTPUT"
-          echo "execution_specs_ref=$EXECUTION_SPECS_REF" >> "$GITHUB_OUTPUT"
-          echo "client_ref_input=$CLIENT_REF_INPUT" >> "$GITHUB_OUTPUT"
-          echo "phases=$PHASES_RAW" >> "$GITHUB_OUTPUT"
-          echo "llm_mode=$LLM_MODE" >> "$GITHUB_OUTPUT"
-          echo "record_llm_calls=$RECORD_LLM_CALLS" >> "$GITHUB_OUTPUT"
-
-      - name: Validate inputs
-        id: validated
-        run: |
-          set -euo pipefail
-          EIP="${{ steps.resolved.outputs.eip }}"
-          FORK="${{ steps.resolved.outputs.fork }}"
-          CLIENT="${{ steps.resolved.outputs.client }}"
-          MODEL="${{ steps.resolved.outputs.model }}"
-          MAX_TURNS="${{ steps.resolved.outputs.max_turns }}"
-          PHASES_RAW="${{ steps.resolved.outputs.phases }}"
-          EIPS_REF="${{ steps.resolved.outputs.eips_ref }}"
-          EXECUTION_SPECS_REF="${{ steps.resolved.outputs.execution_specs_ref }}"
-          CLIENT_REF_INPUT="${{ steps.resolved.outputs.client_ref_input }}"
-          LLM_MODE="${{ steps.resolved.outputs.llm_mode }}"
-          RECORD_LLM_CALLS="${{ steps.resolved.outputs.record_llm_calls }}"
-          HAS_KEY="${{ steps.detect_key.outputs.has_key }}"
-          case "$EIP" in
-            ''|*[!0-9]*)
-              echo "Invalid EIP: '$EIP' (must be numeric)" >> "$GITHUB_STEP_SUMMARY"
-              exit 1
-              ;;
-          esac
-          case "$FORK" in
-            frontier|homestead|tangerine-whistle|spurious-dragon|byzantium|constantinople|petersburg|istanbul|muir-glacier|berlin|london|arrow-glacier|gray-glacier|paris|shanghai|cancun|prague)
-              ;;
-            *)
-              echo "Invalid fork: '$FORK'" >> "$GITHUB_STEP_SUMMARY"
-              exit 1
-              ;;
-          esac
-          case "$CLIENT" in
-            geth|besu|erigon|nethermind|reth)
-              ;;
-            *)
-              echo "Invalid client: '$CLIENT'" >> "$GITHUB_STEP_SUMMARY"
-              exit 1
-              ;;
-          esac
-          case "$MODEL" in
-            claude-haiku-4-5|claude-sonnet-4-5|claude-opus-4-5)
-              ;;
-            *)
-              echo "Invalid model: '$MODEL'" >> "$GITHUB_STEP_SUMMARY"
-              exit 1
-              ;;
-          esac
-          case "$LLM_MODE" in
-            live|fake)
-              ;;
-            *)
-              echo "Invalid llm_mode: '$LLM_MODE'" >> "$GITHUB_STEP_SUMMARY"
-              exit 1
-              ;;
-          esac
-          case "$RECORD_LLM_CALLS" in
-            true|false)
-              ;;
-            *)
-              echo "Invalid record_llm_calls: '$RECORD_LLM_CALLS'" >> "$GITHUB_STEP_SUMMARY"
-              exit 1
-              ;;
-          esac
-          case "$MAX_TURNS" in
-            ''|*[!0-9]*)
-              echo "Invalid max_turns: '$MAX_TURNS'" >> "$GITHUB_STEP_SUMMARY"
-              exit 1
-              ;;
-          esac
-          if [ "$MAX_TURNS" -lt 1 ]; then
-            echo "Invalid max_turns: '$MAX_TURNS' (must be >= 1)" >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
-          CLIENT_REF="$CLIENT_REF_INPUT"
-          if [ -z "$CLIENT_REF" ]; then
+          # Use input or env defaults
+          echo "eip=${{ inputs.eip || env.DEFAULT_EIP }}" >> "$GITHUB_OUTPUT"
+          echo "fork=${{ inputs.fork || env.DEFAULT_FORK }}" >> "$GITHUB_OUTPUT"
+          echo "client=${{ inputs.client || env.DEFAULT_CLIENT }}" >> "$GITHUB_OUTPUT"
+          echo "phases=${{ inputs.phases || env.DEFAULT_PHASES }}" >> "$GITHUB_OUTPUT"
+          echo "eips_ref=${{ inputs.eips_ref || env.DEFAULT_EIPS_REF }}" >> "$GITHUB_OUTPUT"
+          echo "specs_ref=${{ inputs.execution_specs_ref || env.DEFAULT_EXECUTION_SPECS_REF }}" >> "$GITHUB_OUTPUT"
+          echo "llm_mode=${{ inputs.llm_mode || env.DEFAULT_LLM_MODE }}" >> "$GITHUB_OUTPUT"
+          
+          # Resolve client ref
+          CLIENT="${{ inputs.client || env.DEFAULT_CLIENT }}"
+          REF="${{ inputs.client_ref }}"
+          if [ -z "$REF" ]; then
             case "$CLIENT" in
-              geth)
-                CLIENT_REF="${{ env.DEFAULT_GETH_REF }}"
-                ;;
-              besu)
-                CLIENT_REF="${{ env.DEFAULT_BESU_REF }}"
-                ;;
-              erigon)
-                CLIENT_REF="${{ env.DEFAULT_ERIGON_REF }}"
-                ;;
-              nethermind)
-                CLIENT_REF="${{ env.DEFAULT_NETHERMIND_REF }}"
-                ;;
-              reth)
-                CLIENT_REF="${{ env.DEFAULT_RETH_REF }}"
-                ;;
+              geth) REF="${{ env.DEFAULT_GETH_REF }}" ;;
+              besu) REF="${{ env.DEFAULT_BESU_REF }}" ;;
+              erigon) REF="${{ env.DEFAULT_ERIGON_REF }}" ;;
+              nethermind) REF="${{ env.DEFAULT_NETHERMIND_REF }}" ;;
+              reth) REF="${{ env.DEFAULT_RETH_REF }}" ;;
             esac
           fi
-          # Resolve phase plan from subcommand names
-          PHASES_RAW="${PHASES_RAW// /}"
-          ORDER=(extract locate-spec analyze-spec locate-client analyze-client)
-          IFS=',' read -r -a PHASE_ITEMS <<< "$PHASES_RAW"
-          MAX_INDEX=-1
-          for item in "${PHASE_ITEMS[@]}"; do
-            if [ -z "$item" ]; then continue; fi
-            phase=$(echo "$item" | tr '[:upper:]' '[:lower:]')
-            for i in "${!ORDER[@]}"; do
-              if [ "${ORDER[$i]}" = "$phase" ] && [ "$i" -gt "$MAX_INDEX" ]; then
-                MAX_INDEX="$i"
-              fi
-            done
-          done
-          if [ "$MAX_INDEX" -lt 0 ]; then
-            echo "Invalid phases: none selected" >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
-          RUN_PHASES=("${ORDER[@]:0:$((MAX_INDEX+1))}")
-          echo "client_ref=$CLIENT_REF" >> "$GITHUB_OUTPUT"
-          echo "phase_plan=${RUN_PHASES[*]}" >> "$GITHUB_OUTPUT"
-          echo "target_phase=${ORDER[$MAX_INDEX]}" >> "$GITHUB_OUTPUT"
-          echo "Resolved phase plan: ${RUN_PHASES[*]}" >> "$GITHUB_STEP_SUMMARY"
-          SHOULD_RUN="false"
-          if [ "$LLM_MODE" = "fake" ]; then
-            SHOULD_RUN="true"
-          elif [ "$HAS_KEY" = "true" ]; then
-            SHOULD_RUN="true"
-          fi
-          echo "should_run=$SHOULD_RUN" >> "$GITHUB_OUTPUT"
-          if [ "$SHOULD_RUN" = "false" ]; then
-            echo "ANTHROPIC_API_KEY is not set and llm_mode=live; skipping run." >> "$GITHUB_STEP_SUMMARY"
-          fi
+          echo "client_ref=$REF" >> "$GITHUB_OUTPUT"
 
-      - name: Checkout dependency repos (shallow)
-        if: ${{ steps.validated.outputs.should_run == 'true' }}
+      - name: Checkout dependency repos
         run: |
-          set -euo pipefail
-          EIPS_REF="${{ steps.resolved.outputs.eips_ref }}"
-          EXECUTION_SPECS_REF="${{ steps.resolved.outputs.execution_specs_ref }}"
-          CLIENT="${{ steps.resolved.outputs.client }}"
-          CLIENT_REF="${{ steps.validated.outputs.client_ref }}"
-
-          clone_ref() {
-            local url="$1"
-            local dest="$2"
-            local ref="$3"
-            rm -rf "$dest"
-            if [[ "$ref" =~ ^[0-9a-f]{7,40}$ ]]; then
-              git clone --no-tags --depth 1 "$url" "$dest"
-              (cd "$dest" && git fetch --no-tags --depth 1 origin "$ref" && git checkout "$ref")
-            else
-              git clone --no-tags --depth 1 --branch "$ref" "$url" "$dest"
-            fi
-          }
-
           mkdir -p specs clients/execution
-          git clone --no-tags --depth 1 --branch "$EIPS_REF" https://github.com/ethereum/EIPs.git specs/EIPs
-          clone_ref https://github.com/ethereum/execution-specs.git specs/execution-specs "$EXECUTION_SPECS_REF"
+          
+          # EIPs
+          git clone --depth 1 --branch "${{ steps.config.outputs.eips_ref }}" \
+            https://github.com/ethereum/EIPs.git specs/EIPs
+            
+          # Execution Specs
+          SPECS_REF="${{ steps.config.outputs.specs_ref }}"
+          git clone --depth 1 https://github.com/ethereum/execution-specs.git specs/execution-specs
+          (cd specs/execution-specs && git fetch --depth 1 origin "$SPECS_REF" && git checkout "$SPECS_REF")
+
+          # Client
+          CLIENT="${{ steps.config.outputs.client }}"
+          CLIENT_REF="${{ steps.config.outputs.client_ref }}"
           case "$CLIENT" in
-            geth)
-              CLIENT_REPO="https://github.com/ethereum/go-ethereum.git"
-              ;;
-            besu)
-              CLIENT_REPO="https://github.com/hyperledger/besu.git"
-              ;;
-            erigon)
-              CLIENT_REPO="https://github.com/ledgerwatch/erigon.git"
-              ;;
-            nethermind)
-              CLIENT_REPO="https://github.com/NethermindEth/nethermind.git"
-              ;;
-            reth)
-              CLIENT_REPO="https://github.com/paradigmxyz/reth.git"
-              ;;
+            geth) REPO="https://github.com/ethereum/go-ethereum.git" ;;
+            besu) REPO="https://github.com/hyperledger/besu.git" ;;
+            erigon) REPO="https://github.com/ledgerwatch/erigon.git" ;;
+            nethermind) REPO="https://github.com/NethermindEth/nethermind.git" ;;
+            reth) REPO="https://github.com/paradigmxyz/reth.git" ;;
           esac
-          clone_ref "$CLIENT_REPO" "clients/execution/$CLIENT" "$CLIENT_REF"
+          git clone --depth 1 "$REPO" "clients/execution/$CLIENT"
+          (cd "clients/execution/$CLIENT" && git fetch --depth 1 origin "$CLIENT_REF" && git checkout "$CLIENT_REF")
 
       - name: Set up Python
-        if: ${{ steps.validated.outputs.should_run == 'true' }}
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install eip-verify
-        if: ${{ steps.validated.outputs.should_run == 'true' }}
-        run: python -m pip install -e .
+        run: python -m pip install -e "${{ inputs.pypi_package }}"
 
-      - name: Run eip-verify phases
-        if: ${{ steps.validated.outputs.should_run == 'true' }}
-        id: run_phases
+      - name: Run Pipeline
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          set -euo pipefail
-          EIP="${{ steps.resolved.outputs.eip }}"
-          FORK="${{ steps.resolved.outputs.fork }}"
-          CLIENT="${{ steps.resolved.outputs.client }}"
-          MODEL="${{ steps.resolved.outputs.model }}"
-          MAX_TURNS="${{ steps.resolved.outputs.max_turns }}"
-          LLM_MODE="${{ steps.resolved.outputs.llm_mode }}"
-          RECORD_LLM_CALLS="${{ steps.resolved.outputs.record_llm_calls }}"
-          PHASE_PLAN="${{ steps.validated.outputs.phase_plan }}"
-          LLM_ARGS="--llm-mode $LLM_MODE"
-          if [ "$RECORD_LLM_CALLS" = "true" ]; then
-            LLM_ARGS="$LLM_ARGS --record-llm-calls"
-          fi
-          EIP_FILE="specs/EIPs/EIPS/eip-${EIP}.md"
-          if [ ! -f "$EIP_FILE" ]; then
-            echo "EIP file not found: $EIP_FILE" >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
-          RUN_ROOT=""
-          PARENT_RUN=""
-          LAST_PHASE=""
-          LAST_OUTPUT=""
-          for phase in $PHASE_PLAN; do
-            case "$phase" in
-              extract)
-                eip-verify extract --eip "$EIP" --eip-file "$EIP_FILE" --spec-repo specs/execution-specs --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
-                RUN_ROOT=$(ls -td runs/*/ | head -1)
-                PARENT_RUN=$(ls -td "$RUN_ROOT/phase0A_runs"/* | head -1)
-                LAST_PHASE="extract"
-                LAST_OUTPUT="$PARENT_RUN/phase0A_output.txt"
-                ;;
-              locate-spec)
-                eip-verify locate-spec --parent-run "$PARENT_RUN" --spec-repo specs/execution-specs --eip "$EIP" --fork "$FORK" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
-                PARENT_RUN=$(ls -td "$PARENT_RUN/phase1A_runs"/* | head -1)
-                LAST_PHASE="locate-spec"
-                LAST_OUTPUT="$PARENT_RUN/phase1A_output.txt"
-                ;;
-              analyze-spec)
-                eip-verify analyze-spec --parent-run "$PARENT_RUN" --eip "$EIP" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
-                PARENT_RUN=$(ls -td "$PARENT_RUN/phase1B_runs"/* | head -1)
-                LAST_PHASE="analyze-spec"
-                LAST_OUTPUT="$PARENT_RUN/phase1B_output.txt"
-                ;;
-              locate-client)
-                eip-verify locate-client --parent-run "$PARENT_RUN" --client-repo "clients/execution/$CLIENT" --eip "$EIP" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
-                PARENT_RUN=$(ls -td "$PARENT_RUN/phase2A_runs"/* | head -1)
-                LAST_PHASE="locate-client"
-                LAST_OUTPUT="$PARENT_RUN/phase2A_output.txt"
-                ;;
-              analyze-client)
-                eip-verify analyze-client --parent-run "$PARENT_RUN" --client-repo "clients/execution/$CLIENT" --eip "$EIP" --model "$MODEL" --max-turns "$MAX_TURNS" $LLM_ARGS
-                LAST_PHASE="analyze-client"
-                LAST_OUTPUT=$(ls -td "$PARENT_RUN/phase2B_runs"/* | head -1)/phase2B_output.txt
-                ;;
-            esac
-          done
-          echo "last_phase=$LAST_PHASE" >> "$GITHUB_OUTPUT"
-          echo "last_output=$LAST_OUTPUT" >> "$GITHUB_OUTPUT"
+          eip-verify pipeline \
+            --eip "${{ steps.config.outputs.eip }}" \
+            --phases "${{ steps.config.outputs.phases }}" \
+            --spec-repo "specs/execution-specs" \
+            --client-repo "clients/execution/${{ steps.config.outputs.client }}" \
+            --eip-file "specs/EIPs/EIPS/eip-${{ steps.config.outputs.eip }}.md" \
+            --fork "${{ steps.config.outputs.fork }}" \
+            --model "${{ inputs.model }}" \
+            --max-turns "${{ inputs.max_turns }}" \
+            --llm-mode "${{ steps.config.outputs.llm_mode }}" \
+            --output-dir "runs/ci_run"
 
-      - name: Find run root
-        if: ${{ steps.validated.outputs.should_run == 'true' }}
-        id: run_root
-        run: |
-          RUN_ROOT=$(ls -td runs/*/ | head -1)
-          echo "run_root=$RUN_ROOT" >> "$GITHUB_OUTPUT"
-
-      - name: Build summary
-        if: ${{ steps.validated.outputs.should_run == 'true' }}
-        run: |
-          eip-verify report --run-root "${{ steps.run_root.outputs.run_root }}"
-          cat "${{ steps.run_root.outputs.run_root }}/summary.md" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Append last phase output
-        if: ${{ steps.validated.outputs.should_run == 'true' }}
-        run: |
-          set -euo pipefail
-          RUN_ROOT="${{ steps.run_root.outputs.run_root }}"
-          LAST_PHASE="${{ steps.run_phases.outputs.last_phase }}"
-          LAST_OUTPUT="${{ steps.run_phases.outputs.last_output }}"
-          phase_desc() {
-            case "$1" in
-              extract) echo "Obligation extraction" ;;
-              locate-spec) echo "Spec implementation locations" ;;
-              analyze-spec) echo "Spec code flow + gap hints" ;;
-              locate-client) echo "Client implementation locations" ;;
-              analyze-client) echo "Client gap analysis" ;;
-              *) echo "Phase output" ;;
-            esac
-          }
-          escape_html() {
-            sed -e 's/&/\\&amp;/g' -e 's/</\\&lt;/g' -e 's/>/\\&gt;/g' "$1"
-          }
-          if [ -n "$LAST_OUTPUT" ] && [ -f "$LAST_OUTPUT" ]; then
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            last_desc=$(phase_desc "$LAST_PHASE")
-            echo "<details><summary>Last phase output ($LAST_PHASE — $last_desc)</summary><pre>" >> "$GITHUB_STEP_SUMMARY"
-            escape_html "$LAST_OUTPUT" >> "$GITHUB_STEP_SUMMARY"
-            echo "</pre></details>" >> "$GITHUB_STEP_SUMMARY"
-          fi
-
-      - name: Upload summary
-        if: ${{ steps.validated.outputs.should_run == 'true' }}
+      - name: Upload Artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: eip-verify-summary
-          path: |
-            ${{ steps.run_root.outputs.run_root }}/summary.json
-            ${{ steps.run_root.outputs.run_root }}/summary.md
-      - name: Upload run artifacts
-        if: ${{ steps.validated.outputs.should_run == 'true' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: eip-verify-run-artifacts
-          path: ${{ steps.run_root.outputs.run_root }}/
-
-      - name: Skip run (missing ANTHROPIC_API_KEY)
-        if: ${{ steps.validated.outputs.should_run == 'false' }}
-        run: |
-          echo "ANTHROPIC_API_KEY is not set and llm_mode=live; skipping run." >> "$GITHUB_STEP_SUMMARY"
+          name: verification-report
+          path: runs/ci_run/
