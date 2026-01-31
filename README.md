@@ -131,6 +131,23 @@ jobs:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 ```
 
+## GitHub Actions Manual Triggers
+
+This repository includes two manual workflows for running verification on-demand:
+
+### 1. Manual Run (`manual_run.yml`)
+Run verification for a single EIP.
+*   **Trigger**: Actions tab -> "Manual Run" -> "Run workflow"
+*   **Inputs**: EIP number, fork, client, etc.
+
+### 2. Manual Run (Batch) (`manual_run_batch.yml`)
+Run verification for multiple EIPs or an entire fork in parallel.
+*   **Trigger**: Actions tab -> "Manual Run (Batch)"
+*   **Inputs**:
+    *   `eip`: Comma-separated list (e.g., `1559, 2930`). **Leave empty to run ALL EIPs in the fork.**
+    *   `fork`: The fork to use if `eip` is empty (e.g., `london`).
+*   **Output**: Produces a separate artifact (`verification-report-<EIP>`) for each EIP.
+
 ## Tests
 
 ```sh
