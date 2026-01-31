@@ -104,3 +104,9 @@ def test_write_report_markdown(fake_run_dir):
     assert "Total Obligations: **1**" in content
     assert "Serious Gap" in content
     assert "## Findings" in content
+    
+    # Check Dropdown
+    assert "<details>" in content
+    assert "Full CSV Output" in content
+    assert "id,obligation_gap" in content  # CSV header
+    assert "1,Serious Gap" in content      # CSV row

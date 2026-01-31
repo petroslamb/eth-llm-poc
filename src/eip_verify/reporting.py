@@ -351,6 +351,25 @@ def write_report(
             if not has_findings:
                 lines.append("- No gaps found in analyzed columns.")
 
+        # Append Full CSV Raw Content (with size guard)
+        if analysis and analysis.get("source_csv"):
+            csv_path = Path(analysis["source_csv"])
+            if csv_path.exists():
+                raw_content = csv_path.read_text(encoding="utf-8")
+                # 500KB limit for GitHub Step Summary (1MB max total)
+                MAX_SIZE = 500 * 1024 
+                if len(raw_content) > MAX_SIZE:
+                    raw_content = raw_content[:MAX_SIZE] + "\n... (Truncated due to size limit)"
+                
+                lines.append("")
+                lines.append("<details>")
+                lines.append(f"<summary>Full CSV Output (Phase {phase_label_str})</summary>")
+                lines.append("")
+                lines.append("```csv")
+                lines.append(raw_content)
+                lines.append("```")
+                lines.append("</details>")
+
         (out_dir / "summary.md").write_text("\n".join(lines), encoding="utf-8")
 
     return out_dir
