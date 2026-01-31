@@ -117,8 +117,9 @@ def run_pipeline(
         else:
             agent = ClaudeAgent()
 
-    # Track output paths for chaining
+    # Track output paths for chaining (and logging at the end)
     current_parent_run: Optional[Path] = None
+    phase_outputs: List[tuple[str, Path]] = []
     
     # Validate eip_file for extract phase if needed
     if "extract" in phases:
@@ -251,9 +252,8 @@ def run_pipeline(
             if phase_runs:
                 phase_output_dir = sorted(phase_runs)[-1]
         
-        # Log to GitHub Step Summary if running in Actions
         if phase_output_dir:
-            _log_phase_to_summary(phase, phase_output_dir)
+            phase_outputs.append((phase, phase_output_dir))
 
     # Generate report at the end
     print("\n=== Generating Report ===")
@@ -261,9 +261,14 @@ def run_pipeline(
     print(f"Pipeline completed. Report written to {run_root}/summary.md")
 
     # Write to GitHub Step Summary if running in Actions
+    # 1. Main Summary Report
     step_summary = os.getenv("GITHUB_STEP_SUMMARY")
     if step_summary:
         summary_md = run_root / "summary.md"
         if summary_md.exists():
             with open(step_summary, "a", encoding="utf-8") as f:
                 f.write(summary_md.read_text(encoding="utf-8"))
+        
+        # 2. Phase Artifacts (at the bottom)
+        for phase, out_dir in phase_outputs:
+            _log_phase_to_summary(phase, out_dir)
