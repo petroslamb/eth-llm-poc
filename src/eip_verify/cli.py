@@ -16,6 +16,7 @@ from .pipeline import run_pipeline
 from .reporting import write_report
 from .runner import run_phase_0a, run_phase_1a, run_phase_1b, run_phase_2a, run_phase_2b
 from .spec_index import run_index_specs
+from . import spec_index
 from .utils import timestamp
 
 
