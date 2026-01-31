@@ -58,6 +58,19 @@ def _ascii_bar(count: int, total: int, width: int = 10) -> str:
     return f"[{bar}] {percent}%"
 
 
+def _get_definitions_section() -> str:
+    """Return a markdown table defining the reporting columns."""
+    return """## Definitions
+
+| Column | Description |
+| :--- | :--- |
+| **obligation_gap** | Discrepancies between the extracted obligation and the EIP text (Phase 1A/1B). |
+| **code_gap** | Discrepancies between the obligation and the Reference Implementation intent (Phase 1B). |
+| **client_obligation_gap** | Discrepancies between the Client Implementation and the EIP Obligation (Phase 2B). |
+| **client_code_gap** | Discrepancies between the Client Implementation and the Reference Implementation (Phase 2B). |
+"""
+
+
 def _analyze_csv(csv_path: Path) -> dict[str, Any]:
     if not csv_path.exists():
         return {}
@@ -350,6 +363,10 @@ def write_report(
             
             if not has_findings:
                 lines.append("- No gaps found in analyzed columns.")
+
+        # Definitions Section
+        lines.append("")
+        lines.append(_get_definitions_section())
 
         # Append Full CSV Raw Content (with size guard)
         if analysis and analysis.get("source_csv"):

@@ -105,6 +105,11 @@ def test_write_report_markdown(fake_run_dir):
     assert "Serious Gap" in content
     assert "## Findings" in content
     
+    # Check Definitions
+    assert "## Definitions" in content
+    assert "obligation_gap" in content
+    assert "discrepancies between the extracted obligation" in content.lower()
+    
     # Check Dropdown
     assert "<details>" in content
     assert "Full CSV Output" in content
