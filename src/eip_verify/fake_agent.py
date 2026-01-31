@@ -22,12 +22,42 @@ def _write_fake_obligations_csv(path: Path, eip_number: str) -> None:
     with path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=fieldnames)
         writer.writeheader()
+        
+        # Row 1: Perfect obligation
         writer.writerow(
             {
                 "id": f"EIP{eip_number}-OBL-001",
-                "category": "fake",
+                "category": "core",
+                "enforcement_type": "state_change",
+                "statement": f"Perfect obligation for EIP-{eip_number}.",
+                "locations": "spec.py:100",
+                "code_flow": "entry -> verification",
+                "obligation_gap": "",
+                "code_gap": "",
+            }
+        )
+        
+        # Row 2: Obligation with gaps
+        writer.writerow(
+            {
+                "id": f"EIP{eip_number}-OBL-002",
+                "category": "edge_case",
+                "enforcement_type": "check",
+                "statement": f"Gap obligation for EIP-{eip_number}.",
+                "locations": "spec.py:200",
+                "code_flow": "entry -> check",
+                "obligation_gap": "Ambiguous specific condition",
+                "code_gap": "Missing assertion in spec",
+            }
+        )
+        
+        # Row 3: Empty/Missing obligation
+        writer.writerow(
+            {
+                "id": f"EIP{eip_number}-OBL-003",
+                "category": "future",
                 "enforcement_type": "",
-                "statement": f"Fake obligation for EIP-{eip_number}.",
+                "statement": f"Empty obligation for EIP-{eip_number}.",
                 "locations": "",
                 "code_flow": "",
                 "obligation_gap": "",
@@ -36,7 +66,7 @@ def _write_fake_obligations_csv(path: Path, eip_number: str) -> None:
         )
 
 
-def _write_fake_client_csv(input_csv: Path, output_csv: Path) -> None:
+def _write_fake_client_csv(input_csv: Path, output_csv: Path, phase: str) -> None:
     with input_csv.open(encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle)
         fieldnames = list(reader.fieldnames or [])
@@ -51,8 +81,30 @@ def _write_fake_client_csv(input_csv: Path, output_csv: Path) -> None:
                 fieldnames.append(col)
         rows = []
         for row in reader:
+            # Initialize extras
             for col in extras:
                 row.setdefault(col, "")
+            
+            # Logic for Phase 2B gaps
+            if phase == "2B":
+                row_id = row.get("id", "")
+                if "OBL-001" in row_id:
+                    row["client_locations"] = "client/file.go:50"
+                    row["client_code_flow"] = "HandleMsg -> correct"
+                elif "OBL-002" in row_id:
+                    row["client_locations"] = "client/file.go:99"
+                    row["client_obligation_gap"] = "Client implements older version"
+                    row["client_code_gap"] = "Missing bounds check"
+            
+            # Phase 2A just keeps defaults (empty or copied) for now, 
+            # or could mirror logic if we wanted 2A to populate locations too.
+            if phase == "2A":
+                row_id = row.get("id", "")
+                if "OBL-001" in row_id:
+                     row["client_locations"] = "client/file.go:50"
+                if "OBL-002" in row_id:
+                     row["client_locations"] = "client/file.go:99"
+
             rows.append(row)
 
     with output_csv.open("w", encoding="utf-8", newline="") as handle:
@@ -101,7 +153,7 @@ class FakeClaudeAgent:
 
         if phase == "0A" and output_csv and not output_csv.exists():
             _write_fake_obligations_csv(output_csv, eip_number)
-        if phase == "2A" and output_csv and input_csv and input_csv.exists() and not output_csv.exists():
-            _write_fake_client_csv(input_csv, output_csv)
-        if phase == "2B" and output_csv and input_csv and input_csv.exists() and not output_csv.exists():
-            _write_fake_client_csv(input_csv, output_csv)
+        if phase == "2A" and output_csv and input_csv and input_csv.exists():
+            _write_fake_client_csv(input_csv, output_csv, phase="2A")
+        if phase == "2B" and output_csv and input_csv and input_csv.exists():
+            _write_fake_client_csv(input_csv, output_csv, phase="2B")

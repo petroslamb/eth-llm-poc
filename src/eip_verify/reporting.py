@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import csv
 import json
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any
 
 from .utils import ensure_dir, timestamp
 
@@ -45,6 +46,68 @@ def _parse_timestamp(value: Optional[str]) -> Optional[str]:
     if not value:
         return None
     return value if "_" in value else None
+
+
+def _ascii_bar(count: int, total: int, width: int = 10) -> str:
+    if total == 0:
+        return "[" + " " * width + "] 0%"
+    fraction = count / total
+    filled = int(fraction * width)
+    bar = "█" * filled + "░" * (width - filled)
+    percent = int(fraction * 100)
+    return f"[{bar}] {percent}%"
+
+
+def _analyze_csv(csv_path: Path) -> dict[str, Any]:
+    if not csv_path.exists():
+        return {}
+    
+    rows: list[dict] = []
+    try:
+        with csv_path.open(encoding="utf-8", newline="") as f:
+            reader = csv.DictReader(f)
+            rows = list(reader)
+    except Exception:
+        return {"error": "Failed to parse CSV"}
+
+    total_rows = len(rows)
+    if total_rows == 0:
+        return {"total_rows": 0}
+
+    stats = {}
+    fieldnames = list(rows[0].keys()) if rows else []
+    
+    for field in fieldnames:
+        populated = sum(1 for r in rows if r.get(field, "").strip())
+        stats[field] = {
+            "populated": populated,
+            "total": total_rows,
+            "percent": int((populated / total_rows) * 100) if total_rows > 0 else 0,
+            "ascii_bar": _ascii_bar(populated, total_rows),
+        }
+
+    findings = {}
+    gap_columns = ["obligation_gap", "code_gap", "client_obligation_gap", "client_code_gap"]
+    for col in gap_columns:
+        if col not in fieldnames:
+            continue
+        
+        column_findings = []
+        for row in rows:
+            val = row.get(col, "").strip()
+            if val:
+                column_findings.append({
+                    "id": row.get("id", "unknown"),
+                    "text": val
+                })
+        findings[col] = column_findings
+
+    return {
+        "source_csv": str(csv_path),
+        "total_rows": total_rows,
+        "stats": stats,
+        "findings": findings,
+    }
 
 
 def _find_run_root(path: Path) -> Path:
@@ -132,6 +195,22 @@ def build_summary(run_root: Path) -> dict[str, object]:
         if spec_map_path.exists():
             spec_map_check = _load_json(spec_map_path)
 
+    # Find the best CSV for analysis
+    # Preference: Phase 2B -> 2A -> 1B -> 1A -> 0A
+    analysis_csv: Optional[str] = None
+    analysis_phase: Optional[str] = None
+    
+    for phase in ["2B", "2A", "1B", "1A", "0A"]:
+        manifest = latest_by_phase.get(phase)
+        if manifest and manifest.get("output_csv"):
+             path = Path(manifest["output_csv"])
+             if path.exists():
+                 analysis_csv = str(path)
+                 analysis_phase = phase
+                 break
+    
+    csv_analysis = _analyze_csv(Path(analysis_csv)) if analysis_csv else None
+
     summary: dict[str, object] = {
         "run_root": str(run_root),
         "generated_at": timestamp(),
@@ -145,6 +224,8 @@ def build_summary(run_root: Path) -> dict[str, object]:
         "mismatch_forks": (phase0 or {}).get("mismatch_forks", []),
         "spec_map_check": spec_map_check,
         "run_config": run_config,
+        "csv_analysis": csv_analysis,
+        "analysis_phase": analysis_phase,
         "manifests": [
             {"phase": m.get("_phase"), "path": m.get("_path")}
             for m in sorted(manifests, key=lambda x: x.get("_path", ""))
@@ -228,6 +309,48 @@ def write_report(
             lines.append("```json")
             lines.append(json.dumps(summary["spec_map_check"], indent=2))
             lines.append("```")
+        
+        analysis = summary.get("csv_analysis")
+        phase_label_str = summary.get("analysis_phase") or "Unknown"
+        
+        if analysis and analysis.get("total_rows", 0) > 0:
+            lines.append("")
+            lines.append(f"## Statistics (Phase {phase_label_str})")
+            lines.append(f"- Source: `{analysis.get('source_csv')}`")
+            lines.append(f"- Total Obligations: **{analysis['total_rows']}**")
+            lines.append("")
+            lines.append("| Column | Populated | % | Progress |")
+            lines.append("|---|---|---|---|")
+            
+            stats = analysis.get("stats", {})
+            for field, data in stats.items():
+                lines.append(f"| {field} | {data['populated']} | {data['percent']}% | `{data['ascii_bar']}` |")
+            
+            lines.append("")
+            lines.append("## Findings")
+            
+            findings = analysis.get("findings", {})
+            has_findings = False
+            for category, items in findings.items():
+                if not items:
+                    continue
+                has_findings = True
+                lines.append(f"### {category}")
+                
+                # Grouping logic: if > 20, show top 20 and count
+                limit = 20
+                displayed = items[:limit]
+                
+                for item in displayed:
+                    lines.append(f"- **{item['id']}**: {item['text']}")
+                
+                if len(items) > limit:
+                    lines.append(f"- ... and {len(items) - limit} more.")
+                lines.append("")
+            
+            if not has_findings:
+                lines.append("- No gaps found in analyzed columns.")
+
         (out_dir / "summary.md").write_text("\n".join(lines), encoding="utf-8")
 
     return out_dir
