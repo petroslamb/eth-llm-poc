@@ -6,10 +6,26 @@ import os
 from pathlib import Path
 from typing import List, Optional
 
+from contextlib import contextmanager
+
 from .agents import AgentProtocol, ClaudeAgent
 from .reporting import write_report
 from .runner import run_phase_0a, run_phase_1a, run_phase_1b, run_phase_2a, run_phase_2b
 from .utils import timestamp
+
+
+@contextmanager
+def github_log_group(title: str):
+    """Wrap logs in a GitHub Actions group if running in CI."""
+    is_ci = os.getenv("GITHUB_ACTIONS") == "true"
+    if is_ci:
+        print(f"::group::{title}")
+    try:
+        yield
+    finally:
+        if is_ci:
+            print("::endgroup::")
+
 
 
 PHASE_ORDER = ["extract", "locate-spec", "analyze-spec", "locate-client", "analyze-client"]
@@ -62,8 +78,9 @@ def run_pipeline(
     for phase in PHASE_ORDER:
         if phase not in phases:
             continue
-            
-        print(f"\n=== Running Phase: {phase} ===")
+
+        with github_log_group(f"Phase: {phase}"):
+            print(f"\n=== Running Phase: {phase} ===")
         
         if phase == "extract":
             run_phase_0a(
@@ -172,3 +189,11 @@ def run_pipeline(
     print("\n=== Generating Report ===")
     write_report(run_root=run_root, output_dir=None, formats=["json", "md"])
     print(f"Pipeline completed. Report written to {run_root}/summary.md")
+
+    # Write to GitHub Step Summary if running in Actions
+    step_summary = os.getenv("GITHUB_STEP_SUMMARY")
+    if step_summary:
+        summary_md = run_root / "summary.md"
+        if summary_md.exists():
+            with open(step_summary, "a", encoding="utf-8") as f:
+                f.write(summary_md.read_text(encoding="utf-8"))
