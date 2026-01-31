@@ -31,7 +31,7 @@ on:
       model:
         description: "Claude model"
         required: false
-        default: "claude-3-opus-20240229"
+        default: "claude-sonnet-4-5"
         type: string
       max_turns:
         description: "Max turns per phase"
