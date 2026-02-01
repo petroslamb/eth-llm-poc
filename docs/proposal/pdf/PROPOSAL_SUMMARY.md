@@ -24,6 +24,8 @@ The plan scales to consensus specs and clients, adds cross-client validation, an
 
 ## 1. RFP Objectives and How We Meet Them
 
+These objectives are already validated by the working PoC. The table below maps each RFP requirement to concrete outputs or artifacts produced by the current pipeline.
+
 | RFP Objective | How We Address It | Evidence |
 | --- | --- | --- |
 | Automated spec compliance | Extract obligations, map to spec + client code, produce gap reports | PoC 5 run artifacts + indexed CSVs |
@@ -77,6 +79,8 @@ Ethereum’s spec and client surface is broad and changes frequently. The right 
 
 ## 6. Deliverables and Acceptance Criteria
 
+Each deliverable has a clear acceptance criterion so EF can validate progress without ambiguity. Evidence is available in the repository and from PoC outputs.
+
 | Deliverable | Acceptance Criteria | Evidence |
 | --- | --- | --- |
 | Technical architecture & design | Architecture + approach cover ingest, analysis, report, and toolchain | Architecture overview + system diagrams |
@@ -88,6 +92,8 @@ Ethereum’s spec and client surface is broad and changes frequently. The right 
 
 ## 7. Success Metrics (Initial Targets)
 Targets are refined with EF in Phase 1. Initial targets reflect feasible, auditable outcomes for a 4–6 month roadmap.
+
+Early PoC runs for EIP-1559 and EIP-2930 against the Geth client indicate the pipeline is robust and already meets the intended coverage and low false-positive goals for those example cases.
 
 | Metric | Initial Target | Evidence/Method |
 | --- | --- | --- |
@@ -101,6 +107,8 @@ Targets are refined with EF in Phase 1. Initial targets reflect feasible, audita
 ---
 
 ## 8. Project Plan and Timeline (4–6 Months)
+
+The plan expands coverage in a controlled way: first harden the pipeline, then scale across execution and consensus specs and clients, and finally add optional higher-level protocol security phases if desired.
 
 | Phase | Timing | Outputs |
 | --- | --- | --- |
@@ -122,6 +130,8 @@ Targets are refined with EF in Phase 1. Initial targets reflect feasible, audita
 
 ## 9. Evaluation Criteria (RFP)
 
+The proposed system is assessed against the RFP criteria with evidence from the PoC and a clear path to expansion.
+
 | Criterion | PoC Evidence | Future Expansion |
 | --- | --- | --- |
 | Scalability | Single EIP or batch; `eip-verify` unit scales across clients | Extend to consensus specs/clients and additional phases |
@@ -132,6 +142,8 @@ Targets are refined with EF in Phase 1. Initial targets reflect feasible, audita
 ---
 
 ## 10. Risks and Mitigations
+
+The approach is intentionally conservative: fewer moving parts, clear audit trails, and a fallback path when model outputs are uncertain.
 
 | Risk | Mitigation |
 | --- | --- |
