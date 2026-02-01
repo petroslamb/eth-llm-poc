@@ -1,9 +1,8 @@
-# Proposal Summary (Submission Draft)
+# Proposal Summary
 
-**Base repository URL (replace if needed):**
-- https://github.com/petroslamb/eth-llm-poc/blob/main
+**Base repository URL:** [eth-llm-poc/blob/main](https://github.com/petroslamb/eth-llm-poc/blob/main)
 
-This document is the submission-ready proposal summary for the Ethereum Foundation RFP on integrating LLMs into protocol security research. It is grounded in a working system (PoC 5) and describes a low-risk, auditable path to full execution and consensus coverage in 4–6 months.
+This document is the submission-ready proposal summary for the Ethereum Foundation RFP on integrating LLMs into protocol security research. It is grounded in a working system (PoC 5) delivered in the `eth-llm-poc` repository, with the installable Python package renamed to `eip-verify`. It describes a low-risk, auditable path to full execution and consensus coverage in 4–6 months.
 
 ---
 
@@ -172,7 +171,14 @@ We provide a cost model that separates experimentation runs from batch coverage 
 ---
 
 ## 12. Vendor Background
-Petros Lambropoulos is an independent consultant focused on production-grade agentic systems, evaluation pipelines, and ML monitoring workflows. Prior roles include Senior Software Engineer on the NLP team at Workable and Senior Software Engineer at NannyML. Consulting engagements include Google Cloud / ADK on agent systems for code intelligence and automation. This project also delivers the working PoC 5 pipeline included in the repository. References are available on request.
+Petros Lambropoulos is an independent consultant with 12+ years of experience in software engineering, ML systems, and production-grade AI. Prior roles include Senior Software Engineer on the NLP team at Workable and Senior Software Engineer at NannyML. Consulting engagements include Hedera / CNO (compliance-first tokenization and trading infrastructure) and dikaio.ai (agentic workflows and evaluation pipelines). This project also delivers the working PoC 5 pipeline in the `eth-llm-poc` repository with the `eip-verify` CLI package. References are available on request.
+
+**Vendor links:**  
+Website: [petroslamb.github.io](https://petroslamb.github.io/peterlamb/)  
+GitHub repo: [eth-llm-poc](https://github.com/petroslamb/eth-llm-poc)  
+GitHub profile: [petroslamb](https://github.com/petroslamb)  
+LinkedIn: [petroslamb](https://uk.linkedin.com/in/petroslamb)  
+Rooted Layers (Substack): [Rooted Layers](https://lambpetros.substack.com/)
 
 **Docs:** see Supporting Materials (Vendor background) and resume.
 
