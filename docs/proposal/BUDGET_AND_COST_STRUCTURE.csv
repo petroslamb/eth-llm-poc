@@ -1,0 +1,18 @@
+category,scenario,unit,rate_eur,quantity,total_eur,notes
+fx,usd_to_eur,usd,0.8439,,,Mid-market rate used for conversion (2026-02-01)
+engineering,solo_list_rate_month,day,960,20,19200,List rate EUR 120/hour
+engineering,solo_discounted_rate_month,day,672,20,13440,30% discount
+engineering,solo_discounted_4_months,day,672,80,53760,
+engineering,solo_discounted_6_months,day,672,120,80640,
+llm,opus_per_run,run,33.76,1,33.76,3M in / 1M out
+llm,opus_month_200_runs,run,33.76,200,6751.20,3M in / 1M out
+llm,sonnet_per_run,run,20.25,1,20.25,3M in / 1M out
+llm,sonnet_month_200_runs,run,20.25,200,4050.72,3M in / 1M out
+llm,opus_batch_E10_clients10,run,33.76,100,3375.60,E=10
+llm,opus_batch_E25_clients10,run,33.76,250,8439.00,E=25
+llm,opus_batch_E50_clients10,run,33.76,500,16878.00,E=50
+llm,sonnet_batch_E10_clients10,run,20.25,100,2025.36,E=10
+llm,sonnet_batch_E25_clients10,run,20.25,250,5063.40,E=25
+llm,sonnet_batch_E50_clients10,run,20.25,500,10126.80,E=50
+ci,linux_per_minute,minute,0.0067512,1,0.0068,USD 0.008/min baseline
+ci,linux_month_200_runs_60min,minute,0.0067512,12000,81.01,200 runs x 60 min

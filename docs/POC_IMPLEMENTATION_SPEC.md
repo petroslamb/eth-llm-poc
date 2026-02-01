@@ -177,7 +177,7 @@ This allows CI and local testing without API calls while preserving the file lay
 
 ## 10) References
 
-- Canonical RFP: `poc5/docs/Request for Proposal (RFP)_ Integrating Large Language Models (LLMs) into Ethereum Protocol Security Research.md`.
+- Canonical RFP: `poc5/docs/proposal/Request for Proposal (RFP)_ Integrating Large Language Models (LLMs) into Ethereum Protocol Security Research.md`.
 - Mapping goals: `poc5/docs/PROTOCOL_SECURITY_MAPPING_GOALS.md`.
 
 ## Appendix A) Operational runbook (copy/paste)
