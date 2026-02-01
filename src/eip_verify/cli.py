@@ -379,7 +379,7 @@ class CLI:
         
         # Determine strict eip list
         eip_list = []
-        if eip:
+        if eip is not None:
             if isinstance(eip, (list, tuple)):
                 # Flatten valid items
                 for item in eip:
@@ -389,6 +389,8 @@ class CLI:
                         eip_list.append(str(item))
             elif isinstance(eip, str):
                 eip_list = [e.strip() for e in eip.split(",") if e.strip()]
+            else:
+                eip_list = [str(eip)]
         
         # 1. If explicit EIPs provided, use them
         if eip_list:
