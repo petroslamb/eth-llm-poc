@@ -201,11 +201,5 @@ pytest -q
 
 ## Example Runs
 
-Example verification runs are available in `examples/runs`.
+Example validation runs are available in `examples`. Read the `examples/README.md` for model qualitative comparisons and some initial costs on the best `opus-4.5` model.
 
-**Model Performance Observations:**
-- **Claude 4.5 Haiku**: Use of this model resulted in a high rate of false positives; the Geth code analysis was generally beyond its capabilities.
-- **Claude 4.5 Sonnet**: Performed well with low false positives. Its output was verbose and descriptive, which aided in understanding the context of certain tasks.
-- **Claude 4.5 Opus**: The slight favorite. Like Sonnet, it had low false positives, but its concise and specific output style was marginally better suited for this verification task.
-
-**Evaluation Note**: The evaluation of these runs was conducted using `gpt-5.2-codex` on all findings across EIPs, execution-specs, and the Geth client.
