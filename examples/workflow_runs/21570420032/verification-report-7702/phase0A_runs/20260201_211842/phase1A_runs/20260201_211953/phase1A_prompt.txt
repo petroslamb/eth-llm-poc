@@ -1,0 +1,28 @@
+You are mapping EIP-7702 obligations to implementation locations in the prague fork.
+
+Inputs:
+- Obligations CSV: runs/ci_run/phase0A_runs/20260201_211842/obligations_index.csv
+- Fork root: /home/runner/work/eth-llm-poc/eth-llm-poc/specs/execution-specs/src/ethereum/forks/prague
+
+Tasks:
+1) For each obligation row, locate all code paths that implement the obligation.
+2) Ensure you capture all viable paths, not just the most direct one.
+3) Include the enforcement point in locations (the predicate check or the line that raises/returns an error), not only helper functions.
+4) Write a list of locations in the locations column for each row.
+
+Locations format:
+- Use a bracketed list, e.g. [path/file.py:L10-L42, path/other.py:function_name]
+
+Output:
+- Update CSV at: runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/obligations_index.csv
+
+Constraints:
+- Use filesystem tools to read files and write the updated CSV.
+- Do not delete or reorder rows.
+- Use Python's csv module to read/write so commas in text fields are quoted correctly.
+- Do not include a location unless the file contains the key predicate/constant relevant to the obligation.
+
+Completion requirements:
+- Read runs/ci_run/phase0A_runs/20260201_211842/obligations_index.csv with tools.
+- Write runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/obligations_index.csv.
+- Re-open runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/obligations_index.csv and confirm it exists and row count matches runs/ci_run/phase0A_runs/20260201_211842/obligations_index.csv.

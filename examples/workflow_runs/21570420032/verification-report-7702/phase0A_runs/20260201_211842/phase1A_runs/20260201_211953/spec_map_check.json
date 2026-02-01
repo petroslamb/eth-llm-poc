@@ -1,0 +1,8 @@
+{
+  "fork": "prague",
+  "spec_map_path": "runs/ci_run/phase0A_runs/20260201_211842/eip_fork_map.json",
+  "status": "ok",
+  "readme_only": [],
+  "fork_init_only": [],
+  "mismatch": false
+}

@@ -1,0 +1,27 @@
+You are completing code flow and gap analysis for EIP-7702 obligations.
+
+Inputs:
+- Obligations CSV: runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/obligations_index.csv
+
+Tasks:
+1) For each obligation row, write the end-to-end code_flow text.
+   - The flow must include the enforcement hop (the predicate check or the line that raises/returns an error),
+     and at least one entry point that leads to it.
+2) Fill enforcement_type if missing.
+3) Identify gaps:
+   - obligation_gap: missing or ambiguous spec requirement.
+   - code_gap: missing or unclear implementation path.
+
+Output:
+- Update CSV at: runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/phase1B_runs/20260201_212159/obligations_index.csv
+
+Constraints:
+- Use filesystem tools to read files and write the updated CSV.
+- Keep prior columns intact and only fill missing fields.
+- Use Python's csv module to read/write so commas in text fields are quoted correctly.
+- Do not speculate. If you cannot confirm an enforcement location, leave code_flow minimal and record the uncertainty in code_gap.
+
+Completion requirements:
+- Read runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/obligations_index.csv with tools.
+- Write runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/phase1B_runs/20260201_212159/obligations_index.csv.
+- Re-open runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/phase1B_runs/20260201_212159/obligations_index.csv and confirm it exists and row count matches runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/obligations_index.csv.

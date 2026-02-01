@@ -1,0 +1,323 @@
+{
+  "generated_at": "20260201_211842",
+  "spec_root": "/home/runner/work/eth-llm-poc/eth-llm-poc/specs/execution-specs",
+  "spec_readme": "/home/runner/work/eth-llm-poc/eth-llm-poc/specs/execution-specs/README.md",
+  "spec_branch": "HEAD",
+  "spec_commit": "ca18ab1cbc431f1291c58246f0ca4a53e37c7a7d",
+  "forks": [
+    {
+      "fork": "Version and Code Name",
+      "spec_path": null,
+      "eips_readme": [],
+      "eips_fork_init": null,
+      "readme_only": [],
+      "fork_init_only": [],
+      "mismatch": false
+    },
+    {
+      "fork": "Prague",
+      "spec_path": null,
+      "eips_readme": [
+        2537,
+        2935,
+        6110,
+        7002,
+        7251,
+        7549,
+        7623,
+        7685,
+        7691,
+        7702
+      ],
+      "eips_fork_init": null,
+      "readme_only": [],
+      "fork_init_only": [],
+      "mismatch": false
+    },
+    {
+      "fork": "Cancun",
+      "spec_path": "/src/ethereum/forks/cancun/__init__.py",
+      "eips_readme": [
+        1153,
+        4788,
+        4844,
+        5656,
+        6780,
+        7044,
+        7045,
+        7514,
+        7516
+      ],
+      "eips_fork_init": [
+        1153,
+        4788,
+        4844,
+        5656,
+        6780,
+        7516,
+        7569
+      ],
+      "readme_only": [
+        7044,
+        7045,
+        7514
+      ],
+      "fork_init_only": [
+        7569
+      ],
+      "mismatch": true
+    },
+    {
+      "fork": "Shanghai",
+      "spec_path": "/src/ethereum/forks/shanghai/__init__.py",
+      "eips_readme": [
+        3651,
+        3855,
+        3860,
+        4895
+      ],
+      "eips_fork_init": [
+        3651,
+        3855,
+        3860,
+        4895,
+        6049
+      ],
+      "readme_only": [],
+      "fork_init_only": [
+        6049
+      ],
+      "mismatch": true
+    },
+    {
+      "fork": "Paris",
+      "spec_path": "/src/ethereum/forks/paris/__init__.py",
+      "eips_readme": [
+        3675,
+        4399
+      ],
+      "eips_fork_init": [
+        3675,
+        4399
+      ],
+      "readme_only": [],
+      "fork_init_only": [],
+      "mismatch": false
+    },
+    {
+      "fork": "Gray Glacier",
+      "spec_path": "/src/ethereum/forks/gray_glacier/__init__.py",
+      "eips_readme": [
+        5133
+      ],
+      "eips_fork_init": [
+        5133
+      ],
+      "readme_only": [],
+      "fork_init_only": [],
+      "mismatch": false
+    },
+    {
+      "fork": "Arrow Glacier",
+      "spec_path": "/src/ethereum/forks/arrow_glacier/__init__.py",
+      "eips_readme": [
+        4345
+      ],
+      "eips_fork_init": [
+        4345
+      ],
+      "readme_only": [],
+      "fork_init_only": [],
+      "mismatch": false
+    },
+    {
+      "fork": "London",
+      "spec_path": "/src/ethereum/forks/london/__init__.py",
+      "eips_readme": [
+        1559,
+        3198,
+        3529,
+        3541,
+        3554
+      ],
+      "eips_fork_init": [
+        1559,
+        3198,
+        3529,
+        3541,
+        3554
+      ],
+      "readme_only": [],
+      "fork_init_only": [],
+      "mismatch": false
+    },
+    {
+      "fork": "Berlin",
+      "spec_path": "/src/ethereum/forks/berlin/__init__.py",
+      "eips_readme": [
+        2565,
+        2718,
+        2929,
+        2930
+      ],
+      "eips_fork_init": [
+        2565,
+        2718,
+        2929,
+        2930
+      ],
+      "readme_only": [],
+      "fork_init_only": [],
+      "mismatch": false
+    },
+    {
+      "fork": "Muir Glacier",
+      "spec_path": null,
+      "eips_readme": [
+        2384
+      ],
+      "eips_fork_init": null,
+      "readme_only": [],
+      "fork_init_only": [],
+      "mismatch": false
+    },
+    {
+      "fork": "Istanbul",
+      "spec_path": null,
+      "eips_readme": [
+        152,
+        1108,
+        1344,
+        1884,
+        2028,
+        2200
+      ],
+      "eips_fork_init": null,
+      "readme_only": [],
+      "fork_init_only": [],
+      "mismatch": false
+    },
+    {
+      "fork": "Petersburg",
+      "spec_path": null,
+      "eips_readme": [
+        145,
+        1014,
+        1052,
+        1234
+      ],
+      "eips_fork_init": null,
+      "readme_only": [],
+      "fork_init_only": [],
+      "mismatch": false
+    },
+    {
+      "fork": "Constantinople",
+      "spec_path": null,
+      "eips_readme": [
+        145,
+        1014,
+        1052,
+        1234,
+        1283
+      ],
+      "eips_fork_init": null,
+      "readme_only": [],
+      "fork_init_only": [],
+      "mismatch": false
+    },
+    {
+      "fork": "Byzantium",
+      "spec_path": null,
+      "eips_readme": [
+        100,
+        140,
+        196,
+        197,
+        198,
+        211,
+        214,
+        649,
+        658
+      ],
+      "eips_fork_init": null,
+      "readme_only": [],
+      "fork_init_only": [],
+      "mismatch": false
+    },
+    {
+      "fork": "Spurious Dragon",
+      "spec_path": null,
+      "eips_readme": [
+        155,
+        160,
+        161,
+        170
+      ],
+      "eips_fork_init": null,
+      "readme_only": [],
+      "fork_init_only": [],
+      "mismatch": false
+    },
+    {
+      "fork": "Tangerine Whistle",
+      "spec_path": null,
+      "eips_readme": [
+        150
+      ],
+      "eips_fork_init": null,
+      "readme_only": [],
+      "fork_init_only": [],
+      "mismatch": false
+    },
+    {
+      "fork": "DAO Fork",
+      "spec_path": null,
+      "eips_readme": [],
+      "eips_fork_init": null,
+      "readme_only": [],
+      "fork_init_only": [],
+      "mismatch": false
+    },
+    {
+      "fork": "DAO Wars",
+      "spec_path": null,
+      "eips_readme": [],
+      "eips_fork_init": null,
+      "readme_only": [],
+      "fork_init_only": [],
+      "mismatch": false
+    },
+    {
+      "fork": "Homestead",
+      "spec_path": null,
+      "eips_readme": [
+        2,
+        7,
+        8
+      ],
+      "eips_fork_init": null,
+      "readme_only": [],
+      "fork_init_only": [],
+      "mismatch": false
+    },
+    {
+      "fork": "Frontier Thawing",
+      "spec_path": null,
+      "eips_readme": [],
+      "eips_fork_init": null,
+      "readme_only": [],
+      "fork_init_only": [],
+      "mismatch": false
+    },
+    {
+      "fork": "Frontier",
+      "spec_path": null,
+      "eips_readme": [],
+      "eips_fork_init": null,
+      "readme_only": [],
+      "fork_init_only": [],
+      "mismatch": false
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+usage_date_utc,model,workspace,api_key,usage_type,context_window,token_type,cost_usd,cost_type
+2026-02-01,Claude Haiku 4.5,Default,claude-sdk,message,≤ 200k,input_no_cache,0.02,token
+2026-02-01,Claude Haiku 4.5,Default,claude-sdk,message,≤ 200k,output,0.01,token
+2026-02-01,Claude Opus 4.5,Default,claude-sdk,message,≤ 200k,input_no_cache,0.00,token
+2026-02-01,Claude Opus 4.5,Default,claude-sdk,message,≤ 200k,input_cache_read,1.65,token
+2026-02-01,Claude Opus 4.5,Default,claude-sdk,message,≤ 200k,input_cache_write_5m,1.89,token
+2026-02-01,Claude Opus 4.5,Default,claude-sdk,message,≤ 200k,output,0.82,token

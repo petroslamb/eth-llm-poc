@@ -1,0 +1,37 @@
+Now let me read the key files that are most relevant to EIP-7702 implementation to map obligations to code locations:Now let me read additional files for complete coverage:Now let me read the vm instructions system.py to understand CALL opcodes:Now let me check the precompiled_contracts mapping and the state.py for additional mappings:I have all the information I need. Now let me write a Python script to generate the updated CSV with accurate location mappings for each obligation. Let me first check if the output directory exists:Now let me create and run a Python script to process the obligations and write the updated CSV:Now let me verify the output and compare row counts:Line counts match (49 lines = 1 header + 48 data rows). Now let me read the output file to confirm it was written correctly:The CSV has been successfully created with all 48 obligations mapped to their implementation locations. Let me also verify the row count matches by running a quick Python verification:The task is complete. Here's a summary of what was done:
+
+## Summary
+
+I mapped EIP-7702 obligations from the input CSV to their implementation locations in the Prague fork codebase. 
+
+### Key Implementation Files Identified:
+
+1. **`vm/eoa_delegation.py`** - Core EOA delegation logic:
+   - Constants: `SET_CODE_TX_MAGIC`, `EOA_DELEGATION_MARKER`, `PER_EMPTY_ACCOUNT_COST`, `PER_AUTH_BASE_COST`, `NULL_ADDRESS`
+   - Functions: `is_valid_delegation()`, `get_delegated_code_address()`, `recover_authority()`, `access_delegation()`, `set_delegation()`
+
+2. **`transactions.py`** - Transaction validation and intrinsic cost calculation:
+   - `SetCodeTransaction` dataclass
+   - `calculate_intrinsic_cost()` for authorization list cost
+   - `signing_hash_7702()` for transaction signature
+   - `recover_sender()` for transaction signature verification
+
+3. **`fork.py`** - Block/transaction validation:
+   - `check_transaction()` - validates empty authorization list, null destination
+   - Sender validation for delegation indicators
+
+4. **`vm/interpreter.py`** - Execution flow:
+   - `process_message_call()` - processes delegation before execution
+   - Code address resolution and delegation handling
+
+5. **`vm/instructions/system.py`** - CALL opcodes:
+   - `call()`, `callcode()`, `delegatecall()`, `staticcall()` - all use `access_delegation()` for delegation resolution
+
+6. **`fork_types.py`** - Type definitions:
+   - `Authorization` dataclass with typed fields enforcing RLP validation constraints
+
+### Output:
+- Created: `runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/obligations_index.csv`
+- Row count: 48 (matches input)
+- All 48 obligations have locations populated
+- All obligation IDs preserved in original order

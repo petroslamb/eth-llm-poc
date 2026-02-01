@@ -1,0 +1,23 @@
+{
+  "phase": "2B",
+  "generated_at": "20260201_212713",
+  "input_csv": "runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/phase1B_runs/20260201_212159/phase2A_runs/20260201_212418/client_obligations_index.csv",
+  "output_csv": "runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/phase1B_runs/20260201_212159/phase2A_runs/20260201_212418/phase2B_runs/20260201_212713/client_obligations_index.csv",
+  "eip_number": "7702",
+  "client_name": "geth",
+  "client_root": "/home/runner/work/eth-llm-poc/eth-llm-poc/clients/execution/geth",
+  "cwd": "/home/runner/work/eth-llm-poc/eth-llm-poc/clients/execution/geth",
+  "obligation_id": null,
+  "parent_run": "runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/phase1B_runs/20260201_212159/phase2A_runs/20260201_212418",
+  "model": "claude-opus-4-5",
+  "max_turns": 20,
+  "allowed_tools": [
+    "Read",
+    "Write",
+    "Bash",
+    "Grep",
+    "Glob"
+  ],
+  "llm_mode": "live",
+  "record_llm_calls": false
+}

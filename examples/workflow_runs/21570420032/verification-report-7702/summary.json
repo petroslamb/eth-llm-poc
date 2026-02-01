@@ -1,0 +1,349 @@
+{
+  "run_root": "/home/runner/work/eth-llm-poc/eth-llm-poc/runs/ci_run",
+  "generated_at": "20260201_212914",
+  "phases_present": [
+    "0A",
+    "1A",
+    "1B",
+    "2A",
+    "2B"
+  ],
+  "latest_manifests": {
+    "0A": "/home/runner/work/eth-llm-poc/eth-llm-poc/runs/ci_run/phase0A_runs/20260201_211842/run_manifest.json",
+    "1A": "/home/runner/work/eth-llm-poc/eth-llm-poc/runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/run_manifest.json",
+    "1B": "/home/runner/work/eth-llm-poc/eth-llm-poc/runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/phase1B_runs/20260201_212159/run_manifest.json",
+    "2A": "/home/runner/work/eth-llm-poc/eth-llm-poc/runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/phase1B_runs/20260201_212159/phase2A_runs/20260201_212418/run_manifest.json",
+    "2B": "/home/runner/work/eth-llm-poc/eth-llm-poc/runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/phase1B_runs/20260201_212159/phase2A_runs/20260201_212418/phase2B_runs/20260201_212713/run_manifest.json"
+  },
+  "eip_number": "7702",
+  "fork_name": "prague",
+  "client_name": "geth",
+  "spec_branch": "HEAD",
+  "spec_commit": "ca18ab1cbc431f1291c58246f0ca4a53e37c7a7d",
+  "mismatch_forks": [
+    "Cancun",
+    "Shanghai"
+  ],
+  "spec_map_check": {
+    "fork": "prague",
+    "spec_map_path": "runs/ci_run/phase0A_runs/20260201_211842/eip_fork_map.json",
+    "status": "ok",
+    "readme_only": [],
+    "fork_init_only": [],
+    "mismatch": false
+  },
+  "run_config": {
+    "model": "claude-opus-4-5",
+    "max_turns": 20,
+    "llm_mode": "live",
+    "record_llm_calls": false,
+    "allowed_tools": [
+      "Read",
+      "Write",
+      "Bash",
+      "Grep",
+      "Glob"
+    ],
+    "obligation_id": null
+  },
+  "csv_analysis": {
+    "source_csv": "runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/phase1B_runs/20260201_212159/phase2A_runs/20260201_212418/phase2B_runs/20260201_212713/client_obligations_index.csv",
+    "total_rows": 48,
+    "stats": {
+      "id": {
+        "populated": 48,
+        "total": 48,
+        "percent": 100,
+        "ascii_bar": "[\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588] 100%"
+      },
+      "category": {
+        "populated": 48,
+        "total": 48,
+        "percent": 100,
+        "ascii_bar": "[\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588] 100%"
+      },
+      "enforcement_type": {
+        "populated": 0,
+        "total": 48,
+        "percent": 0,
+        "ascii_bar": "[\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591] 0%"
+      },
+      "statement": {
+        "populated": 48,
+        "total": 48,
+        "percent": 100,
+        "ascii_bar": "[\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588] 100%"
+      },
+      "locations": {
+        "populated": 48,
+        "total": 48,
+        "percent": 100,
+        "ascii_bar": "[\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588] 100%"
+      },
+      "code_flow": {
+        "populated": 0,
+        "total": 48,
+        "percent": 0,
+        "ascii_bar": "[\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591] 0%"
+      },
+      "obligation_gap": {
+        "populated": 0,
+        "total": 48,
+        "percent": 0,
+        "ascii_bar": "[\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591] 0%"
+      },
+      "code_gap": {
+        "populated": 0,
+        "total": 48,
+        "percent": 0,
+        "ascii_bar": "[\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591] 0%"
+      },
+      "client_locations": {
+        "populated": 48,
+        "total": 48,
+        "percent": 100,
+        "ascii_bar": "[\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588] 100%"
+      },
+      "client_code_flow": {
+        "populated": 48,
+        "total": 48,
+        "percent": 100,
+        "ascii_bar": "[\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588] 100%"
+      },
+      "client_obligation_gap": {
+        "populated": 0,
+        "total": 48,
+        "percent": 0,
+        "ascii_bar": "[\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591] 0%"
+      },
+      "client_code_gap": {
+        "populated": 48,
+        "total": 48,
+        "percent": 100,
+        "ascii_bar": "[\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588] 100%"
+      }
+    },
+    "findings": {
+      "obligation_gap": [],
+      "code_gap": [],
+      "client_obligation_gap": [],
+      "client_code_gap": [
+        {
+          "id": "EIP7702-OBL-001",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-002",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-003",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-004",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-005",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-006",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-007",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-008",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-009",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-010",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-011",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-012",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-013",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-014",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-015",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-016",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-017",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-018",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-019",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-020",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-021",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-022",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-023",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-024",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-025",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-026",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-027",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-028",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-029",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-030",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-031",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-032",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-033",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-034",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-035",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-036",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-037",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-038",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-039",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-040",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-041",
+          "text": "EIP-7702 not implemented in geth. Feature is partially present from related code but delegation indicator exemption is missing."
+        },
+        {
+          "id": "EIP7702-OBL-042",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-043",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-044",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-045",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-046",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-047",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        },
+        {
+          "id": "EIP7702-OBL-048",
+          "text": "EIP-7702 not implemented in geth. SetCodeTxType (0x04) and authorization list processing are absent."
+        }
+      ]
+    }
+  },
+  "analysis_phase": "2B",
+  "manifests": [
+    {
+      "phase": "2B",
+      "path": "/home/runner/work/eth-llm-poc/eth-llm-poc/runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/phase1B_runs/20260201_212159/phase2A_runs/20260201_212418/phase2B_runs/20260201_212713/run_manifest.json"
+    },
+    {
+      "phase": "2A",
+      "path": "/home/runner/work/eth-llm-poc/eth-llm-poc/runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/phase1B_runs/20260201_212159/phase2A_runs/20260201_212418/run_manifest.json"
+    },
+    {
+      "phase": "1B",
+      "path": "/home/runner/work/eth-llm-poc/eth-llm-poc/runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/phase1B_runs/20260201_212159/run_manifest.json"
+    },
+    {
+      "phase": "1A",
+      "path": "/home/runner/work/eth-llm-poc/eth-llm-poc/runs/ci_run/phase0A_runs/20260201_211842/phase1A_runs/20260201_211953/run_manifest.json"
+    },
+    {
+      "phase": "0A",
+      "path": "/home/runner/work/eth-llm-poc/eth-llm-poc/runs/ci_run/phase0A_runs/20260201_211842/run_manifest.json"
+    }
+  ]
+}
