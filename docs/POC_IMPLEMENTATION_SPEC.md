@@ -154,6 +154,7 @@ PoC 5 includes reusable and manual workflows that **shallow-clone dependencies**
 - `manual_run.yml`: workflow_dispatch wrapper around the reusable workflow.
 - `manual_run_batch.yml`: workflow_dispatch batch runner using `eip-verify get-matrix` to resolve EIPs for a fork.
 - `test.yml`: unit/integration tests for the package.
+- The manual workflow UI defaults are synced from `resolve_defaults.yml` via `scripts/sync_workflow_defaults.py`.
 
 **Defaults (current, defined in `resolve_defaults.yml`):**
 - **Single profile:** EIP `7702`, fork `prague`, client `geth`, phases `extract,locate-spec,analyze-spec,locate-client,analyze-client`.

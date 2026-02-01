@@ -181,6 +181,7 @@ This repository includes two manual workflows for running verification on-demand
 Run verification for a single EIP.
 *   **Trigger**: Actions tab -> "Manual Run" -> "Run workflow"
 *   **Inputs**: EIP number, fork, client, etc. (leave blank to use defaults from `resolve_defaults.yml`)
+*   **UI defaults**: Synced from `resolve_defaults.yml` via `scripts/sync_workflow_defaults.py`.
 
 ### 2. Manual Run (Batch) (`manual_run_batch.yml`)
 Run verification for multiple EIPs or an entire fork in parallel.

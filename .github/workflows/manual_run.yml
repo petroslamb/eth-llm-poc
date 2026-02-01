@@ -1,5 +1,6 @@
 name: Manual Run
 
+# workflow_dispatch defaults are synced from resolve_defaults.yml via scripts/sync_workflow_defaults.py
 on:
   workflow_dispatch:
     inputs:
@@ -7,46 +8,57 @@ on:
         description: "EIP number"
         required: false
         type: string
+        default: "7702"
       fork:
         description: "Execution-specs fork"
         required: false
         type: string
+        default: "prague"
       client:
         description: "Execution client"
         required: false
         type: string
+        default: "geth"
       client_ref:
         description: "Execution client ref"
         required: false
         type: string
+        default: "v1.16.8"
       phases:
         description: "Comma-separated phase list"
         required: false
         type: string
+        default: "extract,locate-spec,analyze-spec,locate-client,analyze-client"
       model:
         description: "Claude model"
         required: false
         type: string
+        default: "claude-opus-4-5"
       max_turns:
         description: "Max turns per phase"
         required: false
         type: string
+        default: "20"
       eips_ref:
         description: "EIPs repo branch"
         required: false
         type: string
+        default: "master"
       execution_specs_ref:
         description: "Execution-specs repo ref"
         required: false
         type: string
+        default: "mainnet"
       llm_mode:
         description: "LLM mode (live or fake)"
         required: false
         type: string
+        default: "fake"
       pypi_package:
         description: "Git ref or PyPI version to install eip-verify from (default: local path)"
         required: false
         type: string
+        default: "."
 
 permissions:
   contents: read
