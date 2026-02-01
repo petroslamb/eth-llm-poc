@@ -3,6 +3,8 @@
 This document summarizes the qualitative validation work captured in the example transcript and example run artifacts.
 It is intended as a concise, high-signal overview for reviewers who want to understand how model outputs were
 validated and how the different runs compare.
+Validation was performed with gtp-5.3-codex (high thinking) to reduce Anthropic model bias and increase validation
+diversity.
 
 ## Where to look
 

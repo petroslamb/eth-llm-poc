@@ -1,7 +1,8 @@
 # Example Runs: Model Mapping
 
 This folder stores example run artifacts keyed by timestamp. The model used for each run can be inferred from the
-qualitative validation transcript:
+qualitative validation transcript. Validation was performed with gtp-5.3-codex (high thinking) to reduce Anthropic
+model bias and increase validation diversity:
 
 - 20260128_192948 -> Sonnet
 - 20260129_125052 -> Haiku
