@@ -11,7 +11,7 @@ validated and how the different runs compare.
 - Example run artifacts (timestamped):
   `examples/runs/`
 - Model mapping for the example runs:
-  `examples/runs/README.md`
+  `examples/README.md`
 
 ## Scope
 
@@ -57,4 +57,4 @@ plus a later EIP-2930 (Berlin fork) run. Validation is qualitative: spot-checkin
 - 20260129_133849 -> Opus
 - 20260129_161814 -> Opus (EIP-2930 Berlin full phase chain)
 
-See `examples/runs/README.md` for the same mapping
+See `examples/README.md` for the same mapping.
