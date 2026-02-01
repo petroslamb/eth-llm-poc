@@ -160,7 +160,7 @@ We provide a cost model that separates experimentation runs from batch coverage 
 ---
 
 ## 12. Vendor Background
-Petros Lambropoulos is an independent consultant with experience building production-grade agentic systems, evaluation pipelines, and ML monitoring workflows. Prior roles include AI and ML systems at Google Cloud and Workable, plus reliability and monitoring work at NannyML. This project also delivers the working PoC 5 pipeline included in the repository. References are available on request.
+Petros Lambropoulos is an independent consultant focused on production-grade agentic systems, evaluation pipelines, and ML monitoring workflows. Prior roles include Senior Software Engineer on the NLP team at Workable and Senior Software Engineer at NannyML. Consulting engagements include Google Cloud / ADK on agent systems for code intelligence and automation. This project also delivers the working PoC 5 pipeline included in the repository. References are available on request.
 
 **Docs:**  
 `poc5/docs/proposal/VENDOR_BACKGROUND_AND_REFERENCES.md`  
