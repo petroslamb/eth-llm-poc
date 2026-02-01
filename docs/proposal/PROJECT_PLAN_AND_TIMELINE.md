@@ -7,7 +7,7 @@ This plan assumes PoC 5 is complete and outlines a 4–6 month roadmap. Dates ar
 | Assumption | Value |
 | --- | --- |
 | Kickoff date | TBD (set at award) |
-| Scope baseline | Execution-specs + execution clients, single-run pipeline |
+| Scope baseline | Execution-specs + Geth client, single-run pipeline |
 | Expansion | Consensus-specs + consensus clients after baseline hardening |
 | Run model | CLI + reusable GitHub Actions workflows |
 

@@ -3,7 +3,7 @@
 This document describes the **proposed system** based on the working PoC 5 implementation. It answers the RFP requirements for (a) how the system ingests specifications, analyzes code, and reports discrepancies, and (b) the technical approach, methodologies, frameworks, and tools.
 
 ## Scope and Intent
-- **Baseline**: execution-specs + execution clients (PoC 5 today).
+- **Baseline**: execution-specs + Geth client (PoC 5 today).
 - **Expansion**: consensus-specs + consensus clients (planned).
 - **Run model**: CLI + reusable CI workflows with deterministic artifacts.
 - **Design principle**: keep the pipeline **simple, auditable, and repeatable**.
@@ -113,7 +113,7 @@ The following were prototyped and rejected due to complexity, unpredictability, 
 
 ## Client Coverage Strategy
 
-Execution and consensus layers have **separate client matrices**, validated independently before cross-layer linkage.
+Execution and consensus layers have **separate client matrices**, validated independently before cross-layer linkage. Client matrices are part of the proposed expansion.
 
 | Layer | Clients (examples) | Coverage goal |
 | --- | --- | --- |

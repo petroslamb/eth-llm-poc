@@ -1,6 +1,6 @@
 # RFP Response Index (PoC 5)
 
-This index maps the RFP requirements to the documentation in `poc5/docs/proposal/`. PoC 5 is scoped to execution-specs and execution clients.
+This index maps the RFP requirements to the documentation in `poc5/docs/proposal/`. PoC 5 is scoped to execution-specs and the Geth client.
 
 ## Canonical RFP
 - `poc5/docs/proposal/Request for Proposal (RFP)_ Integrating Large Language Models (LLMs) into Ethereum Protocol Security Research.md`

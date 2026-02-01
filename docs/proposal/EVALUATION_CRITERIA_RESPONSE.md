@@ -16,6 +16,7 @@ This document summarizes how PoC 5 addresses the RFP evaluation criteria. Implem
 ## Scalability and Maintenance
 - The PoC supports **single EIP runs** and **batch runs** for all EIPs in an execution fork.
 - The **unit of work** is a reusable `eip-verify` job that scales in CI; this is demonstrated in the manual batch workflow.
+- The PoC currently runs against **Geth**; the execution and consensus client matrices are part of the proposed expansion.
 - Future scalability extends the same unit of work to **consensus-specs** and **consensus clients**.
 - Additional phases can scale coverage of protocol security mapping goals.
 

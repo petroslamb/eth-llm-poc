@@ -18,7 +18,7 @@ The plan scales to consensus specs and clients, adds cross-client validation, an
 - **Working PoC today:** execution-specs pipeline already runs with reusable CI workflows and auditable artifacts.
 - **Deterministic and auditable:** strict phase boundaries, versioned runs, and structured outputs minimize ambiguity.
 - **Lowest-risk architecture:** avoided multi-agent and RAG complexity after evaluation; chosen approach is reproducible.
-- **Clear scaling unit:** `eip-verify` job enables batch execution by EIP × client without architecture change.
+- **Clear scaling unit:** `eip-verify` enables batch execution across all EIPs in a fork today; the same unit extends to EIP × client scaling.
 
 ---
 
@@ -42,7 +42,7 @@ Ethereum’s spec and client surface is broad and changes frequently. The right 
 ## 3. Scope Boundaries
 **In scope (Phase 1–4):**
 - Execution-specs ingestion and EIP obligation extraction.
-- Execution clients (forked in repo) validated per EIP and per fork.
+- Execution client validation (starting with Geth; client matrix planned).
 - Consensus-specs ingestion and consensus client validation.
 - Deterministic artifacts, manifests, and summary reports.
 
@@ -84,7 +84,7 @@ Each deliverable has a clear acceptance criterion so EF can validate progress wi
 | Deliverable | Acceptance Criteria | Evidence |
 | --- | --- | --- |
 | Technical architecture & design | Architecture + approach cover ingest, analysis, report, and toolchain | Architecture overview + system diagrams |
-| Working prototype | PoC 5 runs per-EIP/per-client pipeline with artifacts | CLI pipeline + run outputs |
+| Working prototype | PoC 5 runs per-EIP pipeline on Geth with artifacts | CLI pipeline + run outputs |
 | Integration guidelines | Reusable workflow integration documented | Workflow usage + examples |
 | Operations & extension | Setup, maintenance, and future phases documented | Ops guide + extension plan |
 
@@ -134,7 +134,7 @@ The proposed system is assessed against the RFP criteria with evidence from the 
 
 | Criterion | PoC Evidence | Future Expansion |
 | --- | --- | --- |
-| Scalability | Single EIP or batch; `eip-verify` unit scales across clients | Extend to consensus specs/clients and additional phases |
+| Scalability | Single EIP or batch across a fork; `eip-verify` scales in CI | Extend to client matrices and additional phases |
 | Accuracy | Opus 4.5 yields minimal false positives; manual cross-model review used | Tune prompts, add evaluators, expand validation |
 | Reliability | Simple chained pipeline with deterministic outputs | Add harnesses, logs, monitoring |
 | Security | Runs inside CI; report-only outputs; minimal surface | Add tighter sandboxing as needed |
