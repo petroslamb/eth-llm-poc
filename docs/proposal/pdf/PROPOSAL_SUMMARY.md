@@ -26,9 +26,9 @@ The plan scales to consensus specs and clients, adds cross-client validation, an
 
 | RFP Objective | How We Address It | Evidence |
 | --- | --- | --- |
-| Automated spec compliance | Extract obligations, map to spec + client code, produce gap reports | `poc5/docs/POC_IMPLEMENTATION_SPEC.md` |
-| Workflow integration | Reusable GitHub Actions workflow with auditable artifacts | `poc5/docs/proposal/INTEGRATION_GUIDE.md` |
-| Efficiency and accuracy | Deterministic phases, low false positives, optional LLM judge pass | `poc5/docs/proposal/EVALUATION_CRITERIA_RESPONSE.md` |
+| Automated spec compliance | Extract obligations, map to spec + client code, produce gap reports | PoC 5 run artifacts + indexed CSVs |
+| Workflow integration | Reusable GitHub Actions workflow with auditable artifacts | Reusable CI workflow + job manifests |
+| Efficiency and accuracy | Deterministic phases, low false positives, optional LLM judge pass | Phase manifests + evaluation notes |
 
 ---
 
@@ -79,10 +79,10 @@ Ethereum’s spec and client surface is broad and changes frequently. The right 
 
 | Deliverable | Acceptance Criteria | Evidence |
 | --- | --- | --- |
-| Technical architecture & design | Architecture + approach cover ingest, analysis, report, and toolchain | `poc5/docs/proposal/TECHNICAL_ARCHITECTURE_AND_DESIGN.md` |
-| Working prototype | PoC 5 runs per-EIP/per-client pipeline with artifacts | `poc5/docs/POC_IMPLEMENTATION_SPEC.md` |
-| Integration guidelines | Reusable workflow integration documented | `poc5/docs/proposal/INTEGRATION_GUIDE.md` |
-| Operations & extension | Setup, maintenance, and future phases documented | `poc5/docs/proposal/OPERATIONS_AND_EXTENSION.md` |
+| Technical architecture & design | Architecture + approach cover ingest, analysis, report, and toolchain | Architecture overview + system diagrams |
+| Working prototype | PoC 5 runs per-EIP/per-client pipeline with artifacts | CLI pipeline + run outputs |
+| Integration guidelines | Reusable workflow integration documented | Workflow usage + examples |
+| Operations & extension | Setup, maintenance, and future phases documented | Ops guide + extension plan |
 
 ---
 
@@ -111,7 +111,7 @@ Targets are refined with EF in Phase 1. Initial targets reflect feasible, audita
 | Phase 5 (optional) | Month 5 | CI gating, quality thresholds, dashboarding |
 | Phase 6 (optional) | Month 6 | Extended phases for broader protocol security mapping |
 
-**Detailed plan:** `poc5/docs/proposal/PROJECT_PLAN_AND_TIMELINE.md`
+**Detailed plan:** see Supporting Materials (Project plan and timeline).
 
 **Optional extension goals (Month 5–6):**
 - Cross-layer invariants and EL/CL consistency checks.
@@ -154,17 +154,15 @@ We provide a cost model that separates experimentation runs from batch coverage 
 | LLM runs (Sonnet, 200/month) | EUR 4,050.72/month |
 | CI (Linux baseline, 200 runs) | EUR 81.01/month |
 
-**Full cost model:** `poc5/docs/proposal/BUDGET_AND_COST_STRUCTURE.md`  
-**CSV breakdown:** `poc5/docs/proposal/BUDGET_AND_COST_STRUCTURE.csv`
+**Full cost model:** see Supporting Materials (Budget and cost structure).  
+**CSV breakdown:** see Supporting Materials (Budget CSV).
 
 ---
 
 ## 12. Vendor Background
 Petros Lambropoulos is an independent consultant focused on production-grade agentic systems, evaluation pipelines, and ML monitoring workflows. Prior roles include Senior Software Engineer on the NLP team at Workable and Senior Software Engineer at NannyML. Consulting engagements include Google Cloud / ADK on agent systems for code intelligence and automation. This project also delivers the working PoC 5 pipeline included in the repository. References are available on request.
 
-**Docs:**  
-`poc5/docs/proposal/VENDOR_BACKGROUND_AND_REFERENCES.md`  
-`poc5/docs/proposal/resume2025_public.pdf`
+**Docs:** see Supporting Materials (Vendor background) and resume.
 
 ---
 
@@ -176,14 +174,35 @@ Petros Lambropoulos is an independent consultant focused on production-grade age
 ---
 
 ## 14. Supporting Materials (Repository Links)
-Append these to the base repository URL above:
-- `/poc5/docs/proposal/TECHNICAL_ARCHITECTURE_AND_DESIGN.md`
-- `/poc5/docs/proposal/PROJECT_PLAN_AND_TIMELINE.md`
-- `/poc5/docs/proposal/BUDGET_AND_COST_STRUCTURE.md`
-- `/poc5/docs/proposal/BUDGET_AND_COST_STRUCTURE.csv`
-- `/poc5/docs/proposal/INTEGRATION_GUIDE.md`
-- `/poc5/docs/proposal/OPERATIONS_AND_EXTENSION.md`
-- `/poc5/docs/proposal/EVALUATION_CRITERIA_RESPONSE.md`
-- `/poc5/docs/proposal/VENDOR_BACKGROUND_AND_REFERENCES.md`
-- `/poc5/docs/proposal/PROPOSAL_READINESS_CHECKLIST.md`
-- `/poc5/docs/proposal/Request for Proposal (RFP)_ Integrating Large Language Models (LLMs) into Ethereum Protocol Security Research.md`
+Append the folder and file below to the base repository URL above.
+
+- Technical architecture  
+  Folder: poc5/docs/proposal/  
+  File: TECHNICAL_ARCHITECTURE_AND_DESIGN.md
+- Project plan and timeline  
+  Folder: poc5/docs/proposal/  
+  File: PROJECT_PLAN_AND_TIMELINE.md
+- Budget and cost structure  
+  Folder: poc5/docs/proposal/  
+  File: BUDGET_AND_COST_STRUCTURE.md
+- Budget CSV  
+  Folder: poc5/docs/proposal/  
+  File: BUDGET_AND_COST_STRUCTURE.csv
+- Integration guide  
+  Folder: poc5/docs/proposal/  
+  File: INTEGRATION_GUIDE.md
+- Operations and extension  
+  Folder: poc5/docs/proposal/  
+  File: OPERATIONS_AND_EXTENSION.md
+- Evaluation criteria response  
+  Folder: poc5/docs/proposal/  
+  File: EVALUATION_CRITERIA_RESPONSE.md
+- Vendor background  
+  Folder: poc5/docs/proposal/  
+  File: VENDOR_BACKGROUND_AND_REFERENCES.md
+- Proposal readiness checklist  
+  Folder: poc5/docs/proposal/  
+  File: PROPOSAL_READINESS_CHECKLIST.md
+- Canonical RFP  
+  Folder: poc5/docs/proposal/  
+  File: Request for Proposal (RFP)_ Integrating Large Language Models (LLMs) into Ethereum Protocol Security Research.md
