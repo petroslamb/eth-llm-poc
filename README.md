@@ -174,3 +174,14 @@ Run verification for multiple EIPs or an entire fork in parallel.
 pip install -e ".[test]"
 pytest -q
 ```
+
+## Example Runs
+
+Example verification runs are available in `examples/runs`.
+
+**Model Performance Observations:**
+- **Claude 4.5 Haiku**: Use of this model resulted in a high rate of false positives; the Geth code analysis was generally beyond its capabilities.
+- **Claude 4.5 Sonnet**: Performed well with low false positives. Its output was verbose and descriptive, which aided in understanding the context of certain tasks.
+- **Claude 4.5 Opus**: The slight favorite. Like Sonnet, it had low false positives, but its concise and specific output style was marginally better suited for this verification task.
+
+**Evaluation Note**: The evaluation of these runs was conducted using `gpt-5.2-codex` on all findings across EIPs, execution-specs, and the Geth client.
