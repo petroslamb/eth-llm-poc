@@ -30,7 +30,7 @@ These objectives are already validated by the working PoC. The table below maps 
 | --- | --- | --- |
 | Automated spec compliance | Extract obligations, map to spec + client code, produce gap reports | PoC 5 run artifacts + indexed CSVs |
 | Workflow integration | Reusable GitHub Actions workflow with auditable artifacts | Reusable CI workflow + job manifests |
-| Efficiency and accuracy | Deterministic phases, low false positives, optional LLM judge pass | Phase manifests + evaluation notes |
+| Efficiency and accuracy | Deterministic phases, low false positives, manual cross-model review | Phase manifests + evaluation notes |
 
 ---
 
@@ -99,7 +99,7 @@ Early PoC runs for EIP-1559 and EIP-2930 against the Geth client indicate the pi
 | --- | --- | --- |
 | Coverage | 100% of selected EIPs per fork mapped to spec obligations | CSV indices + manifests |
 | Client validation | Per-EIP runs across agreed execution and consensus clients | Run manifests + summaries |
-| Accuracy | <=5% false positives after judge pass on sampled runs | Cross-model review + audit logs |
+| Accuracy | <=5% false positives in sampled runs validated by manual cross-model review | Cross-model review + audit logs |
 | Reproducibility | 100% artifact completeness per run | Manifests + structured outputs |
 | Throughput | 200 runs/month baseline; batch support by EIP × client | CI batch runs |
 | Run time | Target <=60 minutes per CI run on baseline runners | CI run logs |
@@ -135,7 +135,7 @@ The proposed system is assessed against the RFP criteria with evidence from the 
 | Criterion | PoC Evidence | Future Expansion |
 | --- | --- | --- |
 | Scalability | Single EIP or batch; `eip-verify` unit scales across clients | Extend to consensus specs/clients and additional phases |
-| Accuracy | Opus 4.5 yields minimal false positives; judge pass optional | Tune prompts, add evaluators, expand validation |
+| Accuracy | Opus 4.5 yields minimal false positives; manual cross-model review used | Tune prompts, add evaluators, expand validation |
 | Reliability | Simple chained pipeline with deterministic outputs | Add harnesses, logs, monitoring |
 | Security | Runs inside CI; report-only outputs; minimal surface | Add tighter sandboxing as needed |
 
@@ -148,7 +148,7 @@ The approach is intentionally conservative: fewer moving parts, clear audit trai
 | Risk | Mitigation |
 | --- | --- |
 | Spec ambiguity or EIP overlap | Obligation extraction with citations and audit trails |
-| Model drift or regressions | Fixed prompts, versioned runs, optional judge pass |
+| Model drift or regressions | Fixed prompts, versioned runs, manual cross-model review |
 | Cost variability | Explicit run budgeting, batch scheduling, model fallback |
 | Client divergence | Per-client runs, EL/CL separation, artifact comparisons |
 | Over-complexity | Avoid multi-agent/RAG to preserve determinism |

@@ -21,7 +21,7 @@ This document summarizes how PoC 5 addresses the RFP evaluation criteria. Implem
 
 ## Accuracy Strategy
 - We evaluated a matrix of **methodologies, models, agents, and frameworks** and selected the current approach as the most accurate.
-- Claude Opus 4.5 yields **low false positives**; remaining findings are low-impact and can be re-checked via an **LLM judge pass**.
+- Claude Opus 4.5 yields **low false positives**; remaining findings are low-impact and can be re-checked via **manual cross-model review** (used in the PoC). Automation of this step is optional future work.
 - We manually validated accuracy using a second strong model (GPT-5.2 Codex High) to reduce single-model bias.
 - Phases are **tunable and extensible**, enabling targeted improvements for extraction, mapping, and analysis.
 

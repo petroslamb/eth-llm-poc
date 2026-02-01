@@ -91,7 +91,7 @@ The following were prototyped and rejected due to complexity, unpredictability, 
 
 ### Accuracy
 - We evaluated a matrix of **methodologies, models, agents, and frameworks** and selected the current approach as the most accurate.
-- Claude Opus 4.5 yields **low false positives**; remaining findings are typically low-impact and can be re-checked via an **LLM judge pass**.
+- Claude Opus 4.5 yields **low false positives**; remaining findings are typically low-impact and can be re-checked via **manual cross-model review** (used in the PoC). Automation of this step is optional future work.
 - We manually validated accuracy using a second strong model (GPT-5.2 Codex High) to reduce bias from single-model evaluation.
 - Phases are **tunable and extensible**, allowing targeted improvements to extraction, mapping, and analysis.
 
