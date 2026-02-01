@@ -1,0 +1,210 @@
+name: Resolve Run Defaults
+
+on:
+  workflow_call:
+    inputs:
+      profile:
+        description: "Defaults profile (single or batch)"
+        required: false
+        type: string
+      eip:
+        description: "EIP number"
+        required: false
+        type: string
+      fork:
+        description: "Execution-specs fork"
+        required: false
+        type: string
+      client:
+        description: "Execution client"
+        required: false
+        type: string
+      client_ref:
+        description: "Execution client ref"
+        required: false
+        type: string
+      phases:
+        description: "Comma-separated phase list"
+        required: false
+        type: string
+      model:
+        description: "Claude model"
+        required: false
+        type: string
+      max_turns:
+        description: "Max turns per phase"
+        required: false
+        type: string
+      eips_ref:
+        description: "EIPs repo branch"
+        required: false
+        type: string
+      execution_specs_ref:
+        description: "Execution-specs repo ref"
+        required: false
+        type: string
+      llm_mode:
+        description: "LLM mode (live or fake)"
+        required: false
+        type: string
+      pypi_package:
+        description: "Git ref or PyPI version to install eip-verify from (default: local path)"
+        required: false
+        type: string
+    outputs:
+      eip:
+        description: "Resolved EIP number"
+        value: ${{ jobs.defaults.outputs.eip }}
+      fork:
+        description: "Resolved execution-specs fork"
+        value: ${{ jobs.defaults.outputs.fork }}
+      client:
+        description: "Resolved execution client"
+        value: ${{ jobs.defaults.outputs.client }}
+      client_ref:
+        description: "Resolved client ref"
+        value: ${{ jobs.defaults.outputs.client_ref }}
+      phases:
+        description: "Resolved phase list"
+        value: ${{ jobs.defaults.outputs.phases }}
+      model:
+        description: "Resolved model"
+        value: ${{ jobs.defaults.outputs.model }}
+      max_turns:
+        description: "Resolved max turns"
+        value: ${{ jobs.defaults.outputs.max_turns }}
+      eips_ref:
+        description: "Resolved EIPs ref"
+        value: ${{ jobs.defaults.outputs.eips_ref }}
+      execution_specs_ref:
+        description: "Resolved execution-specs ref"
+        value: ${{ jobs.defaults.outputs.execution_specs_ref }}
+      llm_mode:
+        description: "Resolved LLM mode"
+        value: ${{ jobs.defaults.outputs.llm_mode }}
+      pypi_package:
+        description: "Resolved PyPI package"
+        value: ${{ jobs.defaults.outputs.pypi_package }}
+
+jobs:
+  defaults:
+    runs-on: ubuntu-latest
+    outputs:
+      eip: ${{ steps.resolve.outputs.eip }}
+      fork: ${{ steps.resolve.outputs.fork }}
+      client: ${{ steps.resolve.outputs.client }}
+      client_ref: ${{ steps.resolve.outputs.client_ref }}
+      phases: ${{ steps.resolve.outputs.phases }}
+      model: ${{ steps.resolve.outputs.model }}
+      max_turns: ${{ steps.resolve.outputs.max_turns }}
+      eips_ref: ${{ steps.resolve.outputs.eips_ref }}
+      execution_specs_ref: ${{ steps.resolve.outputs.execution_specs_ref }}
+      llm_mode: ${{ steps.resolve.outputs.llm_mode }}
+      pypi_package: ${{ steps.resolve.outputs.pypi_package }}
+    steps:
+      - name: Resolve defaults
+        id: resolve
+        run: |
+          DEFAULT_EIP_SINGLE="7702"
+          DEFAULT_EIP_BATCH=""
+          DEFAULT_FORK="prague"
+          DEFAULT_CLIENT="geth"
+          DEFAULT_PHASES="extract,locate-spec,analyze-spec,locate-client,analyze-client"
+          DEFAULT_MODEL="claude-opus-4-5"
+          DEFAULT_MAX_TURNS="20"
+          DEFAULT_EIPS_REF="master"
+          DEFAULT_EXECUTION_SPECS_REF="mainnet"
+          DEFAULT_LLM_MODE="fake"
+          DEFAULT_PYPI_PACKAGE="."
+
+          DEFAULT_GETH_REF="v1.16.8"
+          DEFAULT_BESU_REF="25.12.0"
+          DEFAULT_ERIGON_REF="v3.3.7"
+          DEFAULT_NETHERMIND_REF="1.36.0"
+          DEFAULT_RETH_REF="v1.10.2"
+
+          PROFILE="${{ inputs.profile }}"
+          if [ -z "$PROFILE" ]; then
+            PROFILE="single"
+          fi
+
+          EIP="${{ inputs.eip }}"
+          if [ -z "$EIP" ]; then
+            if [ "$PROFILE" = "batch" ]; then
+              EIP="$DEFAULT_EIP_BATCH"
+            else
+              EIP="$DEFAULT_EIP_SINGLE"
+            fi
+          fi
+
+          FORK="${{ inputs.fork }}"
+          if [ -z "$FORK" ]; then
+            FORK="$DEFAULT_FORK"
+          fi
+
+          CLIENT="${{ inputs.client }}"
+          if [ -z "$CLIENT" ]; then
+            CLIENT="$DEFAULT_CLIENT"
+          fi
+
+          PHASES="${{ inputs.phases }}"
+          if [ -z "$PHASES" ]; then
+            PHASES="$DEFAULT_PHASES"
+          fi
+
+          MODEL="${{ inputs.model }}"
+          if [ -z "$MODEL" ]; then
+            MODEL="$DEFAULT_MODEL"
+          fi
+
+          MAX_TURNS="${{ inputs.max_turns }}"
+          if [ -z "$MAX_TURNS" ]; then
+            MAX_TURNS="$DEFAULT_MAX_TURNS"
+          fi
+
+          EIPS_REF="${{ inputs.eips_ref }}"
+          if [ -z "$EIPS_REF" ]; then
+            EIPS_REF="$DEFAULT_EIPS_REF"
+          fi
+
+          EXECUTION_SPECS_REF="${{ inputs.execution_specs_ref }}"
+          if [ -z "$EXECUTION_SPECS_REF" ]; then
+            EXECUTION_SPECS_REF="$DEFAULT_EXECUTION_SPECS_REF"
+          fi
+
+          LLM_MODE="${{ inputs.llm_mode }}"
+          if [ -z "$LLM_MODE" ]; then
+            LLM_MODE="$DEFAULT_LLM_MODE"
+          fi
+
+          PYPI_PACKAGE="${{ inputs.pypi_package }}"
+          if [ -z "$PYPI_PACKAGE" ]; then
+            PYPI_PACKAGE="$DEFAULT_PYPI_PACKAGE"
+          fi
+
+          CLIENT_REF="${{ inputs.client_ref }}"
+          if [ -z "$CLIENT_REF" ]; then
+            case "$CLIENT" in
+              geth) CLIENT_REF="$DEFAULT_GETH_REF" ;;
+              besu) CLIENT_REF="$DEFAULT_BESU_REF" ;;
+              erigon) CLIENT_REF="$DEFAULT_ERIGON_REF" ;;
+              nethermind) CLIENT_REF="$DEFAULT_NETHERMIND_REF" ;;
+              reth) CLIENT_REF="$DEFAULT_RETH_REF" ;;
+              *)
+                echo "Unknown client '$CLIENT' with empty client_ref" >&2
+                exit 1
+                ;;
+            esac
+          fi
+
+          echo "eip=$EIP" >> "$GITHUB_OUTPUT"
+          echo "fork=$FORK" >> "$GITHUB_OUTPUT"
+          echo "client=$CLIENT" >> "$GITHUB_OUTPUT"
+          echo "client_ref=$CLIENT_REF" >> "$GITHUB_OUTPUT"
+          echo "phases=$PHASES" >> "$GITHUB_OUTPUT"
+          echo "model=$MODEL" >> "$GITHUB_OUTPUT"
+          echo "max_turns=$MAX_TURNS" >> "$GITHUB_OUTPUT"
+          echo "eips_ref=$EIPS_REF" >> "$GITHUB_OUTPUT"
+          echo "execution_specs_ref=$EXECUTION_SPECS_REF" >> "$GITHUB_OUTPUT"
+          echo "llm_mode=$LLM_MODE" >> "$GITHUB_OUTPUT"
+          echo "pypi_package=$PYPI_PACKAGE" >> "$GITHUB_OUTPUT"

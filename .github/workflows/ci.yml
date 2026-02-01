@@ -5,58 +5,47 @@ on:
     inputs:
       eip:
         description: "EIP number"
-        required: false
-        default: "7702"
+        required: true
         type: string
       fork:
         description: "Execution-specs fork"
-        required: false
-        default: "prague"
+        required: true
         type: string
       client:
         description: "Execution client"
-        required: false
-        default: "geth"
+        required: true
         type: string
       client_ref:
         description: "Execution client ref"
-        required: false
-        default: ""
+        required: true
         type: string
       phases:
         description: "Comma-separated phase list"
-        required: false
-        default: "extract,locate-spec,analyze-spec,locate-client,analyze-client"
+        required: true
         type: string
       model:
         description: "Claude model"
-        required: false
-        default: "claude-sonnet-4-5"
+        required: true
         type: string
       max_turns:
         description: "Max turns per phase"
-        required: false
-        default: "20"
+        required: true
         type: string
       eips_ref:
         description: "EIPs repo branch"
-        required: false
-        default: "master"
+        required: true
         type: string
       execution_specs_ref:
         description: "Execution-specs repo ref"
-        required: false
-        default: "mainnet"
+        required: true
         type: string
       llm_mode:
         description: "LLM mode (live or fake)"
-        required: false
-        default: "fake"
+        required: true
         type: string
       pypi_package:
         description: "Git ref or PyPI version to install eip-verify from (default: local path)"
-        required: false
-        default: "."
+        required: true
         type: string
     secrets:
       ANTHROPIC_API_KEY:
@@ -65,20 +54,6 @@ on:
 permissions:
   contents: read
   actions: write
-
-env:
-  DEFAULT_EIP: "7702"
-  DEFAULT_FORK: "prague"
-  DEFAULT_CLIENT: "geth"
-  DEFAULT_PHASES: "extract,locate-spec,analyze-spec,locate-client,analyze-client"
-  DEFAULT_EIPS_REF: "master"
-  DEFAULT_EXECUTION_SPECS_REF: "mainnet"
-  DEFAULT_LLM_MODE: "fake"
-  DEFAULT_GETH_REF: "v1.13.14"
-  DEFAULT_BESU_REF: "24.3.0"
-  DEFAULT_ERIGON_REF: "v2.59.0"
-  DEFAULT_NETHERMIND_REF: "1.26.0"
-  DEFAULT_RETH_REF: "v0.2.0-beta.5"
 
 jobs:
   verify:
@@ -90,31 +65,17 @@ jobs:
           submodules: false
           fetch-depth: 1
 
-      - name: Resolve inputs and defaults
+      - name: Resolve inputs
         id: config
         run: |
-          # Use input or env defaults
-          echo "eip=${{ inputs.eip || env.DEFAULT_EIP }}" >> "$GITHUB_OUTPUT"
-          echo "fork=${{ inputs.fork || env.DEFAULT_FORK }}" >> "$GITHUB_OUTPUT"
-          echo "client=${{ inputs.client || env.DEFAULT_CLIENT }}" >> "$GITHUB_OUTPUT"
-          echo "phases=${{ inputs.phases || env.DEFAULT_PHASES }}" >> "$GITHUB_OUTPUT"
-          echo "eips_ref=${{ inputs.eips_ref || env.DEFAULT_EIPS_REF }}" >> "$GITHUB_OUTPUT"
-          echo "specs_ref=${{ inputs.execution_specs_ref || env.DEFAULT_EXECUTION_SPECS_REF }}" >> "$GITHUB_OUTPUT"
-          echo "llm_mode=${{ inputs.llm_mode || env.DEFAULT_LLM_MODE }}" >> "$GITHUB_OUTPUT"
-          
-          # Resolve client ref
-          CLIENT="${{ inputs.client || env.DEFAULT_CLIENT }}"
-          REF="${{ inputs.client_ref }}"
-          if [ -z "$REF" ]; then
-            case "$CLIENT" in
-              geth) REF="${{ env.DEFAULT_GETH_REF }}" ;;
-              besu) REF="${{ env.DEFAULT_BESU_REF }}" ;;
-              erigon) REF="${{ env.DEFAULT_ERIGON_REF }}" ;;
-              nethermind) REF="${{ env.DEFAULT_NETHERMIND_REF }}" ;;
-              reth) REF="${{ env.DEFAULT_RETH_REF }}" ;;
-            esac
-          fi
-          echo "client_ref=$REF" >> "$GITHUB_OUTPUT"
+          echo "eip=${{ inputs.eip }}" >> "$GITHUB_OUTPUT"
+          echo "fork=${{ inputs.fork }}" >> "$GITHUB_OUTPUT"
+          echo "client=${{ inputs.client }}" >> "$GITHUB_OUTPUT"
+          echo "phases=${{ inputs.phases }}" >> "$GITHUB_OUTPUT"
+          echo "eips_ref=${{ inputs.eips_ref }}" >> "$GITHUB_OUTPUT"
+          echo "specs_ref=${{ inputs.execution_specs_ref }}" >> "$GITHUB_OUTPUT"
+          echo "llm_mode=${{ inputs.llm_mode }}" >> "$GITHUB_OUTPUT"
+          echo "client_ref=${{ inputs.client_ref }}" >> "$GITHUB_OUTPUT"
 
       - name: Checkout dependency repos
         run: |

@@ -129,7 +129,7 @@ eip-verify report --run-root ./runs/<timestamp>
 
 ## Reusable CI Workflow
 
-Use from another repo:
+The reusable workflow has **no internal defaults**; callers must provide all inputs. If you want this repo’s defaults, call the `resolve_defaults.yml` workflow first and pass its outputs into `ci.yml`.
 
 ```yaml
 name: Run eip-verify
@@ -138,15 +138,37 @@ on:
   workflow_dispatch:
 
 jobs:
+  defaults:
+    uses: petroslamb/eth-llm-poc/.github/workflows/resolve_defaults.yml@main
+    with:
+      profile: "single"
+      eip: ${{ inputs.eip }}
+      fork: ${{ inputs.fork }}
+      client: ${{ inputs.client }}
+      client_ref: ${{ inputs.client_ref }}
+      phases: ${{ inputs.phases }}
+      model: ${{ inputs.model }}
+      max_turns: ${{ inputs.max_turns }}
+      eips_ref: ${{ inputs.eips_ref }}
+      execution_specs_ref: ${{ inputs.execution_specs_ref }}
+      llm_mode: ${{ inputs.llm_mode }}
+      pypi_package: ${{ inputs.pypi_package }}
+
   verify:
+    needs: defaults
     uses: petroslamb/eth-llm-poc/.github/workflows/ci.yml@main
     with:
-      eip: "7702"
-      fork: "prague"
-      client: "geth"
-      model: "claude-sonnet-4-5"
-      phases: "analyze-client"
-      max_turns: "20"
+      eip: ${{ needs.defaults.outputs.eip }}
+      fork: ${{ needs.defaults.outputs.fork }}
+      client: ${{ needs.defaults.outputs.client }}
+      client_ref: ${{ needs.defaults.outputs.client_ref }}
+      phases: ${{ needs.defaults.outputs.phases }}
+      model: ${{ needs.defaults.outputs.model }}
+      max_turns: ${{ needs.defaults.outputs.max_turns }}
+      eips_ref: ${{ needs.defaults.outputs.eips_ref }}
+      execution_specs_ref: ${{ needs.defaults.outputs.execution_specs_ref }}
+      llm_mode: ${{ needs.defaults.outputs.llm_mode }}
+      pypi_package: ${{ needs.defaults.outputs.pypi_package }}
     secrets:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 ```
@@ -158,7 +180,7 @@ This repository includes two manual workflows for running verification on-demand
 ### 1. Manual Run (`manual_run.yml`)
 Run verification for a single EIP.
 *   **Trigger**: Actions tab -> "Manual Run" -> "Run workflow"
-*   **Inputs**: EIP number, fork, client, etc.
+*   **Inputs**: EIP number, fork, client, etc. (leave blank to use defaults from `resolve_defaults.yml`)
 
 ### 2. Manual Run (Batch) (`manual_run_batch.yml`)
 Run verification for multiple EIPs or an entire fork in parallel.
@@ -166,6 +188,7 @@ Run verification for multiple EIPs or an entire fork in parallel.
 *   **Inputs**:
     *   `eip`: Comma-separated list (e.g., `1559, 2930`). **Leave empty to run ALL EIPs in the fork.**
     *   `fork`: The fork to use if `eip` is empty (e.g., `london`).
+    *   Other inputs can be left blank to use defaults from `resolve_defaults.yml`.
 *   **Output**: Produces a separate artifact (`verification-report-<EIP>`) for each EIP.
 
 ## Tests

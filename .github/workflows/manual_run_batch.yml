@@ -6,57 +6,46 @@ on:
       eip:
         description: "EIP number(s) (comma-separated, leave empty for all in fork)"
         required: false
-        default: ""
         type: string
       fork:
         description: "Execution-specs fork (used if EIP list is empty)"
         required: false
-        default: "prague"
         type: string
       client:
         description: "Execution client"
         required: false
-        default: "geth"
         type: string
       client_ref:
         description: "Execution client ref"
         required: false
-        default: ""
         type: string
       phases:
         description: "Comma-separated phase list"
         required: false
-        default: "extract,locate-spec,analyze-spec,locate-client,analyze-client"
         type: string
       model:
         description: "Claude model"
         required: false
-        default: "claude-opus-4-5"
         type: string
       max_turns:
         description: "Max turns per phase"
         required: false
-        default: "20"
         type: string
       eips_ref:
         description: "EIPs repo branch"
         required: false
-        default: "master"
         type: string
       execution_specs_ref:
         description: "Execution-specs repo ref"
         required: false
-        default: "mainnet"
         type: string
       llm_mode:
         description: "LLM mode (live or fake)"
         required: false
-        default: "fake"
         type: string
       pypi_package:
         description: "Git ref or PyPI version to install eip-verify from (default: local path)"
         required: false
-        default: "."
         type: string
 
 permissions:
@@ -64,7 +53,24 @@ permissions:
   actions: write
 
 jobs:
+  defaults:
+    uses: ./.github/workflows/resolve_defaults.yml
+    with:
+      profile: "batch"
+      eip: ${{ inputs.eip }}
+      fork: ${{ inputs.fork }}
+      client: ${{ inputs.client }}
+      client_ref: ${{ inputs.client_ref }}
+      phases: ${{ inputs.phases }}
+      model: ${{ inputs.model }}
+      max_turns: ${{ inputs.max_turns }}
+      eips_ref: ${{ inputs.eips_ref }}
+      execution_specs_ref: ${{ inputs.execution_specs_ref }}
+      llm_mode: ${{ inputs.llm_mode }}
+      pypi_package: ${{ inputs.pypi_package }}
+
   discover:
+    needs: defaults
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
@@ -83,7 +89,7 @@ jobs:
           git init specs/execution-specs
           cd specs/execution-specs
           git remote add origin https://github.com/ethereum/execution-specs.git
-          git fetch --depth 1 origin "${{ inputs.execution_specs_ref }}"
+          git fetch --depth 1 origin "${{ needs.defaults.outputs.execution_specs_ref }}"
           git checkout FETCH_HEAD
 
       - name: Resolve EIP Matrix
@@ -93,17 +99,17 @@ jobs:
           pip install .
           
           # Run the resolver
-          echo "Resolving EIPs for fork '${{ inputs.fork }}'..."
+          echo "Resolving EIPs for fork '${{ needs.defaults.outputs.fork }}'..."
           MATRIX_JSON=$(eip-verify get-matrix \
-            --eip "${{ inputs.eip }}" \
-            --fork "${{ inputs.fork }}" \
+            --eip "${{ needs.defaults.outputs.eip }}" \
+            --fork "${{ needs.defaults.outputs.fork }}" \
             --spec-repo "specs/execution-specs")
           
           echo "Found EIPs: $MATRIX_JSON"
           echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
 
   verify:
-    needs: discover
+    needs: [discover, defaults]
     strategy:
       fail-fast: false
       max-parallel: 10
@@ -112,15 +118,15 @@ jobs:
     uses: ./.github/workflows/ci.yml
     with:
       eip: ${{ matrix.eip }}
-      fork: ${{ inputs.fork }}
-      client: ${{ inputs.client }}
-      client_ref: ${{ inputs.client_ref }}
-      phases: ${{ inputs.phases }}
-      model: ${{ inputs.model }}
-      max_turns: ${{ inputs.max_turns }}
-      eips_ref: ${{ inputs.eips_ref }}
-      execution_specs_ref: ${{ inputs.execution_specs_ref }}
-      llm_mode: ${{ inputs.llm_mode }}
-      pypi_package: ${{ inputs.pypi_package }}
+      fork: ${{ needs.defaults.outputs.fork }}
+      client: ${{ needs.defaults.outputs.client }}
+      client_ref: ${{ needs.defaults.outputs.client_ref }}
+      phases: ${{ needs.defaults.outputs.phases }}
+      model: ${{ needs.defaults.outputs.model }}
+      max_turns: ${{ needs.defaults.outputs.max_turns }}
+      eips_ref: ${{ needs.defaults.outputs.eips_ref }}
+      execution_specs_ref: ${{ needs.defaults.outputs.execution_specs_ref }}
+      llm_mode: ${{ needs.defaults.outputs.llm_mode }}
+      pypi_package: ${{ needs.defaults.outputs.pypi_package }}
     secrets:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

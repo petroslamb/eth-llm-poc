@@ -141,17 +141,25 @@ PoC 5 includes reusable and manual workflows that **shallow-clone dependencies**
 
 - `poc5/.github/workflows/ci.yml` (reusable `workflow_call`):
   - Inputs: EIP, fork, client, client ref, phases, model, max turns, EIPs ref, execution-specs ref, llm mode.
+  - **No defaults** in this workflow; all inputs must be provided by the caller.
   - Shallow clones: `EIPs`, `execution-specs`, and a selected client (geth/besu/erigon/nethermind/reth).
   - Runs: `eip-verify pipeline ... --output-dir runs/ci_run`.
   - Uploads `runs/ci_run` as artifacts.
+
+- `resolve_defaults.yml` (reusable `workflow_call`):
+  - Central source of truth for defaults (including per-client refs).
+  - Supports `profile=single|batch` to keep batch EIP defaults empty.
+  - Manual workflows call this before invoking `ci.yml`.
 
 - `manual_run.yml`: workflow_dispatch wrapper around the reusable workflow.
 - `manual_run_batch.yml`: workflow_dispatch batch runner using `eip-verify get-matrix` to resolve EIPs for a fork.
 - `test.yml`: unit/integration tests for the package.
 
-**Defaults (current):**
-- EIP `7702`, fork `prague`, client `geth`, execution-specs ref `mainnet`, EIPs ref `master`.
-- LLM mode defaults to `fake` for CI runs to control cost.
+**Defaults (current, defined in `resolve_defaults.yml`):**
+- **Single profile:** EIP `7702`, fork `prague`, client `geth`, phases `extract,locate-spec,analyze-spec,locate-client,analyze-client`.
+- **Batch profile:** EIP defaults to **empty** (run all EIPs in fork), fork `prague`, client `geth`.
+- Client refs: geth `v1.16.8`, besu `25.12.0`, erigon `v3.3.7`, nethermind `1.36.0`, reth `v1.10.2`.
+- EIPs ref `master`, execution-specs ref `mainnet`, LLM mode `fake`, model `claude-opus-4-5`, max turns `20`, pypi package `.`.
 
 ## 8) Fake mode (deterministic test runs)
 
@@ -223,7 +231,7 @@ gh workflow run "Manual Run" \
   -F eip=7702 \
   -F fork=prague \
   -F client=geth \
-  -F client_ref=v1.13.14 \
+  -F client_ref=v1.16.8 \
   -F phases="extract,locate-spec,analyze-spec,locate-client,analyze-client" \
   -F model=claude-sonnet-4-5 \
   -F max_turns=20 \
@@ -249,15 +257,26 @@ on:
   workflow_dispatch:
 
 jobs:
+  defaults:
+    uses: petroslamb/eth-llm-poc/.github/workflows/resolve_defaults.yml@main
+    with:
+      profile: "single"
+
   verify:
+    needs: defaults
     uses: petroslamb/eth-llm-poc/.github/workflows/ci.yml@main
     with:
-      eip: "7702"
-      fork: "prague"
-      client: "geth"
-      client_ref: "v1.13.14"
-      phases: "extract,locate-spec,analyze-spec,locate-client,analyze-client"
-      model: "claude-sonnet-4-5"
+      eip: ${{ needs.defaults.outputs.eip }}
+      fork: ${{ needs.defaults.outputs.fork }}
+      client: ${{ needs.defaults.outputs.client }}
+      client_ref: ${{ needs.defaults.outputs.client_ref }}
+      phases: ${{ needs.defaults.outputs.phases }}
+      model: ${{ needs.defaults.outputs.model }}
+      max_turns: ${{ needs.defaults.outputs.max_turns }}
+      eips_ref: ${{ needs.defaults.outputs.eips_ref }}
+      execution_specs_ref: ${{ needs.defaults.outputs.execution_specs_ref }}
+      llm_mode: ${{ needs.defaults.outputs.llm_mode }}
+      pypi_package: ${{ needs.defaults.outputs.pypi_package }}
       max_turns: "20"
       eips_ref: "master"
       execution_specs_ref: "mainnet"
