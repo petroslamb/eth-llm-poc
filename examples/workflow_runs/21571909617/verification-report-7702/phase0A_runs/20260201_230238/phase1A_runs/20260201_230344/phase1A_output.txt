@@ -1,0 +1,42 @@
+Now I have the input CSV and the list of Python files in the Prague fork. Let me read the key files that are most likely to contain the EIP-7702 implementation:Now let me read additional files to find more implementation details for the obligations:Now let me read the interpreter and blocks files to find more implementation details:Now let me check the exceptions file and the precompiled_contracts to fully map the obligations:Now let me check if the output directory exists and also create the Python script to write the CSV properly:Good. Now I have all the information needed to create the mapping. Let me create a Python script that will write the updated CSV with the locations:Now let me verify the output CSV by reading it and confirming row count matches:Now let me verify the row counts match between the input and output files:The row counts match (41 lines = 1 header + 40 data rows). Let me clean up the temporary script:The task is complete. Here's a summary of what was accomplished:
+
+## Summary
+
+I mapped the 40 EIP-7702 obligations to their implementation locations in the Prague fork. The updated CSV has been written to:
+`runs/ci_run/phase0A_runs/20260201_230238/phase1A_runs/20260201_230344/obligations_index.csv`
+
+### Key Implementation Files Found:
+
+1. **`transactions.py`** - Transaction type encoding/decoding (0x04), SetCodeTransaction dataclass, intrinsic cost calculation, signing hash computation
+
+2. **`vm/eoa_delegation.py`** - Core EIP-7702 logic:
+   - `SET_CODE_TX_MAGIC = b"\x05"` 
+   - `EOA_DELEGATION_MARKER = b"\xef\x01\x00"`
+   - `PER_EMPTY_ACCOUNT_COST = 25000`
+   - `PER_AUTH_BASE_COST = 12500`
+   - `is_valid_delegation()` - validates delegation indicator format
+   - `get_delegated_code_address()` - extracts address from delegation
+   - `recover_authority()` - recovers signer from authorization tuple
+   - `access_delegation()` - handles warm/cold access during delegation resolution
+   - `set_delegation()` - processes authorization list, sets delegation code
+
+3. **`fork.py`** - Transaction validation:
+   - `check_transaction()` - validates destination non-null, authorization list non-empty, sender code checks
+
+4. **`fork_types.py`** - `Authorization` dataclass with typed fields (chain_id: U256, address: Address, nonce: U64, y_parity: U8, r: U256, s: U256)
+
+5. **`vm/interpreter.py`** - Execution flow:
+   - `process_message_call()` - calls `set_delegation()` before execution
+   - Delegation resolution for tx destination
+   - Precompile handling with `disable_precompiles`
+
+6. **`vm/instructions/system.py`** - CALL/CALLCODE/DELEGATECALL/STATICCALL all use `access_delegation()` for delegation resolution
+
+7. **`vm/instructions/environment.py`** - CODESIZE/CODECOPY operate on `evm.code` (the delegated code)
+
+8. **`blocks.py`** - Receipt encoding with 0x04 prefix for SetCodeTransaction
+
+### Verification
+- Input CSV: 41 lines (1 header + 40 data rows)
+- Output CSV: 41 lines (1 header + 40 data rows) ✓
+- All 40 obligations have locations populated

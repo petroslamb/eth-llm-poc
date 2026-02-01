@@ -1,0 +1,30 @@
+{
+  "phase": "0A",
+  "generated_at": "20260201_230238",
+  "eip_number": "7702",
+  "eip_file": "/home/runner/work/eth-llm-poc/eth-llm-poc/specs/EIPs/EIPS/eip-7702.md",
+  "cwd": "/home/runner/work/eth-llm-poc/eth-llm-poc/specs/EIPs/EIPS",
+  "spec_root": "/home/runner/work/eth-llm-poc/eth-llm-poc/specs/execution-specs",
+  "spec_readme": "/home/runner/work/eth-llm-poc/eth-llm-poc/specs/execution-specs/README.md",
+  "spec_branch": "HEAD",
+  "spec_commit": "ca18ab1cbc431f1291c58246f0ca4a53e37c7a7d",
+  "spec_index": "/home/runner/work/eth-llm-poc/eth-llm-poc/runs/ci_run/phase0A_runs/20260201_230238/spec_index.json",
+  "eip_fork_map": "/home/runner/work/eth-llm-poc/eth-llm-poc/runs/ci_run/phase0A_runs/20260201_230238/eip_fork_map.json",
+  "spec_index_report": "/home/runner/work/eth-llm-poc/eth-llm-poc/runs/ci_run/phase0A_runs/20260201_230238/spec_index_report.md",
+  "mismatch_forks": [
+    "Cancun",
+    "Shanghai"
+  ],
+  "output_csv": "/home/runner/work/eth-llm-poc/eth-llm-poc/runs/ci_run/phase0A_runs/20260201_230238/obligations_index.csv",
+  "model": "claude-opus-4-5",
+  "max_turns": 20,
+  "allowed_tools": [
+    "Read",
+    "Write",
+    "Bash",
+    "Grep",
+    "Glob"
+  ],
+  "llm_mode": "live",
+  "record_llm_calls": false
+}
