@@ -20,20 +20,20 @@ This plan assumes PoC 5 is complete and outlines a 4–6 month roadmap. Dates ar
 | Consensus layer coverage | Consensus-specs + consensus clients | Per-client verification runs and reporting |
 | Cross-layer linkage | Mapping EL/CL fork relationships | Combined analysis and traceability |
 
-## Roadmap (4–6 Months)
+## Milestones (4–6 Months)
 
-| Phase | Timing | Dependencies | Key Deliverables |
+| Milestone | Timing | Dependencies | Key Deliverables |
 | --- | --- | --- | --- |
-| Phase 0 (complete) | Done | — | Working CLI, reusable workflow, run artifacts |
-| Phase 1 | Month 1 | None | Ground truth dataset, accuracy baselines, prompt tuning |
-| Phase 2 | Month 2 | Phase 1 accuracy ≥80% | Execution client matrix (3+ clients), batch coverage |
-| Phase 3 | Month 3 | Parallel to Phase 2 | Consensus-specs ingestion, obligation extraction |
-| Phase 4 | Month 4 | Phases 2 and 3 | Consensus client matrix, EL/CL linkage |
-| Phase 5 (optional) | Month 5 | — | CI gating, quality thresholds, dashboarding |
-| Phase 6 (optional) | Month 6 | — | Extended phases, cross-client divergence scoring |
+| M0 (complete) | Done | — | Working CLI, reusable workflow, run artifacts |
+| M1 | Month 1 | None | Ground truth dataset, accuracy baselines, prompt tuning |
+| M2 | Month 2 | M1 accuracy ≥80% | Execution client matrix (3+ clients), batch coverage |
+| M3 | Month 3 | Parallel to M2 | Consensus-specs ingestion, obligation extraction |
+| M4 | Month 4 | M2 and M3 | Consensus client matrix, EL/CL linkage |
+| M5 (optional) | Month 5 | — | CI gating, quality thresholds, dashboarding |
+| M6 (optional) | Month 6 | — | Extended milestones, cross-client divergence scoring |
 
-**Critical path:** Phase 1 accuracy validation gates Phase 2 expansion.  
-**Contingency:** Phases 5–6 absorb schedule slip from core phases if needed.
+**Critical path:** M1 accuracy validation gates M2 expansion.  
+**Contingency:** M5–6 absorb schedule slip from core milestones if needed.
 
 ## Client Coverage Expansion
 
@@ -51,7 +51,7 @@ Execution layer and consensus layer are treated as separate client matrices, eac
 - Introduce regression suites for fake mode and deterministic snapshots.
 - Define triage workflow for false positives/negatives and add review guidance.
 
-## Optional Tracks (Months 5–6)
+## Optional Tracks (M5–M6)
 - **CI gating outputs**: SARIF, policy thresholds, and automated quality gates.
 - **Advanced analysis phases**: cross-client divergence scoring, impact prioritization.
 - **Dashboards and reporting**: run history, client coverage status, risk trends.

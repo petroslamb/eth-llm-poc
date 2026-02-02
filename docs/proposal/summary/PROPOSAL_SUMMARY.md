@@ -10,7 +10,7 @@ This document is the submission-ready proposal summary for the Ethereum Foundati
 
 Ethereum's Protocol Security team manually audits client implementations against evolving specifications. **eth-llm-poc** automates obligation extraction, spec mapping, and client gap detection using direct chained agent calls with strict phase boundaries. The prototype is complete: validated runs across EIP-1559, EIP-2930, and EIP-7702 with structured artifacts (CSV, JSON, Markdown) in GitHub Actions CI.
 
-This proposal extends the prototype to production coverage. Phase 1-2 hardens the pipeline and establishes accuracy baselines across an execution client matrix. Phase 3-4 adds consensus-specs ingestion and consensus client coverage. Optional Phase 5-6 integrates CI gating and quality dashboards.
+This proposal extends the prototype to production coverage. Milestones 1-2 harden the pipeline and establish accuracy baselines across an execution client matrix. Milestones 3-4 add consensus-specs ingestion and consensus client coverage. Optional Milestones 5-6 integrate CI gating and quality dashboards.
 
 ---
 
@@ -64,7 +64,7 @@ Ethereum's spec and client surface is broad and evolves frequently. The right so
 
 ## 3. Scope Boundaries
 
-**In scope (Phase 1-4):** Execution-specs ingestion and EIP obligation extraction. Execution client validation starting with Geth, with a client matrix planned. Consensus-specs ingestion and consensus client validation. Deterministic artifacts, manifests, and summary reports.
+**In scope (Milestones 1-4):** Execution-specs ingestion and EIP obligation extraction. Execution client validation starting with Geth, with a client matrix planned. Consensus-specs ingestion and consensus client validation. Deterministic artifacts, manifests, and summary reports.
 
 **Out of scope (unless explicitly requested):** Automatic code changes or patches. Formal verification tooling beyond structured discrepancy reports. Production deployment inside client release pipelines.
 
@@ -124,36 +124,36 @@ Each deliverable has a clear acceptance criterion so EF can validate progress wi
 
 ## 7. Success Metrics (Initial Targets)
 
-Targets are refined with EF in Phase 1. Current targets reflect feasible outcomes for a 4-6 month roadmap.
+Targets are refined with EF in Milestone 1. Current targets reflect feasible outcomes for a 4-6 month roadmap.
 
 | Metric | Initial Target | Current State | Measurement |
 | --- | --- | --- | --- |
 | Coverage | 100% of selected EIPs per fork mapped | EIP-1559, EIP-2930, EIP-7702 validated | CSV indices + manifests |
-| Accuracy | <=5% false positives after Phase 1 tuning | Qualitative: Opus shows low observed FP | Ground truth dataset + precision/recall in Phase 1 |
+| Accuracy | <=5% false positives after Milestone 1 tuning | Qualitative: Opus shows low observed FP | Ground truth dataset + precision/recall in Milestone 1 |
 | Reproducibility | 100% artifact completeness per run | Achieved in current runs | Manifests + structured outputs |
 | Throughput | 200 runs/month baseline | CI batch runs functional | Batch workflow logs |
 | Run time | <=60 minutes per CI run | ~30 min observed for EIP-7702 | CI run logs |
 
-> **Accuracy note:** Current validation is qualitative (spot-checks, cross-model comparison). Phase 1 establishes quantitative baselines with curated ground truth for 2-3 well-understood EIPs.
+> **Accuracy note:** Current validation is qualitative (spot-checks, cross-model comparison). Milestone 1 establishes quantitative baselines with curated ground truth for 2-3 well-understood EIPs.
 
 ---
 
-## 8. Project Plan and Timeline (4-6 Months)
+## 8. Project Milestones and Timeline (4-6 Months)
 
 The plan expands coverage in a controlled way: first harden the pipeline and establish accuracy baselines, then scale across execution and consensus layers.
 
-| Phase | Timing | Dependencies | Outputs |
+| Milestone | Timing | Dependencies | Outputs |
 | --- | --- | --- | --- |
-| Phase 0 (complete) | Done | None | Working CLI, reusable workflow, run artifacts |
-| Phase 1 | Month 1 | None | Ground truth dataset, accuracy baselines, prompt tuning |
-| Phase 2 | Month 2 | Phase 1 accuracy >=80% | Execution client matrix (3+ clients), batch coverage |
-| Phase 3 | Month 3 | Parallel to Phase 2 | Consensus-specs ingestion, obligation extraction |
-| Phase 4 | Month 4 | Phases 2 and 3 | Consensus client matrix, EL/CL linkage |
-| Phase 5 (optional) | Month 5 | None | CI gating, quality thresholds, dashboarding |
-| Phase 6 (optional) | Month 6 | None | Extended phases for broader protocol security mapping |
+| M0 (complete) | Done | None | Working CLI, reusable workflow, run artifacts |
+| M1 | Month 1 | None | Ground truth dataset, accuracy baselines, prompt tuning |
+| M2 | Month 2 | M1 accuracy >=80% | Execution client matrix (3+ clients), batch coverage |
+| M3 | Month 3 | Parallel to M2 | Consensus-specs ingestion, obligation extraction |
+| M4 | Month 4 | M2 and M3 | Consensus client matrix, EL/CL linkage |
+| M5 (optional) | Month 5 | None | CI gating, quality thresholds, dashboarding |
+| M6 (optional) | Month 6 | None | Extended milestones for broader protocol security mapping |
 
-**Critical path:** Phase 1 accuracy validation gates Phase 2 expansion.  
-**Contingency:** Phase 5-6 absorbs schedule slip from core phases if needed.
+**Critical path:** M1 accuracy validation gates M2 expansion.  
+**Contingency:** M5-6 absorb schedule slip from core milestones if needed.
 
 **Detailed plan:** see Supporting Materials (Project plan and timeline).
 
@@ -164,7 +164,7 @@ The plan expands coverage in a controlled way: first harden the pipeline and est
 | Criterion | Evidence | Future Expansion |
 | --- | --- | --- |
 | Scalability | Single EIP or batch across a fork; `eip-verify` scales in CI | Client matrices, parallel runs |
-| Accuracy | Opus 4.5 yields plausible outputs; quantitative baselines in Phase 1 | Prompt tuning, evaluators, expanded validation |
+| Accuracy | Opus 4.5 yields plausible outputs; quantitative baselines in Milestone 1 | Prompt tuning, evaluators, expanded validation |
 | Reliability | Simple chained pipeline with deterministic outputs | Harnesses, logs, monitoring |
 | Security | Runs inside CI; report-only outputs; minimal surface | Tighter sandboxing as needed |
 
