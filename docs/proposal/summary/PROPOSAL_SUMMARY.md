@@ -35,7 +35,7 @@ Evidence sources include a qualitative evaluation summary in `docs/QUALITATIVE_E
 
 ## 1. RFP Objectives and How We Meet Them
 
-These objectives are validated by the working system. The table below maps each RFP requirement to concrete outputs.
+The table below maps each RFP requirement to concrete outputs.
 
 | RFP Objective | How We Address It | Evidence |
 | --- | --- | --- |
@@ -49,13 +49,7 @@ These objectives are validated by the working system. The table below maps each 
 
 Ethereum's spec and client surface is broad and evolves frequently. The right solution is the most **reproducible and auditable**, not the most complex.
 
-**Approaches evaluated:**
-| Approach | Finding |
-| --- | --- |
-| Multi-agent systems | Coordination complexity, harder reproducibility, opaque failures |
-| RAG pipelines | Context drift, retrieval failures, fragile context windows |
-| Symbolic repo maps | High engineering overhead, unpredictable results |
-| LangChain deep agent / aider repomap | More layers without accuracy gains |
+We evaluated multi-agent systems (coordination complexity, opaque failures), RAG pipelines (context drift, retrieval failures), symbolic repo maps (high engineering overhead), and LangChain deep agent / aider repomap (more layers without accuracy gains). All introduced unpredictable results or poor auditability.
 
 **Chosen approach:** Direct chained agent calls with strict phase boundaries using Claude Agent SDK. Minimal layers between LLM and codebase preserves traceability. This is the lowest-risk path to a trustworthy workflow.
 
