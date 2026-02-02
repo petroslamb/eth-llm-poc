@@ -242,37 +242,15 @@ Petros Lambropoulos is an independent consultant with 13 years of experience in 
 
 ---
 
-## 14. Supporting Materials (Repository Links)
+## 14. Supporting Materials
 
-Append the folder and file below to the base repository URL above.
-
-- Technical architecture  
-  Folder: docs/proposal/  
-  File: [TECHNICAL_ARCHITECTURE_AND_DESIGN.md](../TECHNICAL_ARCHITECTURE_AND_DESIGN.md)
-- Project plan and timeline  
-  Folder: docs/proposal/  
-  File: [PROJECT_PLAN_AND_TIMELINE.md](../PROJECT_PLAN_AND_TIMELINE.md)
-- Budget and cost structure  
-  Folder: docs/proposal/  
-  File: [BUDGET_AND_COST_STRUCTURE.md](../BUDGET_AND_COST_STRUCTURE.md)
-- Budget CSV  
-  Folder: docs/proposal/  
-  File: [BUDGET_AND_COST_STRUCTURE.csv](../BUDGET_AND_COST_STRUCTURE.csv)
-- Integration guide  
-  Folder: docs/proposal/  
-  File: [INTEGRATION_GUIDE.md](../INTEGRATION_GUIDE.md)
-- Operations and extension  
-  Folder: docs/proposal/  
-  File: [OPERATIONS_AND_EXTENSION.md](../OPERATIONS_AND_EXTENSION.md)
-- Evaluation criteria response  
-  Folder: docs/proposal/  
-  File: [EVALUATION_CRITERIA_RESPONSE.md](../EVALUATION_CRITERIA_RESPONSE.md)
-- Vendor background  
-  Folder: docs/proposal/  
-  File: [VENDOR_BACKGROUND_AND_REFERENCES.md](../VENDOR_BACKGROUND_AND_REFERENCES.md)
-- Proposal readiness checklist  
-  Folder: docs/proposal/  
-  File: [PROPOSAL_READINESS_CHECKLIST.md](../PROPOSAL_READINESS_CHECKLIST.md)
-- Canonical RFP  
-  Folder: docs/proposal/  
-  File: [Request for Proposal (RFP)_ Integrating Large Language Models (LLMs) into Ethereum Protocol Security Research.md](../Request%20for%20Proposal%20%28RFP%29_%20Integrating%20Large%20Language%20Models%20%28LLMs%29%20into%20Ethereum%20Protocol%20Security%20Research.md)
+- [Technical Architecture and Design](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/TECHNICAL_ARCHITECTURE_AND_DESIGN.md)
+- [Project Plan and Timeline](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/PROJECT_PLAN_AND_TIMELINE.md)
+- [Budget and Cost Structure](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/BUDGET_AND_COST_STRUCTURE.md)
+- [Budget CSV](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/BUDGET_AND_COST_STRUCTURE.csv)
+- [Integration Guide](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/INTEGRATION_GUIDE.md)
+- [Operations and Extension](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/OPERATIONS_AND_EXTENSION.md)
+- [Evaluation Criteria Response](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/EVALUATION_CRITERIA_RESPONSE.md)
+- [Vendor Background](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/VENDOR_BACKGROUND_AND_REFERENCES.md)
+- [Proposal Readiness Checklist](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/PROPOSAL_READINESS_CHECKLIST.md)
+- [Canonical RFP](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/Request%20for%20Proposal%20%28RFP%29_%20Integrating%20Large%20Language%20Models%20%28LLMs%29%20into%20Ethereum%20Protocol%20Security%20Research.md)
