@@ -57,16 +57,9 @@ We evaluated multi-agent systems (coordination complexity, opaque failures), RAG
 
 ## 3. Scope Boundaries
 
-**In scope (Phase 1-4):**
-- Execution-specs ingestion and EIP obligation extraction.
-- Execution client validation (starting with Geth; client matrix planned).
-- Consensus-specs ingestion and consensus client validation.
-- Deterministic artifacts, manifests, and summary reports.
+**In scope (Phase 1-4):** Execution-specs ingestion and EIP obligation extraction. Execution client validation starting with Geth, with a client matrix planned. Consensus-specs ingestion and consensus client validation. Deterministic artifacts, manifests, and summary reports.
 
-**Out of scope (unless explicitly requested):**
-- Automatic code changes or patches.
-- Formal verification tooling beyond structured discrepancy reports.
-- Production deployment inside client release pipelines.
+**Out of scope (unless explicitly requested):** Automatic code changes or patches. Formal verification tooling beyond structured discrepancy reports. Production deployment inside client release pipelines.
 
 ---
 
