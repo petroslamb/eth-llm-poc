@@ -1,6 +1,17 @@
 # Qualitative Evaluation (Validation Included)
 
-This document summarizes qualitative validation performed on PoC outputs. It does not claim formal correctness; it
+## Summary
+
+**Model selection matters critically.** Our evaluation of Haiku, Sonnet, and Opus across EIP-1559, EIP-2930, and EIP-7702 shows:
+- **Haiku**: High noise in client mapping (many ABI/test file false positives)
+- **Sonnet**: Better than Haiku, more verbose on constraints
+- **Opus**: Best overall, occasional incomplete obligations
+
+**Recommendation**: Use Opus for production runs, Sonnet for cost-sensitive batches. Avoid Haiku for this task.
+
+---
+
+This document summarizes qualitative validation performed on pipeline outputs. It does not claim formal correctness; it
 records what was spot-checked, what was compared across runs, and what issues were observed.
 
 Validation was performed with `gpt-5.2-codex (high thinking)` to reduce Anthropic model bias and increase validation

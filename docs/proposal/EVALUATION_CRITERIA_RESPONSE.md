@@ -1,6 +1,6 @@
 # Evaluation Criteria Response
 
-This document summarizes how PoC 5 addresses the RFP evaluation criteria. Implementation details are in [docs/POC_IMPLEMENTATION_SPEC.md](../POC_IMPLEMENTATION_SPEC.md).
+This document summarizes how eth-llm-poc addresses the RFP evaluation criteria. Implementation details are in [docs/POC_IMPLEMENTATION_SPEC.md](../POC_IMPLEMENTATION_SPEC.md).
 
 ## Summary Table
 
@@ -21,14 +21,16 @@ This document summarizes how PoC 5 addresses the RFP evaluation criteria. Implem
 ## Scalability and Maintenance
 - The PoC supports **single EIP runs** and **batch runs** for all EIPs in an execution fork.
 - The **unit of work** is a reusable `eip-verify` job that scales in CI; this is demonstrated in the manual batch workflow.
-- The PoC currently runs against **Geth**; the execution and consensus client matrices are part of the proposed expansion.
+- The eth-llm-poc currently runs against **Geth**; the execution and consensus client matrices are part of the proposed expansion.
 - Future scalability extends the same unit of work to **consensus-specs** and **consensus clients**.
 - Additional phases can scale coverage of protocol security mapping goals.
 
 ## Accuracy Strategy
 - We evaluated a matrix of **methodologies, models, agents, and frameworks** and selected the current approach as the most accurate.
-- Claude Opus 4.5 yields **low false positives**; remaining findings are low-impact and can be re-checked via **manual cross-model review** (used in the PoC). Automation of this step is optional future work.
-- We manually validated accuracy using a second strong model (GPT-5.2 Codex High) to reduce single-model bias.
+- Claude Opus 4.5 yields **plausible outputs with low observed false positives** in qualitative validation.
+- Haiku runs showed higher noise in client mapping; model selection matters.
+- We validated outputs using a second strong model (GPT-5.2 Codex High) to reduce single-model bias.
+- **Phase 1 establishes quantitative baselines** with ground truth datasets for 2–3 well-understood EIPs.
 - Phases are **tunable and extensible**, enabling targeted improvements for extraction, mapping, and analysis.
 
 ## Reliability

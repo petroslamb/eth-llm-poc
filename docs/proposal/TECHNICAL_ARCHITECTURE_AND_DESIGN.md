@@ -1,9 +1,9 @@
 # Technical Architecture and Design (Proposed System)
 
-This document describes the **proposed system** based on the working PoC 5 implementation. It answers the RFP requirements for (a) how the system ingests specifications, analyzes code, and reports discrepancies, and (b) the technical approach, methodologies, frameworks, and tools.
+This document describes the **proposed system** based on the working eth-llm-poc implementation. It answers the RFP requirements for (a) how the system ingests specifications, analyzes code, and reports discrepancies, and (b) the technical approach, methodologies, frameworks, and tools.
 
 ## Scope and Intent
-- **Baseline**: execution-specs + Geth client (PoC 5 today).
+- **Baseline**: execution-specs + Geth client (eth-llm-poc today).
 - **Expansion**: consensus-specs + consensus clients (planned).
 - **Run model**: CLI + reusable CI workflows with deterministic artifacts.
 - **Design principle**: keep the pipeline **simple, auditable, and repeatable**.
@@ -41,7 +41,7 @@ The pipeline performs **direct chained agent calls** per phase:
 - Produce **summary.md** and **summary.json** for human and machine consumption.
 - Package outputs as CI artifacts for review and triage.
 
-## Architecture (Based on PoC 5)
+## Architecture (Based on eth-llm-poc)
 
 | Component | Responsibility | Evidence |
 | --- | --- | --- |
@@ -59,15 +59,19 @@ The pipeline performs **direct chained agent calls** per phase:
 - **Deterministic regression runs**: fake mode generates repeatable outputs to validate prompts and reporting logic.
 - **Audit-first outputs**: CSVs, manifests, and summaries enable manual review and reproducibility.
 
-### Approaches Evaluated and Rejected
-The following were prototyped and rejected due to complexity, unpredictability, or lack of productization:
-- Loosely coupled multi-agent systems (harder reproducibility).
-- MCP/A2A protocols (added coordination complexity).
-- RAG pipelines (fragile retrieval, context drift).
-- Symbolic repo maps/graphs (overhead, unpredictable results).
-- Cutting-edge research approaches with limited production maturity.
+### Approach Evaluation Matrix
 
-### Chosen Approach (Simplest That Works)
+We evaluated multiple approaches and selected the one with the best accuracy-to-complexity ratio:
+
+| Approach | Accuracy | Reproducibility | Complexity | Verdict |
+| --- | --- | --- | --- | --- |
+| Multi-agent systems | Medium | Low | High | Rejected |
+| MCP/A2A protocols | Unknown | Low | High | Rejected |
+| RAG pipelines | Medium | Low | Medium | Rejected |
+| Symbolic repo maps | High (potential) | Medium | Very High | Rejected |
+| **Direct chained phases** | **High** | **High** | **Medium** | **Selected** |
+
+### Selected Approach
 - **Direct chained agent calls** with a strong production agent.
 - **Filesystem-native tools** for repo analysis (read/write/grep/bash equivalents).
 - **Minimal layers** between the LLM and the codebase to preserve traceability.
