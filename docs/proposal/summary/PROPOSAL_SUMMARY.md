@@ -242,15 +242,37 @@ Petros Lambropoulos is an independent consultant with 13 years of experience in 
 
 ---
 
-## 14. Supporting Materials
+## 14. Supporting Materials (Repository Links)
 
-- Technical Architecture and Design: [docs/proposal/TECHNICAL_ARCHITECTURE_AND_DESIGN.md](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/TECHNICAL_ARCHITECTURE_AND_DESIGN.md)
-- Project Plan and Timeline: [docs/proposal/PROJECT_PLAN_AND_TIMELINE.md](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/PROJECT_PLAN_AND_TIMELINE.md)
-- Budget and Cost Structure: [docs/proposal/BUDGET_AND_COST_STRUCTURE.md](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/BUDGET_AND_COST_STRUCTURE.md)
-- Budget CSV: [docs/proposal/BUDGET_AND_COST_STRUCTURE.csv](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/BUDGET_AND_COST_STRUCTURE.csv)
-- Integration Guide: [docs/proposal/INTEGRATION_GUIDE.md](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/INTEGRATION_GUIDE.md)
-- Operations and Extension: [docs/proposal/OPERATIONS_AND_EXTENSION.md](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/OPERATIONS_AND_EXTENSION.md)
-- Evaluation Criteria Response: [docs/proposal/EVALUATION_CRITERIA_RESPONSE.md](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/EVALUATION_CRITERIA_RESPONSE.md)
-- Vendor Background: [docs/proposal/VENDOR_BACKGROUND_AND_REFERENCES.md](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/VENDOR_BACKGROUND_AND_REFERENCES.md)
-- Proposal Readiness Checklist: [docs/proposal/PROPOSAL_READINESS_CHECKLIST.md](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/PROPOSAL_READINESS_CHECKLIST.md)
-- Canonical RFP: [docs/proposal/Request for Proposal (RFP)\_ Integrating Large Language Models (LLMs) into Ethereum Protocol Security Research.md](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/Request%20for%20Proposal%20%28RFP%29_%20Integrating%20Large%20Language%20Models%20%28LLMs%29%20into%20Ethereum%20Protocol%20Security%20Research.md)
+Append the folder and file below to the base repository URL above.
+
+- Technical architecture  
+  Folder: docs/proposal/  
+  File: [TECHNICAL_ARCHITECTURE_AND_DESIGN.md](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/TECHNICAL_ARCHITECTURE_AND_DESIGN.md)
+- Project plan and timeline  
+  Folder: docs/proposal/  
+  File: [PROJECT_PLAN_AND_TIMELINE.md](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/PROJECT_PLAN_AND_TIMELINE.md)
+- Budget and cost structure  
+  Folder: docs/proposal/  
+  File: [BUDGET_AND_COST_STRUCTURE.md](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/BUDGET_AND_COST_STRUCTURE.md)
+- Budget CSV  
+  Folder: docs/proposal/  
+  File: [BUDGET_AND_COST_STRUCTURE.csv](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/BUDGET_AND_COST_STRUCTURE.csv)
+- Integration guide  
+  Folder: docs/proposal/  
+  File: [INTEGRATION_GUIDE.md](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/INTEGRATION_GUIDE.md)
+- Operations and extension  
+  Folder: docs/proposal/  
+  File: [OPERATIONS_AND_EXTENSION.md](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/OPERATIONS_AND_EXTENSION.md)
+- Evaluation criteria response  
+  Folder: docs/proposal/  
+  File: [EVALUATION_CRITERIA_RESPONSE.md](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/EVALUATION_CRITERIA_RESPONSE.md)
+- Vendor background  
+  Folder: docs/proposal/  
+  File: [VENDOR_BACKGROUND_AND_REFERENCES.md](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/VENDOR_BACKGROUND_AND_REFERENCES.md)
+- Proposal readiness checklist  
+  Folder: docs/proposal/  
+  File: [PROPOSAL_READINESS_CHECKLIST.md](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/PROPOSAL_READINESS_CHECKLIST.md)
+- Canonical RFP  
+  Folder: docs/proposal/  
+  File: [RFP.md](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/Request%20for%20Proposal%20%28RFP%29_%20Integrating%20Large%20Language%20Models%20%28LLMs%29%20into%20Ethereum%20Protocol%20Security%20Research.md)
