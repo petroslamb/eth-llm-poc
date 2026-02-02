@@ -217,7 +217,7 @@ Petros Lambropoulos is an independent consultant with 13 years of experience in 
 
 **Career highlights:**
 
-- **Workable (2016-2019):** Senior Software Engineer on the NLP team. Built resume parsing and job matching systems.
+- **Workable (2022-2024):** Senior Software Engineer on the NLP team. Built resume parsing and job matching systems.
 
 - **NannyML (2021-2023):** Senior Software Engineer. Built ML monitoring platform for model drift detection.
 
