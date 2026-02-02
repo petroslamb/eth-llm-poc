@@ -25,22 +25,11 @@ This proposal extends the prototype to production coverage. Phase 1-2 hardens th
 
 ## Evidence and Validation
 
-Evidence is documented via qualitative evaluation (manual spot-checks and cross-model comparison) and multiple pipeline runs. Formal quantitative accuracy baselines are scoped for Phase 1.
+Validation combines qualitative evaluation (manual spot-checks and cross-model comparison) with multiple pipeline runs. Formal quantitative accuracy baselines are scoped for Phase 1.
 
-**Current validation approach:**
-- Manual spot-checks of obligations against EIP text, execution-specs, and Geth sources.
-- Cross-model comparison (Haiku, Sonnet, Opus) to assess stability and quality differences.
-- Model selection based on observed quality: Opus 4.5 produces the most plausible outputs; Haiku showed high noise in client mapping.
+Current validation includes manual spot-checks of obligations against EIP text, execution-specs, and Geth sources. Cross-model comparison across Haiku, Sonnet, and Opus assessed stability and quality differences. Opus 4.5 produces the most plausible outputs; Haiku showed high noise in client mapping.
 
-**Evidence sources:**
-- Qualitative evaluation summary: [docs/QUALITATIVE_EVALUATION.md](../../QUALITATIVE_EVALUATION.md)
-- Validation transcript: [examples/qualitative_validation_transcript.md](../../../examples/qualitative_validation_transcript.md)
-- Example CI runs (EIP-7702, Opus): 
-  - [Run 21571909617](../../../examples/workflow_runs/21571909617/verification-report-7702/summary.md)
-  - [Run 21570420032](../../../examples/workflow_runs/21570420032/verification-report-7702/summary.md)
-- Local runs: EIP-1559 (Sonnet, Haiku, Opus), EIP-2930 (Opus) in `examples/runs/`
-
-> **Note on determinism:** Phase inputs, outputs, and artifacts are deterministic in structure. LLM responses remain stochastic. We achieve reproducibility via version pinning, cross-model validation, and fake mode for regression testing.
+Evidence sources include a qualitative evaluation summary in `docs/QUALITATIVE_EVALUATION.md`, a validation transcript in `examples/qualitative_validation_transcript.md`, example CI runs for EIP-7702 (runs 21571909617 and 21570420032), and local runs for EIP-1559 and EIP-2930 in `examples/runs/`.
 
 ---
 
