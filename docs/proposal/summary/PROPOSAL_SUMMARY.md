@@ -223,8 +223,6 @@ Petros Lambropoulos is an independent consultant with 13 years of experience in 
 
 - **Recent consulting:** Hedera/CNO (compliance-first tokenization infrastructure), dikaio.ai (agentic workflows and evaluation pipelines).
 
-**This project:** Delivered eth-llm-poc end-to-end with installable `eip-verify` CLI, CI workflows, and validated runs.
-
 **Vendor links:**  
 - Website: https://petroslamb.github.io/peterlamb/  
 - Blog: https://lambpetros.substack.com/  
