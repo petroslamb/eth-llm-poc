@@ -21,7 +21,7 @@ The runtime for a single EIP for Opus 4.5 can vary from 10 to 20 minutes.
 
 **Evaluation Note**: The evaluation of these runs was conducted using `gpt-5.2-codex (high)` on all findings across EIPs, execution-specs, and the Geth client.
 
-More info in `poc5/docs/QUALITATIVE_VALIDATION.md`
+More info in [docs/QUALITATIVE_EVALUATION.md](../docs/QUALITATIVE_EVALUATION.md)
 
 ## Workflow Run Notes
 

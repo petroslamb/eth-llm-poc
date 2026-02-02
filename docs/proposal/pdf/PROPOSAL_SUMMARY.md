@@ -21,6 +21,17 @@ The plan scales to consensus specs and clients, adds cross-client validation, an
 
 ---
 
+## Evidence and Qualitative Evaluation (Validation Included)
+Evidence and validation are documented in a qualitative evaluation summary and the full transcript. Determinism here
+refers to fixed phase outputs and reproducible artifacts (especially in fake mode); LLM outputs remain stochastic and
+are validated via spot checks and cross-model comparisons.
+
+- Qualitative evaluation summary: [docs/QUALITATIVE_EVALUATION.md](../../QUALITATIVE_EVALUATION.md)
+- Qualitative validation transcript: [examples/qualitative_validation_transcript.md](../../../examples/qualitative_validation_transcript.md)
+- Example CI run summary (EIP-7702, Opus): [examples/workflow_runs/21571909617/verification-report-7702/summary.md](../../../examples/workflow_runs/21571909617/verification-report-7702/summary.md)
+
+---
+
 ## 1. RFP Objectives and How We Meet Them
 
 These objectives are already validated by the working PoC. The table below maps each RFP requirement to concrete outputs or artifacts produced by the current pipeline.

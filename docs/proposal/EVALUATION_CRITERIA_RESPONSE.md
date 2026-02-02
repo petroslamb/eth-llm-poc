@@ -13,6 +13,11 @@ This document summarizes how PoC 5 addresses the RFP evaluation criteria. Implem
 | Cost and timeline | Cost controls via configuration and a phased delivery plan | [docs/proposal/BUDGET_AND_COST_STRUCTURE.md](BUDGET_AND_COST_STRUCTURE.md), [docs/proposal/PROJECT_PLAN_AND_TIMELINE.md](PROJECT_PLAN_AND_TIMELINE.md) |
 | Team expertise | Vendor background and case studies | [docs/proposal/VENDOR_BACKGROUND_AND_REFERENCES.md](VENDOR_BACKGROUND_AND_REFERENCES.md) |
 
+**Evidence links (qualitative validation):**
+- [docs/QUALITATIVE_EVALUATION.md](../QUALITATIVE_EVALUATION.md)
+- [examples/qualitative_validation_transcript.md](../../examples/qualitative_validation_transcript.md)
+- [examples/workflow_runs/21571909617/verification-report-7702/summary.md](../../examples/workflow_runs/21571909617/verification-report-7702/summary.md)
+
 ## Scalability and Maintenance
 - The PoC supports **single EIP runs** and **batch runs** for all EIPs in an execution fork.
 - The **unit of work** is a reusable `eip-verify` job that scales in CI; this is demonstrated in the manual batch workflow.
