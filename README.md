@@ -2,6 +2,15 @@
 
 LLM-powered traceability and verification of EIP obligations against `execution-specs` and execution client implementations (Geth tested).
 
+## Example CI Run (What You’ll See)
+
+Take a look at a real run: [CI run #21571909617](https://github.com/petroslamb/eth-llm-poc/actions/runs/21571909617).
+
+What this run shows:
+- A `verification-report-7702` artifact containing `summary.md` / `summary.json` (EIP, client/ref, model, and a concise pass/fail-style summary of findings).
+- The Actions UI with expandable job/step dropdowns—open the job, expand steps, and you’ll see logs for each phase plus the artifact upload step.
+- The run summary gives a quick read; the artifact summary is the durable, shareable report.
+
 ## Quick Start
 
 1) Fork the repo and add `ANTHROPIC_API_KEY` to your repo secrets.  
