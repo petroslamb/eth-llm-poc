@@ -219,7 +219,7 @@ Petros Lambropoulos is an independent consultant with 13 years of experience in 
 
 - **Workable (2022-2024):** Senior Software Engineer on the NLP team. Built resume parsing and job matching systems.
 
-- **NannyML (2021-2023):** Senior Software Engineer. Built ML monitoring platform for model drift detection.
+- **NannyML (2021-2022):** Senior Software Engineer. Built ML monitoring platform for model drift detection.
 
 - **Recent consulting:** Hedera/CNO (compliance-first tokenization infrastructure), dikaio.ai (agentic workflows and evaluation pipelines).
 
