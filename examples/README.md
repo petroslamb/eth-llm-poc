@@ -1,6 +1,6 @@
 # Example Runs: Model Mapping
 
-This folder stores example run artifacts keyed by timestamp. The model used for each run on the same eip-1559 in order to validate the results and compare models. Validation was performed with `gtp-5.2-codex (high thinking)` on codex-cli to reduce Anthropic model bias and increase validation diversity:
+This folder stores example run artifacts keyed by timestamp. The model used for each run on the same eip-1559 in order to validate the results and compare models. Validation was performed with `gpt-5.2-codex (high thinking)` on codex-cli to reduce Anthropic model bias and increase validation diversity:
 
 ```
 - 20260128_192948 -> Sonnet 4.5
@@ -19,7 +19,7 @@ The runtime for a single EIP for Opus 4.5 can vary from 10 to 20 minutes.
 - **Claude 4.5 Sonnet**: Performed well with low false positives. Its output was verbose and descriptive, which aided in understanding the context of certain tasks.
 - **Claude 4.5 Opus**: The slight favorite. Like Sonnet, it had low false positives, but its concise and specific output style was marginally better suited for this verification task.
 
-**Evaluation Note**: The evaluation of these runs was conducted using `gpt-5.2-codex (high)` on all findings across EIPs, execution-specs, and the Geth client.
+**Evaluation Note**: The evaluation of these runs was conducted using `gpt-5.2-codex (high thinking)` on all findings across EIPs, execution-specs, and the Geth client.
 
 More info in [docs/QUALITATIVE_EVALUATION.md](../docs/QUALITATIVE_EVALUATION.md)
 
