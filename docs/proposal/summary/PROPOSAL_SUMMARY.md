@@ -244,8 +244,6 @@ Petros Lambropoulos is an independent consultant with 13 years of experience in 
 
 ## 14. Supporting Materials (Repository Links)
 
-Append the folder and file below to the base repository URL above.
-
 - Technical architecture  
   Folder: docs/proposal/  
   File: [TECHNICAL_ARCHITECTURE_AND_DESIGN.md](https://github.com/petroslamb/eth-llm-poc/blob/main/docs/proposal/TECHNICAL_ARCHITECTURE_AND_DESIGN.md)
