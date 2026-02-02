@@ -45,12 +45,12 @@ The pipeline performs **direct chained agent calls** per phase:
 
 | Component | Responsibility | Evidence |
 | --- | --- | --- |
-| CLI entrypoint | Configuration, inputs, orchestration | `poc5/src/eip_verify/cli.py` |
-| Pipeline | Phase sequencing and run layout | `poc5/src/eip_verify/pipeline.py` |
-| Phase runner | Phase logic for extract/locate/analyze | `poc5/src/eip_verify/runner.py` |
-| Spec indexer | Spec parsing + EIP↔fork mapping | `poc5/src/eip_verify/spec_index.py` |
-| Reporting | Summary aggregation | `poc5/src/eip_verify/reporting.py` |
-| CI workflows | Reusable workflow_call | `poc5/.github/workflows/ci.yml` |
+| CLI entrypoint | Configuration, inputs, orchestration | [src/eip_verify/cli.py](../../src/eip_verify/cli.py) |
+| Pipeline | Phase sequencing and run layout | [src/eip_verify/pipeline.py](../../src/eip_verify/pipeline.py) |
+| Phase runner | Phase logic for extract/locate/analyze | [src/eip_verify/runner.py](../../src/eip_verify/runner.py) |
+| Spec indexer | Spec parsing + EIP↔fork mapping | [src/eip_verify/spec_index.py](../../src/eip_verify/spec_index.py) |
+| Reporting | Summary aggregation | [src/eip_verify/reporting.py](../../src/eip_verify/reporting.py) |
+| CI workflows | Reusable workflow_call | [.github/workflows/ci.yml](../../.github/workflows/ci.yml) |
 
 ## Technical Approach
 

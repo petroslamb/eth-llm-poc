@@ -1,12 +1,12 @@
 # Operations and Extension
 
-This document covers setup, maintenance, and extension guidance for PoC 5. For detailed CLI usage, see `poc5/README.md` and `poc5/docs/POC_IMPLEMENTATION_SPEC.md`.
+This document covers setup, maintenance, and extension guidance for PoC 5. For detailed CLI usage, see [README.md](../../README.md) and [docs/POC_IMPLEMENTATION_SPEC.md](../POC_IMPLEMENTATION_SPEC.md).
 
 ## Setup (Local)
 
 | Step | Command / Location | Notes |
 | --- | --- | --- |
-| Install | `pip install -e .` | From `poc5/` |
+| Install | `pip install -e .` | From repo root |
 | Configure | `example_config.yaml` | Copy to `config.yaml` if desired |
 | Credentials | `ANTHROPIC_API_KEY` | Required for `--llm-mode live` |
 
@@ -16,7 +16,7 @@ This document covers setup, maintenance, and extension guidance for PoC 5. For d
 | --- | --- | --- |
 | Update spec refs | As forks update | Use workflow inputs or local repo refs |
 | Refresh client refs | As client releases | Update `client_ref` in workflows |
-| Review prompts | As scope changes | `poc5/src/eip_verify/prompts/` |
+| Review prompts | As scope changes | [src/eip_verify/prompts/](../../src/eip_verify/prompts/) |
 | Manage artifacts | Per run | Archive `runs/` outputs for audit |
 | Validate outputs | Per run | Check `summary.md` and CSVs |
 

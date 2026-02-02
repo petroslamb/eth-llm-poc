@@ -129,4 +129,4 @@ Project totals:
 - Phase selection to avoid unnecessary model calls.
 
 ## CSV Export
-- Detailed numeric breakdowns live in `poc5/docs/proposal/BUDGET_AND_COST_STRUCTURE.csv`.
+- Detailed numeric breakdowns live in [docs/proposal/BUDGET_AND_COST_STRUCTURE.csv](BUDGET_AND_COST_STRUCTURE.csv).

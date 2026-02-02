@@ -195,32 +195,32 @@ LinkedIn: https://uk.linkedin.com/in/petroslamb
 Append the folder and file below to the base repository URL above.
 
 - Technical architecture  
-  Folder: poc5/docs/proposal/  
-  File: TECHNICAL_ARCHITECTURE_AND_DESIGN.md
+  Folder: docs/proposal/  
+  File: [TECHNICAL_ARCHITECTURE_AND_DESIGN.md](../TECHNICAL_ARCHITECTURE_AND_DESIGN.md)
 - Project plan and timeline  
-  Folder: poc5/docs/proposal/  
-  File: PROJECT_PLAN_AND_TIMELINE.md
+  Folder: docs/proposal/  
+  File: [PROJECT_PLAN_AND_TIMELINE.md](../PROJECT_PLAN_AND_TIMELINE.md)
 - Budget and cost structure  
-  Folder: poc5/docs/proposal/  
-  File: BUDGET_AND_COST_STRUCTURE.md
+  Folder: docs/proposal/  
+  File: [BUDGET_AND_COST_STRUCTURE.md](../BUDGET_AND_COST_STRUCTURE.md)
 - Budget CSV  
-  Folder: poc5/docs/proposal/  
-  File: BUDGET_AND_COST_STRUCTURE.csv
+  Folder: docs/proposal/  
+  File: [BUDGET_AND_COST_STRUCTURE.csv](../BUDGET_AND_COST_STRUCTURE.csv)
 - Integration guide  
-  Folder: poc5/docs/proposal/  
-  File: INTEGRATION_GUIDE.md
+  Folder: docs/proposal/  
+  File: [INTEGRATION_GUIDE.md](../INTEGRATION_GUIDE.md)
 - Operations and extension  
-  Folder: poc5/docs/proposal/  
-  File: OPERATIONS_AND_EXTENSION.md
+  Folder: docs/proposal/  
+  File: [OPERATIONS_AND_EXTENSION.md](../OPERATIONS_AND_EXTENSION.md)
 - Evaluation criteria response  
-  Folder: poc5/docs/proposal/  
-  File: EVALUATION_CRITERIA_RESPONSE.md
+  Folder: docs/proposal/  
+  File: [EVALUATION_CRITERIA_RESPONSE.md](../EVALUATION_CRITERIA_RESPONSE.md)
 - Vendor background  
-  Folder: poc5/docs/proposal/  
-  File: VENDOR_BACKGROUND_AND_REFERENCES.md
+  Folder: docs/proposal/  
+  File: [VENDOR_BACKGROUND_AND_REFERENCES.md](../VENDOR_BACKGROUND_AND_REFERENCES.md)
 - Proposal readiness checklist  
-  Folder: poc5/docs/proposal/  
-  File: PROPOSAL_READINESS_CHECKLIST.md
+  Folder: docs/proposal/  
+  File: [PROPOSAL_READINESS_CHECKLIST.md](../PROPOSAL_READINESS_CHECKLIST.md)
 - Canonical RFP  
-  Folder: poc5/docs/proposal/  
-  File: Request for Proposal (RFP)_ Integrating Large Language Models (LLMs) into Ethereum Protocol Security Research.md
+  Folder: docs/proposal/  
+  File: [Request for Proposal (RFP)_ Integrating Large Language Models (LLMs) into Ethereum Protocol Security Research.md](../Request%20for%20Proposal%20%28RFP%29_%20Integrating%20Large%20Language%20Models%20%28LLMs%29%20into%20Ethereum%20Protocol%20Security%20Research.md)

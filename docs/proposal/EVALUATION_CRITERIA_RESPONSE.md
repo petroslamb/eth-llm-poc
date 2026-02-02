@@ -1,17 +1,17 @@
 # Evaluation Criteria Response
 
-This document summarizes how PoC 5 addresses the RFP evaluation criteria. Implementation details are in `poc5/docs/POC_IMPLEMENTATION_SPEC.md`.
+This document summarizes how PoC 5 addresses the RFP evaluation criteria. Implementation details are in [docs/POC_IMPLEMENTATION_SPEC.md](../POC_IMPLEMENTATION_SPEC.md).
 
 ## Summary Table
 
 | Criterion | Response summary | Evidence |
 | --- | --- | --- |
-| Technical feasibility and innovation | Working multi-phase pipeline with spec indexing, client mapping, and reporting | `poc5/docs/POC_IMPLEMENTATION_SPEC.md` |
-| Scalability and maintenance | Batch-capable workflows and reusable `eip-verify` units of work | `poc5/docs/proposal/INTEGRATION_GUIDE.md` |
-| Accuracy | Model and methodology evaluation yielded low false positives on Opus 4.5 | `poc5/docs/proposal/TECHNICAL_ARCHITECTURE_AND_DESIGN.md` |
-| Security and reliability | Deterministic artifacts, CI isolation, and minimal orchestration | `poc5/docs/POC_IMPLEMENTATION_SPEC.md` |
-| Cost and timeline | Cost controls via configuration and a phased delivery plan | `poc5/docs/proposal/BUDGET_AND_COST_STRUCTURE.md`, `poc5/docs/proposal/PROJECT_PLAN_AND_TIMELINE.md` |
-| Team expertise | Vendor background and case studies | `poc5/docs/proposal/VENDOR_BACKGROUND_AND_REFERENCES.md` |
+| Technical feasibility and innovation | Working multi-phase pipeline with spec indexing, client mapping, and reporting | [docs/POC_IMPLEMENTATION_SPEC.md](../POC_IMPLEMENTATION_SPEC.md) |
+| Scalability and maintenance | Batch-capable workflows and reusable `eip-verify` units of work | [docs/proposal/INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md) |
+| Accuracy | Model and methodology evaluation yielded low false positives on Opus 4.5 | [docs/proposal/TECHNICAL_ARCHITECTURE_AND_DESIGN.md](TECHNICAL_ARCHITECTURE_AND_DESIGN.md) |
+| Security and reliability | Deterministic artifacts, CI isolation, and minimal orchestration | [docs/POC_IMPLEMENTATION_SPEC.md](../POC_IMPLEMENTATION_SPEC.md) |
+| Cost and timeline | Cost controls via configuration and a phased delivery plan | [docs/proposal/BUDGET_AND_COST_STRUCTURE.md](BUDGET_AND_COST_STRUCTURE.md), [docs/proposal/PROJECT_PLAN_AND_TIMELINE.md](PROJECT_PLAN_AND_TIMELINE.md) |
+| Team expertise | Vendor background and case studies | [docs/proposal/VENDOR_BACKGROUND_AND_REFERENCES.md](VENDOR_BACKGROUND_AND_REFERENCES.md) |
 
 ## Scalability and Maintenance
 - The PoC supports **single EIP runs** and **batch runs** for all EIPs in an execution fork.
@@ -43,4 +43,4 @@ This document summarizes how PoC 5 addresses the RFP evaluation criteria. Implem
 ## Cost Controls
 - `--llm-mode fake` allows cost-free runs for CI and tests.
 - `--max-turns` and phase selection limit model usage.
-- See `poc5/docs/proposal/BUDGET_AND_COST_STRUCTURE.md` for budgeting guidance.
+- See [docs/proposal/BUDGET_AND_COST_STRUCTURE.md](BUDGET_AND_COST_STRUCTURE.md) for budgeting guidance.

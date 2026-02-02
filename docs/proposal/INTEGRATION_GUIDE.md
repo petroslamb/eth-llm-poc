@@ -1,6 +1,6 @@
 # Integration Guide (GitHub CI/CD)
 
-This guide explains how to integrate PoC 5 into GitHub Actions using the reusable workflow. Detailed runbook steps are in `poc5/docs/POC_IMPLEMENTATION_SPEC.md`.
+This guide explains how to integrate PoC 5 into GitHub Actions using the reusable workflow. Detailed runbook steps are in [docs/POC_IMPLEMENTATION_SPEC.md](../POC_IMPLEMENTATION_SPEC.md).
 
 ## Reusable Workflow (workflow_call)
 
@@ -57,5 +57,5 @@ jobs:
 ## In-Repo Manual Workflows
 
 For manual runs in this repo, see:
-- `poc5/.github/workflows/manual_run.yml`
-- `poc5/.github/workflows/manual_run_batch.yml`
+- [.github/workflows/manual_run.yml](../../.github/workflows/manual_run.yml)
+- [.github/workflows/manual_run_batch.yml](../../.github/workflows/manual_run_batch.yml)

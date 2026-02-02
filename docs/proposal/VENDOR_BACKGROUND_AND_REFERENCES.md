@@ -35,7 +35,7 @@
 
 | Project | Summary | Evidence |
 | --- | --- | --- |
-| PoC 5 (this repository) | Working CLI + reusable workflow for EIP verification | `poc5/docs/POC_IMPLEMENTATION_SPEC.md`, `poc5/examples/` |
+| PoC 5 (this repository) | Working CLI + reusable workflow for EIP verification | [docs/POC_IMPLEMENTATION_SPEC.md](../POC_IMPLEMENTATION_SPEC.md), [examples/](../../examples/) |
 | Hedera / CNO (consulting) | Compliance-first tokenization and trading infrastructure | Available on request |
 | dikaio.ai (consulting) | Agentic workflows and evaluation pipelines | Available on request |
 | Workable | GenAI PoCs and production ML microservices | Available on request |
