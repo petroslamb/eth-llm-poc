@@ -202,6 +202,10 @@ We provide a cost model separating engineering effort from operational costs. Op
 - `--max-turns` to limit conversation length.
 - Phase selection to avoid unnecessary model calls.
 
+**Payment terms:**
+- LLM and CI operational costs: invoiced upfront at project start.
+- Engineering delivery: invoiced monthly, or per milestone if timelines shift.
+
 **Full cost model:** see Supporting Materials (Budget and cost structure).  
 **CSV breakdown:** see Supporting Materials (Budget CSV).
 

@@ -123,7 +123,17 @@ Project totals:
 - **List**: EUR 832/day → **EUR 16,640/month**
 - **Discounted (30%)**: EUR 582/day → **EUR 11,640/month**
 
-## Cost Controls Available in PoC 5
+## Payment Terms
+
+| Cost Type | Payment Schedule | Notes |
+| --- | --- | --- |
+| LLM usage (Opus/Sonnet) | Upfront at project start | Covers monthly operational budget for runs |
+| CI/Infrastructure | Upfront at project start | Covers GitHub Actions and storage |
+| Engineering delivery | Monthly, or per milestone if delays occur | Invoiced at end of each month or upon milestone completion |
+
+**Rationale:** Operational costs (LLM and CI) are consumed continuously throughout the project and require upfront allocation. Engineering effort is invoiced on a recurring basis, with flexibility to align with milestone delivery if project timelines shift.
+
+## Cost Controls Available in eth-llm-poc
 - `--llm-mode fake` for zero-cost CI and regression runs.
 - `--max-turns` to limit conversation length.
 - Phase selection to avoid unnecessary model calls.
