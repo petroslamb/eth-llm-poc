@@ -27,7 +27,7 @@ This proposal extends the prototype to production coverage. Milestones 1-2 harde
 
 Validation combines qualitative evaluation (manual spot-checks and cross-model comparison) with multiple pipeline runs. Formal quantitative accuracy baselines are scoped for Phase 1.
 
-Current validation includes manual spot-checks of obligations against EIP text, execution-specs, and Geth sources. Cross-model comparison across Haiku, Sonnet, and Opus assessed stability and quality differences. Opus 4.5 produces the most plausible outputs; Haiku showed high noise in client mapping.
+Current validation includes manual spot-checks of obligations against EIP text, execution-specs, and Geth sources. Cross-model comparison across Haiku, Sonnet, and Opus assessed stability and quality differences. Opus 4.5 produces the most accurate outputs; Haiku showed high noise in client mapping.
 
 Evidence sources include a qualitative evaluation summary in `docs/QUALITATIVE_EVALUATION.md`, a validation transcript in `examples/qualitative_validation_transcript.md`, example CI runs for EIP-7702 (runs 21571909617 and 21570420032), and local runs for EIP-1559 and EIP-2930 in `examples/runs/`.
 
@@ -164,7 +164,7 @@ The plan expands coverage in a controlled way: first harden the pipeline and est
 | Criterion | Evidence | Future Expansion |
 | --- | --- | --- |
 | Scalability | Single EIP or batch across a fork; `eip-verify` scales in CI | Client matrices, parallel runs |
-| Accuracy | Opus 4.5 yields plausible outputs; quantitative baselines in Milestone 1 | Prompt tuning, evaluators, expanded validation |
+| Accuracy | Opus 4.5 yields validated outputs; quantitative baselines in Milestone 1 | Prompt tuning, evaluators, expanded validation |
 | Reliability | Simple chained pipeline with deterministic outputs | Harnesses, logs, monitoring |
 | Security | Runs inside CI; report-only outputs; minimal surface | Tighter sandboxing as needed |
 
