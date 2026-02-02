@@ -1,8 +1,14 @@
 # eip-verify
 
-LLM-powered verification of EIP obligations against execution-specs and client implementations.
+LLM-powered traceability and verification of EIP obligations against `execution-specs` and execution client implementations (Geth tested).
 
-## Installation
+## Quick Start
+
+Fork this repo and add your anthropic key. Then go over to Actions and run the workflow of the Manual action for a single EIP. To use the actual LLM, make sure you change option for the LLM run mode from `fake` to `live`.
+
+The run should take about 10mins, if it succeeds you should have a summary report with dropdowns and the ability to download all the artifacts. The Claude Agent is run in phases and each phase depends on the results of the previous phase. The main artifact a a CSV file, where the EIP is broken down to individual atomic oblications, on each row and the columns are gradually filled during consecutive phases run.
+
+During the phases, EIP obligations are gradually located in the code of `execution-specs` and the code flow is mapped as well as any gaps. This then also happens for the execution client. The final completed CSV is located in the subfolder of the last run phase for you to use.
 
 ## Repository Map
 
