@@ -1,32 +1,28 @@
 # Proposal Summary
 
-**Base repository URL:** [eth-llm-poc/blob/main](https://github.com/petroslamb/eth-llm-poc/blob/main)
+**Base repository URL:** [https://github.com/petroslamb/eth-llm-poc](https://github.com/petroslamb/eth-llm-poc)
 
-This document is the submission-ready proposal summary for the Ethereum Foundation RFP on integrating LLMs into protocol security research. It is grounded in a working system delivered in the [eth-llm-poc](https://github.com/petroslamb/eth-llm-poc) repository, with the installable Python package `eip-verify`. It describes a low-risk, auditable path to full execution and consensus coverage in 4–6 months.
+This document is the submission-ready proposal summary for the Ethereum Foundation RFP on integrating LLMs into protocol security research. It is grounded in a working system delivered in the [eth-llm-poc](https://github.com/petroslamb/eth-llm-poc) repository, with the installable Python package `eip-verify`. It describes a low-risk, auditable path to full execution and consensus coverage in 4-6 months.
 
 ---
 
 ## Executive Summary
 
-Ethereum's Protocol Security team manually audits multiple client implementations against evolving specifications—a labor-intensive process that scales poorly with fork velocity and client diversity. We deliver **eth-llm-poc**, a working LLM-assisted verification system that automates obligation extraction, spec mapping, and client gap detection, producing auditable discrepancy reports.
+Ethereum's Protocol Security team manually audits multiple client implementations against evolving specifications. This labor-intensive process scales poorly with fork velocity and client diversity.
 
-**What exists today:**
-- A multi-phase pipeline covering execution-specs and Geth, running in CI with structured artifacts.
-- Validated runs across EIP-1559, EIP-2930, and EIP-7702 with Claude Opus 4.5.
-- Reusable GitHub Actions workflows enabling per-EIP or batch execution.
+To address this, I built **eth-llm-poc**, an LLM-assisted verification system that automates obligation extraction, spec mapping, and client gap detection. The system produces auditable discrepancy reports with full traceability from EIP text to client code.
 
-**What the proposal delivers:**
-- Phase 1–2: Pipeline hardening, quantitative accuracy baselines, execution client matrix.
-- Phase 3–4: Consensus-specs ingestion, consensus client coverage, EL/CL linkage.
-- Phase 5–6 (optional): CI gating, quality dashboards, broader protocol security mapping.
+The prototype is complete and running. It includes a multi-phase pipeline covering execution-specs and Geth, with validated runs across EIP-1559, EIP-2930, and EIP-7702 using Claude Opus 4.5. The pipeline runs in GitHub Actions CI and produces structured artifacts (CSV, JSON, Markdown) that enable independent review. Reusable workflows support both single-EIP and batch execution modes.
 
-**Architecture rationale:** We evaluated multi-agent systems, RAG pipelines, and symbolic repo maps. All introduced instability, unpredictable results, and poor auditability. The chosen direct-chained architecture prioritizes reproducibility and clear audit trails—critical for security infrastructure.
+The architecture uses direct chained agent calls with strict phase boundaries. Each phase operates on explicit inputs and produces deterministic outputs. This design ensures reproducibility and clear audit trails, which are essential for security infrastructure. During development, I evaluated multi-agent systems, RAG pipelines, and symbolic repo maps. All introduced coordination complexity, unpredictable results, or poor auditability. The direct-chained approach outperformed them on stability and traceability.
+
+This proposal extends the prototype to production coverage. Phase 1-2 hardens the pipeline and establishes quantitative accuracy baselines across an execution client matrix. Phase 3-4 adds consensus-specs ingestion and consensus client coverage with EL/CL linkage. Optional Phase 5-6 integrates CI gating, quality dashboards, and broader protocol security mapping.
 
 ---
 
 ## Key Differentiators
 
-- **Working system today:** eth-llm-poc runs end-to-end with CI integration and auditable artifacts—not a proposal for future work.
+- **Working system today:** eth-llm-poc runs end-to-end with CI integration and auditable artifacts. This is a working system, not a proposal for future work.
 - **Auditable by design:** strict phase boundaries, versioned runs, and structured outputs (CSV, JSON, Markdown) enable independent verification.
 - **Proven accuracy:** Claude Opus 4.5 produces plausible outputs with low observed false positives in qualitative validation; quantitative baselines are Phase 1 work.
 - **Clear scaling unit:** `eip-verify` CLI enables single-EIP or batch execution; the same unit extends to EIP × client matrices.
@@ -84,7 +80,7 @@ Ethereum's spec and client surface is broad and evolves frequently. The right so
 
 ## 3. Scope Boundaries
 
-**In scope (Phase 1–4):**
+**In scope (Phase 1-4):**
 - Execution-specs ingestion and EIP obligation extraction.
 - Execution client validation (starting with Geth; client matrix planned).
 - Consensus-specs ingestion and consensus client validation.
@@ -150,7 +146,7 @@ Each deliverable has a clear acceptance criterion so EF can validate progress wi
 
 ## 7. Success Metrics (Initial Targets)
 
-Targets are refined with EF in Phase 1. Current targets reflect feasible outcomes for a 4–6 month roadmap.
+Targets are refined with EF in Phase 1. Current targets reflect feasible outcomes for a 4-6 month roadmap.
 
 | Metric | Initial Target | Current State | Measurement |
 | --- | --- | --- | --- |
@@ -160,26 +156,26 @@ Targets are refined with EF in Phase 1. Current targets reflect feasible outcome
 | Throughput | 200 runs/month baseline | CI batch runs functional | Batch workflow logs |
 | Run time | <=60 minutes per CI run | ~30 min observed for EIP-7702 | CI run logs |
 
-> **Accuracy note:** Current validation is qualitative (spot-checks, cross-model comparison). Phase 1 establishes quantitative baselines with curated ground truth for 2–3 well-understood EIPs.
+> **Accuracy note:** Current validation is qualitative (spot-checks, cross-model comparison). Phase 1 establishes quantitative baselines with curated ground truth for 2-3 well-understood EIPs.
 
 ---
 
-## 8. Project Plan and Timeline (4–6 Months)
+## 8. Project Plan and Timeline (4-6 Months)
 
 The plan expands coverage in a controlled way: first harden the pipeline and establish accuracy baselines, then scale across execution and consensus layers.
 
 | Phase | Timing | Dependencies | Outputs |
 | --- | --- | --- | --- |
-| Phase 0 (complete) | Done | — | Working CLI, reusable workflow, run artifacts |
+| Phase 0 (complete) | Done | None | Working CLI, reusable workflow, run artifacts |
 | Phase 1 | Month 1 | None | Ground truth dataset, accuracy baselines, prompt tuning |
 | Phase 2 | Month 2 | Phase 1 accuracy >=80% | Execution client matrix (3+ clients), batch coverage |
 | Phase 3 | Month 3 | Parallel to Phase 2 | Consensus-specs ingestion, obligation extraction |
 | Phase 4 | Month 4 | Phases 2 and 3 | Consensus client matrix, EL/CL linkage |
-| Phase 5 (optional) | Month 5 | — | CI gating, quality thresholds, dashboarding |
-| Phase 6 (optional) | Month 6 | — | Extended phases for broader protocol security mapping |
+| Phase 5 (optional) | Month 5 | None | CI gating, quality thresholds, dashboarding |
+| Phase 6 (optional) | Month 6 | None | Extended phases for broader protocol security mapping |
 
 **Critical path:** Phase 1 accuracy validation gates Phase 2 expansion.  
-**Contingency:** Phases 5–6 absorb schedule slip from core phases if needed.
+**Contingency:** Phase 5-6 absorbs schedule slip from core phases if needed.
 
 **Detailed plan:** see Supporting Materials (Project plan and timeline).
 
@@ -238,8 +234,8 @@ We provide a cost model separating engineering effort from operational costs. Op
 Petros Lambropoulos is an independent consultant with 13 years of experience in software engineering, ML systems, and production-grade AI.
 
 **Career highlights:**
-- **Workable (2016–2019):** Senior Software Engineer, NLP team — resume parsing and job matching systems.
-- **NannyML (2021–2023):** Senior Software Engineer — ML monitoring platform for model drift detection.
+- **Workable (2016-2019):** Senior Software Engineer on the NLP team. Built resume parsing and job matching systems.
+- **NannyML (2021-2023):** Senior Software Engineer. Built ML monitoring platform for model drift detection.
 - **Recent consulting:** Hedera/CNO (compliance-first tokenization infrastructure), dikaio.ai (agentic workflows and evaluation pipelines).
 
 **This project:** Delivered eth-llm-poc end-to-end with installable `eip-verify` CLI, CI workflows, and validated runs.
