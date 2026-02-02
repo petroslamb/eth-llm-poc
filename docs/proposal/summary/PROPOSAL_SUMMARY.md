@@ -8,24 +8,18 @@ This document is the submission-ready proposal summary for the Ethereum Foundati
 
 ## Executive Summary
 
-Ethereum's Protocol Security team manually audits multiple client implementations against evolving specifications. This labor-intensive process scales poorly with fork velocity and client diversity.
+Ethereum's Protocol Security team manually audits client implementations against evolving specifications. **eth-llm-poc** automates obligation extraction, spec mapping, and client gap detection using direct chained agent calls with strict phase boundaries. The prototype is complete: validated runs across EIP-1559, EIP-2930, and EIP-7702 with structured artifacts (CSV, JSON, Markdown) in GitHub Actions CI.
 
-To address this, we built **eth-llm-poc**, an LLM-assisted verification system that automates obligation extraction, spec mapping, and client gap detection. The system produces auditable discrepancy reports with full traceability from EIP text to client code.
-
-The prototype is complete and running. It includes a multi-phase pipeline covering execution-specs and Geth, with validated runs across EIP-1559, EIP-2930, and EIP-7702 using Claude Opus 4.5. The pipeline runs in GitHub Actions CI and produces structured artifacts (CSV, JSON, Markdown) that enable independent review. Reusable workflows support both single-EIP and batch execution modes.
-
-The architecture uses direct chained agent calls with strict phase boundaries. Each phase operates on explicit inputs and produces deterministic outputs. This design ensures reproducibility and clear audit trails, which are essential for security infrastructure. During development, we evaluated multi-agent systems, RAG pipelines, and symbolic repo maps. All introduced coordination complexity, unpredictable results, or poor auditability. The direct-chained approach outperformed them on stability and traceability.
-
-This proposal extends the prototype to production coverage. Phase 1-2 hardens the pipeline and establishes quantitative accuracy baselines across an execution client matrix. Phase 3-4 adds consensus-specs ingestion and consensus client coverage with EL/CL linkage. Optional Phase 5-6 integrates CI gating, quality dashboards, and broader protocol security mapping.
+This proposal extends the prototype to production coverage. Phase 1-2 hardens the pipeline and establishes accuracy baselines across an execution client matrix. Phase 3-4 adds consensus-specs ingestion and consensus client coverage. Optional Phase 5-6 integrates CI gating and quality dashboards.
 
 ---
 
 ## Key Differentiators
 
-- **Working system today:** eth-llm-poc runs end-to-end with CI integration and auditable artifacts. This is a working system, not a proposal for future work.
-- **Auditable by design:** strict phase boundaries, versioned runs, and structured outputs (CSV, JSON, Markdown) enable independent verification.
-- **Proven accuracy:** Claude Opus 4.5 produces plausible outputs with low observed false positives in qualitative validation; quantitative baselines are Phase 1 work.
-- **Clear scaling unit:** `eip-verify` CLI enables single-EIP or batch execution; the same unit extends to EIP × client matrices.
+- **Working code, not a proposal:** eth-llm-poc runs end-to-end today with CI integration.
+- **Structured outputs:** CSV indices, JSON manifests, and Markdown reports provide full traceability from EIP text to client code.
+- **Validated model selection:** Claude Opus 4.5 was chosen after cross-model comparison (Haiku, Sonnet, GPT-5.2, Gemini 3 Pro); quantitative baselines are Phase 1 work.
+- **Batch-ready CLI:** `eip-verify` supports single-EIP and batch execution, scaling directly to EIP x client matrices.
 
 ---
 
