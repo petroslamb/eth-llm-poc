@@ -88,14 +88,7 @@ We evaluated multi-agent systems (coordination complexity, opaque failures), RAG
 
 **Methodology:** Direct chained agent calls with strict phase boundaries and deterministic artifacts.
 
-**Frameworks and models:**
-| Category | Decision | Rationale |
-| --- | --- | --- |
-| Primary agent | Claude Agent SDK | Best performance and reliability observed |
-| Primary model | Claude Opus 4.5 | Highest accuracy in validation |
-| Fallback model | Claude Sonnet 4.5 | Cost-effective for batch runs |
-| Other models tested | GPT-5.2, Gemini 3 Pro | Lower quality for this task |
-| Agent frameworks tested | LangChain Deep Agent, Aider + RepoMap | More complexity, weaker results |
+**Frameworks and models:** The primary agent is Claude Agent SDK for its performance and reliability. The primary model is Claude Opus 4.5 for highest accuracy, with Claude Sonnet 4.5 as a cost-effective fallback for batch runs. We also tested GPT-5.2 and Gemini 3 Pro (lower quality for this task) and agent frameworks like LangChain Deep Agent and Aider + RepoMap (more complexity, weaker results).
 
 **Tools:** Native filesystem and CLI tools with structured outputs and manifest metadata.
 
