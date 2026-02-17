@@ -1,4 +1,4 @@
-# Essays Workspace Guide
+# Research Working Note Workspace Guide
 
 ## Goal
 This directory contains the full essay production package for the trustworthiness thesis:
