@@ -187,7 +187,7 @@ Haiku's numbers disqualify it for anything but bulk triage pre-screening.
 
 ## Running in CI: Why It Matters
 
-The tool doesn't just run locally. It ships as a [reusable GitHub Action](https://github.com/petroslamb/eth-llm-poc/tree/ca15d40/.github/workflows) with single-run and batch-mode workflows. You can trigger a verification for one EIP or an entire fork's worth of EIPs in parallel.
+The tool doesn't just run locally. It ships as a [reusable GitHub workflow](https://github.com/petroslamb/eth-llm-poc/tree/ca15d40/.github/workflows) with single-run and batch-mode triggers. You can verify one EIP or an entire fork's worth of EIPs in parallel.
 
 This was a deliberate design choice, not a feature checkbox.
 
@@ -223,12 +223,12 @@ Let me make the affirmative case directly, since the data supports it.
 
 ## Beyond Ethereum: Why This Pattern Generalizes
 
-The specific application is Ethereum protocol verification. But the patterns we found apply to any domain where an LLM is used to analyze compliance, verify implementations, or produce structured security assessments:
+The specific application is Ethereum protocol verification. But the patterns we found likely transfer to many analogous domains where an LLM is used to analyze compliance, verify implementations, or produce structured security assessments:
 
 - **Auditability improves faster than correctness.** Invest in making errors findable before investing in making errors rare.
 - **Evidence governance is the bottleneck, not generation quality.** When a model produces both a summary and the supporting data, someone has to decide which one to trust when they disagree.
-- **Cost-to-trust is the real metric, not cost-to-generate.** Our measured API cost for a single-EIP Opus run was [$4.39](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/examples/README.md); at scale with larger token budgets, template projections range $24–40 per run. Either way, the reviewer time to validate the output dwarfs the generation cost.
-- **CI deployment reduces an entire category of reliability concerns.** Fixed inputs, reduced prompt surface, immutable artifacts, bounded agent scope. For deterministic workflows, this is the practical sweet spot.
+- **Cost-to-trust is the real metric, not cost-to-generate.** Our measured API cost for a single-EIP Opus run was [$4.39](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/examples/README.md); at scale with larger token budgets, template projections range $24–40 per run. We expect reviewer time to be the dominant cost driver, but this has not yet been measured — instrumenting adjudication time is an open work item.
+- **CI deployment reduces a major class of reliability concerns.** Fixed inputs, reduced prompt surface, immutable artifacts, bounded agent scope. For deterministic workflows, this is the practical sweet spot.
 
 If you're building LLM-assisted verification in any context — regulatory compliance, codebase auditing, specification checking — the [twelve-step methodology](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/docs/research_working_note/essay_methodology.md) and the [evidence ledger pattern](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/docs/evaluations/evidence_ledger.md) are probably the most reusable contributions from this project.
 
@@ -262,6 +262,6 @@ The tool is open source: **[eip-verify on GitHub](https://github.com/petroslamb/
 
 The strongest contribution of this project isn't a claim that verification is solved. It's a workflow that got better at exposing where it might be wrong.
 
-In protocol security — and in any domain where AI-generated analysis must be trusted — that's the maturity signal that matters.
+In protocol security — and in many domains where AI-generated analysis must be trusted — that's the maturity signal that matters.
 
 *Evidence links in this post are pinned to commit [`ca15d40`](https://github.com/petroslamb/eth-llm-poc/tree/ca15d40).*
