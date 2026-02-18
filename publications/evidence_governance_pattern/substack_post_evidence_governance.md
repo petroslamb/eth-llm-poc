@@ -102,7 +102,7 @@ Our target release discipline follows a dual-gate structure inspired by *EviBoun
 
 **After:** [8 contradictions](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/docs/evaluations/contradictions.csv) surfaced across [81 scored mappings](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/docs/evaluations/sample_scored_run.csv). 3 claims downgraded.
 
-Direct-adjudication burden was [38.3% (18/47)](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/docs/evaluations/sample_scored_run.csv), but 72.2% of that burden came from Haiku outputs ([derivation](https://github.com/petroslamb/eth-llm-poc/blob/main/publications/evidence_governance_pattern/metric_derivations.md)). Without Haiku rows, follow-up burden drops to 15.6% (5/32). Model choice is part of governance: Haiku-tier output is triage-grade in this PoC, while claim promotion requires stronger-model adjudication.
+Direct-adjudication burden was [38.3% (18/47)](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/docs/evaluations/sample_scored_run.csv), but 72.2% of that burden came from Haiku outputs ([derivation](https://github.com/petroslamb/eth-llm-poc/blob/6a21cce/publications/evidence_governance_pattern/metric_derivations.md)). Without Haiku rows, follow-up burden drops to 15.6% (5/32). Model choice is part of governance: Haiku-tier output is triage-grade in this PoC, while claim promotion requires stronger-model adjudication.
 
 The goal, as *From Fluent to Verifiable* frames it, is `E_verify ≪ E_generate`. Governance didn't just measure overall burden — it exposed *where* the burden concentrates, making model-tier selection an auditable governance decision rather than a cost guess.
 
@@ -155,7 +155,7 @@ The tool is open source: **[eip-verify on GitHub](https://github.com/petroslamb/
 
 The strongest contribution isn't a claim that verification is solved. It's a workflow where every trust decision is inspectable, disputable, and updateable.
 
-*Evidence links in this post are pinned to commit [`ca15d40`](https://github.com/petroslamb/eth-llm-poc/tree/ca15d40).*
+*Evidence artifact links are pinned to commit [`ca15d40`](https://github.com/petroslamb/eth-llm-poc/tree/ca15d40). The Part 1 narrative and metric derivations are pinned to later commits ([`13260c8`](https://github.com/petroslamb/eth-llm-poc/tree/13260c8), [`6a21cce`](https://github.com/petroslamb/eth-llm-poc/tree/6a21cce)) because they were written after the evidence pack was frozen.*
 
 ---
 
