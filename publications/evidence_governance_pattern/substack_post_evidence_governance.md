@@ -100,9 +100,11 @@ Our target release discipline follows a dual-gate structure inspired by *EviBoun
 
 **Before (CTR-001):** A polished narrative overrode contradictory row-level data. Nobody noticed because there was no rule for which source to prefer.
 
-**After:** [8 contradictions](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/docs/evaluations/contradictions.csv) surfaced across [81 scored mappings](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/docs/evaluations/sample_scored_run.csv). 3 claims downgraded. Error profiles characterized per model ([scored data](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/docs/evaluations/sample_scored_run.csv)): Haiku produces path noise (13/15 rows needed follow-up, avg 5.0/10 — derivation: [metric_derivations.md](https://github.com/petroslamb/eth-llm-poc/blob/main/publications/evidence_governance_pattern/metric_derivations.md)); Opus and Sonnet produce disputed obligations where the requirement itself is debatable.
+**After:** [8 contradictions](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/docs/evaluations/contradictions.csv) surfaced across [81 scored mappings](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/docs/evaluations/sample_scored_run.csv). 3 claims downgraded.
 
-[**38.3% of direct-adjudication rows**](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/docs/evaluations/sample_scored_run.csv) required manual follow-up. That number is the real cost — not the API bill, not the token count. The reviewer hours. The goal, as *From Fluent to Verifiable* frames it, is `E_verify ≪ E_generate` — verification effort much lower than generation effort. Our 38.3% sets the baseline; each governance iteration should reduce it.
+Direct-adjudication burden was [38.3% (18/47)](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/docs/evaluations/sample_scored_run.csv), but 72.2% of that burden came from Haiku outputs ([derivation](https://github.com/petroslamb/eth-llm-poc/blob/main/publications/evidence_governance_pattern/metric_derivations.md)). Without Haiku rows, follow-up burden drops to 15.6% (5/32). Model choice is part of governance: Haiku-tier output is triage-grade in this PoC, while claim promotion requires stronger-model adjudication.
+
+The goal, as *From Fluent to Verifiable* frames it, is `E_verify ≪ E_generate`. Governance didn't just measure overall burden — it exposed *where* the burden concentrates, making model-tier selection an auditable governance decision rather than a cost guess.
 
 The meta-irony: much of the governance scaffolding was itself built with AI assistance. The AI is mediocre at protocol verification. It's surprisingly good at building infrastructure that exposes its own mediocrity.
 
@@ -132,7 +134,7 @@ Start with 1 and 2. Formalize 3 and 4 as the team develops shared judgment. Step
 
 **Doesn't remove domain experts.** Someone still adjudicates. *SOPBench* shows even strong models fail required verification steps.
 
-**Doesn't scale without reviewer time.** The governance *is* review time. The 38.3% rate is the cost of honest measurement.
+**Doesn't scale without reviewer time.** The governance *is* review time. The aggregate 38.3% rate is real, though heavily model-tier concentrated (72.2% from Haiku). Stronger models reduce burden but don't eliminate it.
 
 **Doesn't survive gaming.** Garbage in the ledger, fake resolutions, rubber-stamped gates — the pattern is as strong as the team's commitment. As *The BIG Argument for AI Safety Cases* warns, safety cases become paperwork without the right operational mindset (Habli et al., 2025).
 

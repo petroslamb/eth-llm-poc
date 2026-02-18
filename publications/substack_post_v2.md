@@ -173,9 +173,9 @@ None of this made the LLM smarter. All of it made the LLM's errors *findable* �
 | Sonnet | 12 | 9.0 | 92% | 8% (1 row) |
 | Haiku | 15 | 5.0 | 13% | 87% (13 rows) |
 
-**38.3% of all direct-adjudication rows required manual follow-up** — partial, invalid, or disputed results that a reviewer would need to investigate.
+**38.3% of all direct-adjudication rows required manual follow-up** (18/47) — but 72.2% of that burden came from Haiku outputs (13 of 18 follow-up rows). Without Haiku, follow-up drops to 15.6% (5/32).
 
-That number is the real cost of this kind of system. Not the API bill. Not the token count. The reviewer hours.
+The aggregate isn't the whole story. Governance exposed a model-tier asymmetry: Haiku-tier output is triage-grade, while claim promotion requires stronger-model adjudication. Model choice is itself a governance decision, and the evidence infrastructure made that visible.
 
 ### Why Opus is the default
 
@@ -227,7 +227,7 @@ The specific application is Ethereum protocol verification. But the patterns we 
 
 - **Auditability improves faster than correctness.** Invest in making errors findable before investing in making errors rare.
 - **Evidence governance is the bottleneck, not generation quality.** When a model produces both a summary and the supporting data, someone has to decide which one to trust when they disagree.
-- **Cost-to-trust is the real metric, not cost-to-generate.** Our measured API cost for a single-EIP Opus run was [$4.39](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/examples/README.md); at scale with larger token budgets, template projections range $24–40 per run. We expect reviewer time to be the dominant cost driver, but this has not yet been measured — instrumenting adjudication time is an open work item.
+- **Cost-to-trust is the real metric, not cost-to-generate.** Our measured API cost for a single-EIP Opus run was [$4.39](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/examples/README.md); at scale with larger token budgets, template projections range $24–40 per run. Reviewer time is the dominant cost driver, and it's heavily model-tier concentrated: 72.2% of our follow-up burden came from Haiku outputs. Governance made this asymmetry visible and actionable.
 - **CI deployment reduces a major class of reliability concerns.** Fixed inputs, reduced prompt surface, immutable artifacts, bounded agent scope. For deterministic workflows, this is the practical sweet spot.
 
 If you're building LLM-assisted verification in any context — regulatory compliance, codebase auditing, specification checking — the [twelve-step methodology](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/docs/research_working_note/essay_methodology.md) and the [evidence ledger pattern](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/docs/evaluations/evidence_ledger.md) are probably the most reusable contributions from this project.

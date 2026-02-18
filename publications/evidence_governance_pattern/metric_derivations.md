@@ -12,21 +12,41 @@ All figures derive from the 47 direct-adjudication rows in [`sample_scored_run.c
 
 Source: Part 1 post, "Per-model performance" table.
 
-## Cited Figures
-
-### "38.3% of direct-adjudication rows required manual follow-up"
+## Aggregate Burden
 
 - Rows needing follow-up: 4 (Opus) + 1 (Sonnet) + 13 (Haiku) = **18**
 - Total direct-adjudication rows: **47**
-- Rate: 18 / 47 = **38.3%**
+- Aggregate follow-up rate: 18 / 47 = **38.3%**
 
-### "Haiku produces path noise (13/15 rows needed follow-up, avg 5.0/10)"
+## Model-Tier Concentration
 
-- Haiku rows: **15**
-- Follow-up needed: **13** (87%)
-- Average score: **5.0 / 10**
+The aggregate 38.3% is heavily driven by Haiku, not evenly distributed:
+
+- **Haiku contributes 13 of 18 follow-up rows = 72.2% of total burden**
+- Non-Haiku (Opus + Sonnet) burden: 5 / 32 = **15.6%**
+- Haiku burden: 13 / 15 = **86.7%**
+
+### Effect Size (Haiku vs Non-Haiku)
+
+| Metric | Value |
+|---|---|
+| Relative risk (follow-up) | 5.55× |
+| Odds ratio | 35.1 |
+| Fisher exact p-value | 4.75 × 10⁻⁶ |
+
+The asymmetry is statistically unambiguous within this run family.
+
+### Implication
+
+The aggregate framing ("38.3% is the cost") can be read as "the method is expensive." The decomposition shows that governance exposed a model-tier asymmetry: most burden concentrates in triage-grade outputs, and model selection is itself an auditable governance decision.
+
+## Other Cited Figures
 
 ### "8 contradictions surfaced across 81 scored mappings"
 
 - 8: count of entries in [`contradictions.csv`](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/docs/evaluations/contradictions.csv) (CTR-001 through CTR-008)
 - 81: total rows in [`sample_scored_run.csv`](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/docs/evaluations/sample_scored_run.csv) (47 direct + 34 proxy)
+
+## Caveat
+
+These are PoC run-family statistics in one environment (Ethereum protocol verification with Claude models). Portability is plausible, not yet proven.
