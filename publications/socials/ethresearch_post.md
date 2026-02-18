@@ -74,7 +74,7 @@ We logged this as **CTR-001** in our [contradiction register](https://github.com
 
 We assembled five interlocking components, adapted from evidence-based medicine's approach to handling conflicting sources. No single component is original — the integration is the contribution.
 
-**1. Evidence Hierarchy.** Raw artifacts (CSVs, transcripts, prompts) beat validation documents (scored assessments), which beat narrative summaries. When tiers conflict, the lower tier wins. Three claims were downgraded via this rule.
+**1. Evidence Hierarchy.** Raw artifacts (CSVs, transcripts, prompts) beat validation documents (scored assessments), which beat narrative summaries. When tiers conflict, the fundamental data wins. Three claims were downgraded via this rule.
 
 **2. Multi-dimensional Scoring Rubric.** Five dimensions, 0–2 each. Total (0–10) maps to `valid`, `partial`, `invalid`, or `disputed`. Replaces subjective plausibility assessment with structured, repeatable judgment. [Rubric](https://github.com/petroslamb/eth-llm-poc/blob/ca15d40/docs/evaluations/scoring_rubric.md).
 
