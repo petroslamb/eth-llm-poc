@@ -1,6 +1,6 @@
-# Our AI Verification Tool Got Better at Proving It Was Wrong — Not at Being Right
+# Measuring Trust: The Gap Between AI Auditing and Correctness
 
-**What happens when you actually measure whether AI-generated security analysis is trustworthy**
+**Auditability improved faster than correctness — and that changes what you should invest in**
 
 ---
 

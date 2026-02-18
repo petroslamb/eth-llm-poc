@@ -1,10 +1,10 @@
-# The Evidence Governance Pattern We Built After Our AI Kept Confidently Lying to Us
+# The Five-Component Pattern for AI Evidence Governance
 
-**A five-component operational pattern for teams that need to trust LLM-generated analysis**
+**A reusable pattern for teams that need to trust LLM-generated analysis in high-stakes workflows**
 
 *This is for teams shipping LLM-assisted analysis in high-stakes workflows — protocol security, compliance auditing, code review — where "the model said so" isn't good enough.*
 
-*Part 2 of [Our AI Verification Tool Got Better at Proving It Was Wrong — Not at Being Right](https://github.com/petroslamb/eth-llm-poc/blob/13260c8/publications/substack_post_v2.md)*
+*Part 2 of [Measuring Trust: The Gap Between AI Auditing and Correctness](https://github.com/petroslamb/eth-llm-poc/blob/13260c8/publications/substack_post_v2.md)*
 
 ---
 
