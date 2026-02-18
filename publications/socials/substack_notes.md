@@ -32,7 +32,7 @@ Three variants. Use Note 1 or Note 2 for the individual post; Note 3 if linking 
 
 > Cheap generation, expensive trust.
 >
-> We tested AI for Ethereum protocol verification. The system got dramatically better at exposing where it might be wrong. It did not get dramatically better at being right.
+> We tested AI for Ethereum protocol verification. The system got measurably better at exposing where it might be wrong. It did not get better at being right.
 >
 > Two posts, one finding:
 > Part 1 — the trust gap → [V2_LINK]

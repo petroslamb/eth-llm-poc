@@ -14,7 +14,7 @@ I spent a month building [eip-verify](https://github.com/petroslamb/eth-llm-poc/
 
 The tool runs in CI, produces inspectable artifacts at every phase, and we scored 47 obligation mappings across three Claude models on EIPs 1559, 2930, and 7702.
 
-**The core finding:** the system got dramatically better at exposing where it might be wrong. It did not get dramatically better at being right. Auditability improved faster than correctness.
+**The core finding:** the system got measurably better at exposing where it might be wrong. It did not get better at being right. Auditability improved faster than correctness.
 
 **What broke:**
 - The same run produced a polished summary saying "all obligations verified" while the underlying data pointed to ABI wrappers and test files

@@ -6,13 +6,11 @@ Post as a thread (each `---` is a new tweet). Or collapse into a single tweet us
 
 **Tweet 1 (hook)**
 
-Our AI verification tool produced a polished summary: "all obligations properly mapped."
+Our AI tool said: "all obligations properly mapped."
 
-The same run's data pointed to test files and ABI wrappers — none of which implement the logic it was supposed to verify.
+The same run's data pointed to test files and ABI wrappers — none of which implement the actual logic.
 
-Both were confident. Both were AI-generated. They contradicted each other.
-
-🧵
+Both confident. Both AI-generated. They contradicted each other. 🧵
 
 ---
 
@@ -32,7 +30,7 @@ After 47 adjudicated mappings across Ethereum EIPs and three Claude model tiers:
 
 Auditability improved faster than correctness.
 
-The system got dramatically better at exposing where it might be wrong. It did NOT get better at being right.
+The system got measurably better at exposing where it might be wrong. It did NOT get better at being right.
 
 ---
 

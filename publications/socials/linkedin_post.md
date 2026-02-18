@@ -10,7 +10,7 @@ Over the past month, I built an open-source AI verification tool for Ethereum pr
 
 **Auditability improved faster than correctness.**
 
-The system got dramatically better at exposing where it might be wrong. It did not get dramatically better at being right. And 72% of the follow-up burden was concentrated in the cheapest model tier — a fact we only discovered because the governance system made it visible.
+The system got measurably better at exposing where it might be wrong. It did not get meaningfully better at being right. And 72% of the follow-up burden was concentrated in the cheapest model tier — a fact we only discovered because the governance system made it visible.
 
 We built a five-component evidence governance pattern — adapted from evidence-based medicine — that makes trust decisions repeatable:
 

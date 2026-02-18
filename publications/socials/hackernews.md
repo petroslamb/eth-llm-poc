@@ -2,17 +2,17 @@
 
 ---
 
-## Submission
+## Submission (recommended: Show HN)
 
-**Title:** Your AI Is Confidently Wrong – And You Have No Rule for What to Do About It
-
-**URL:** [KILLER_PIECE_SUBSTACK_URL]
-
-*Alternative title (if using Show HN format for the tool):*
-
-**Title:** Show HN: eip-verify – AI tool for Ethereum protocol verification with evidence governance
+**Title:** Show HN: eip-verify – Evidence governance for AI-assisted Ethereum protocol verification
 
 **URL:** https://github.com/petroslamb/eth-llm-poc/tree/ca15d40
+
+*Alternative (if submitting the essay instead of the tool):*
+
+**Title:** Auditability improved faster than correctness – lessons from AI-assisted EIP verification
+
+**URL:** [KILLER_PIECE_SUBSTACK_URL]
 
 ---
 
