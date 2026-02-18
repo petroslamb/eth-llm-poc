@@ -57,4 +57,4 @@ How to distribute the eip-verify publications across platforms.
 
 - **Substack (killer piece):** `[INSERT SUBSTACK URL AFTER PUBLISHING]`
 - **GitHub repo:** https://github.com/petroslamb/eth-llm-poc/tree/ca15d40
-- **Publications index:** https://github.com/petroslamb/eth-llm-poc/blob/main/publications/README.md
+- **Publications index:** https://github.com/petroslamb/eth-llm-poc/blob/main/poc5/publications/README.md

@@ -6,7 +6,7 @@ We built [eip-verify](https://github.com/petroslamb/eth-llm-poc/tree/ca15d40), a
 
 After scoring 81 obligation mappings (47 directly adjudicated, 34 compare-derived proxy rows) across three Claude models (Haiku, Opus, Sonnet) on EIPs 1559, 2930, and 7702, the central finding is: **auditability improved faster than correctness across five PoC iterations.**
 
-The system became dramatically better at exposing where it might be wrong. It did not become dramatically better at being right. This post presents the scored data, the evidence governance pattern we built in response, the failure modes we encountered, and open questions for the Ethereum research community.
+The system became measurably better at exposing where it might be wrong. It did not become meaningfully better at being right. This post presents the scored data, the evidence governance pattern we built in response, the failure modes we encountered, and open questions for the Ethereum research community.
 
 ---
 

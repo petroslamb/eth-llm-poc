@@ -18,7 +18,7 @@
 
 ## Author Comment (post immediately after submitting)
 
-Author here. I built this over the past month as a proof of concept for the Ethereum Foundation's Protocol Security team.
+Author here. I built this recently as a proof of concept for the Ethereum Foundation's Protocol Security team.
 
 The tool (eip-verify) uses Claude to extract obligations from Ethereum Improvement Proposals and trace them through specification and client code. It runs in CI and produces inspectable artifacts at each phase.
 

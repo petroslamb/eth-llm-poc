@@ -6,7 +6,7 @@ Every team shipping AI-generated analysis has the same unspoken problem: **what 
 
 Most teams have no rule for which output to trust. The polished narrative wins by default — because it always sounds better than the messy data underneath.
 
-Over the past month, I built an open-source AI verification tool for Ethereum protocol security. After scoring 47 obligation mappings across three model tiers, the core finding wasn't about model capability. It was about trust infrastructure:
+Recently, I built an open-source AI verification tool for Ethereum protocol security. After scoring 47 obligation mappings across three model tiers, the core finding wasn't about model capability. It was about trust infrastructure:
 
 **Auditability improved faster than correctness.**
 
