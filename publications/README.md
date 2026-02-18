@@ -47,6 +47,7 @@ All evidence artifacts pinned to commit [`ca15d40`](https://github.com/petroslam
 
 ---
 
-## Distribution Assets
+## Distribution
 
-Social charts and visual assets for cross-platform promotion live in [`assets/`](assets/).
+- [`socials/`](socials/) — Channel-adapted posts for all platforms (ethresear.ch, HN, Reddit, Twitter/X, LinkedIn, Substack Notes) with distribution guide
+- [`assets/`](assets/) — Social charts and visual assets for cross-platform promotion
