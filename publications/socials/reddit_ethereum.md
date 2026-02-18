@@ -31,6 +31,6 @@ An evidence governance pattern with five components — evidence hierarchy (raw 
 
 Everything is open source. Tool, scored dataset, scoring rubric, contradiction register, evidence ledger — all linked from the repo.
 
-Full write-up: [KILLER_PIECE_LINK]
+Full write-up: https://github.com/petroslamb/eth-llm-poc/blob/main/poc5/publications/substack_post_killer.md
 
 Happy to answer questions about the architecture, the failure modes, or the evidence governance pattern.

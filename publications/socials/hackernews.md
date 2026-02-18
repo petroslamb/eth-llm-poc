@@ -12,7 +12,7 @@
 
 **Title:** Auditability improved faster than correctness – lessons from AI-assisted EIP verification
 
-**URL:** [KILLER_PIECE_SUBSTACK_URL]
+**URL:** https://github.com/petroslamb/eth-llm-poc/blob/main/poc5/publications/substack_post_killer.md
 
 ---
 

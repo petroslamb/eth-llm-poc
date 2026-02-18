@@ -70,7 +70,7 @@ The AI is mediocre at verification. It's surprisingly good at building the scaff
 
 Generation is cheap. Trust is expensive. The expense isn't compute — it's honesty.
 
-Full post + open-source tool: [KILLER_PIECE_LINK]
+Full post + open-source tool: https://github.com/petroslamb/eth-llm-poc/blob/main/poc5/publications/substack_post_killer.md
 
 ---
 

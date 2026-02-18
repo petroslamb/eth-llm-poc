@@ -2,8 +2,8 @@
 
 How to distribute the eip-verify publications across platforms.
 
-> **Note:** All posts contain `[KILLER_PIECE_LINK]` / `[KILLER_PIECE_SUBSTACK_URL]` placeholders.
-> Replace these with the actual Substack URL after publishing the killer piece (no email send). Also replace `[V2_LINK]` and `[GOV_LINK]` in `substack_notes.md` with the published Substack URLs for those posts.
+> **Note:** All posts currently point to the GitHub version of the killer piece (`poc5/publications/substack_post_killer.md`).
+> If you publish on Substack, you can swap these for the Substack URL before posting.
 
 ---
 
@@ -55,6 +55,6 @@ How to distribute the eip-verify publications across platforms.
 
 ## Canonical Links
 
-- **Substack (killer piece):** `[INSERT SUBSTACK URL AFTER PUBLISHING]`
+- **Main post (killer piece):** https://github.com/petroslamb/eth-llm-poc/blob/main/poc5/publications/substack_post_killer.md
 - **GitHub repo:** https://github.com/petroslamb/eth-llm-poc/tree/ca15d40
 - **Publications index:** https://github.com/petroslamb/eth-llm-poc/blob/main/poc5/publications/README.md

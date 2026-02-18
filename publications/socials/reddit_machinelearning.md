@@ -37,4 +37,4 @@ Overall follow-up burden was 38.3% (18/47 direct-adjudication rows), but 72.2% o
 
 Open source: [github.com/petroslamb/eth-llm-poc](https://github.com/petroslamb/eth-llm-poc/tree/ca15d40)
 
-Full write-up: [KILLER_PIECE_LINK]
+Full write-up: https://github.com/petroslamb/eth-llm-poc/blob/main/poc5/publications/substack_post_killer.md

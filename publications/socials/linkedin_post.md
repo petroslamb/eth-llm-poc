@@ -23,6 +23,6 @@ We built a five-component evidence governance pattern — adapted from evidence-
 **For any team where "the model said so" isn't enough:**
 The pattern costs a CSV and an afternoon to start. Begin with a contradiction register — it forces the team to notice disagreements that currently get resolved by whoever speaks last.
 
-Full write-up and open-source tool: [KILLER_PIECE_LINK]
+Full write-up and open-source tool: https://github.com/petroslamb/eth-llm-poc/blob/main/poc5/publications/substack_post_killer.md
 
 #AI #LLM #Governance #ProtocolSecurity #EvidenceBasedPractice #OpenSource

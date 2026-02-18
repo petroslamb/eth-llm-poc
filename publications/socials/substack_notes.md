@@ -12,7 +12,7 @@ Three variants. Use Note 1 or Note 2 for the individual post; Note 3 if linking 
 >
 > After 47 adjudicated mappings across Ethereum EIPs: auditability improved faster than correctness — and that gap is the finding that actually matters.
 >
-> [KILLER_PIECE_LINK]
+> https://github.com/petroslamb/eth-llm-poc/blob/main/poc5/publications/substack_post_killer.md
 
 ---
 
@@ -24,7 +24,7 @@ Three variants. Use Note 1 or Note 2 for the individual post; Note 3 if linking 
 >
 > So we built one — a five-component evidence governance pattern adapted from evidence-based medicine. For any team where "the model said so" isn't good enough:
 >
-> [KILLER_PIECE_LINK]
+> https://github.com/petroslamb/eth-llm-poc/blob/main/poc5/publications/substack_post_killer.md
 
 ---
 
@@ -35,5 +35,5 @@ Three variants. Use Note 1 or Note 2 for the individual post; Note 3 if linking 
 > We tested AI for Ethereum protocol verification. The system got measurably better at exposing where it might be wrong. It did not get better at being right.
 >
 > Two posts, one finding:
-> Part 1 — the trust gap → [V2_LINK]
-> Part 2 — the governance pattern → [GOV_LINK]
+> Part 1 — the trust gap → https://github.com/petroslamb/eth-llm-poc/blob/main/poc5/publications/substack_post_v2.md
+> Part 2 — the governance pattern → https://github.com/petroslamb/eth-llm-poc/blob/main/poc5/publications/evidence_governance_pattern/substack_post_evidence_governance.md
